@@ -24,64 +24,26 @@ inputCells.forEach(function (cell, index) {
     }
 });
 
-function foo(){
-    console.log('foo');
-    // this.removeEventListener(foo);
-}
-
-// function changeCellValue(cell, inputCell) {
-//     cell.innerHTML = inputCell.innerHTML;
-//     cell.style.backgroundColor = 'yellow';
-// }
-
-// function changeCellValue(cell, inputCell) {
-//     cell.innerHTML = inputCell.innerHTML;
-//     cell.style.backgroundColor = 'yellow';
-// }
-
-// cells.forEach(function (cell, index) {
-//     if (cellValues[index] === 0) {
-//         cell.innerHTML = '';
-//         cell.addEventListener('click', function() {
-//             cell.style.backgroundColor = 'white';
-//             inputCells.forEach(function(inputCell, index){
-//                 inputCell.style.backgroundColor = 'white';
-//                 // inputCell.addEventListener('click', foo.bind(inputCell));
-//                 inputCell.addEventListener('click', changeCellValue(cell, inputCell));
-//                 // inputCell.addEventListener('click', foo);
-//                 console.log('inputCell listening: ' + index);
-//             });
-//         });
-//         console.log('cell listening: ' + index);
-//     } else {
-//         cell.innerHTML = cellValues[index];
-//         cell.style.color = 'grey';
-//     }
-// });
-
-
-cells.forEach(function (cell, index) {
-    if (cellValues[index] === 0) {
+cells.forEach(function (cell, cellIndex) {
+    if (cellValues[cellIndex] === 0) {
         cell.innerHTML = '';
         cell.addEventListener('click', function() {
+            // console.log('cell ' + cellIndex + ' clicked');
             cell.style.backgroundColor = 'white';
-            inputCells.forEach(function(inputCell, index){
+            inputCells.forEach(function(inputCell, inputCellIndex){
                 inputCell.style.backgroundColor = 'white';
-                inputCell.addEventListener('click', function(event){
-                    // event.stopPropagation();
-                    // event.stopImmediatePropagation();
-                    // inputCell.style.backgroundColor = 'blue';
+                // Use onClick instead of addEventListener here as we need to replace a handler, not add one:
+                inputCell.onclick = function(event){
+                    // console.log('inputCell ' + inputCell.innerHTML + ' clicked');
                     cell.innerHTML = inputCell.innerHTML;
-                });
-                console.log('inputCell listening: ' + index);
+                    // console.log('cell ' + cellIndex + ' parent: ' + cell.parentNode)
+                };
+                // console.log('inputCell ' + inputCellIndex + ' listening');
             });
-            // inputCells.forEach(function(inputCell, index){
-            //     inputCell.addEventListener('click', changeCellValue(cell, inputCell));
-            // });
         });
-        console.log('cell listening: ' + index);
+        // console.log('cell listening: ' + cellIndex);
     } else {
-        cell.innerHTML = cellValues[index];
+        cell.innerHTML = cellValues[cellIndex];
         cell.style.color = 'grey';
     }
 });
