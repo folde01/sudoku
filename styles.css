@@ -1,10 +1,16 @@
 :root {
     --table-border-color: grey;
+    --table-background-color: pink;
+    --table-background-color-active: white;
+    --inputTable-background-color: white;
+    --inputTable-background-color-active: yellowgreen;
+    --inputTable-color: grey;
+    --inputTable-color-active: black;
 }
 
 .mainTable {
     border: 5px solid var(--table-border-color);
-    background-color: pink;
+    background-color: var(--table-background-color);
     border-spacing: 0;
 }
 
@@ -18,14 +24,24 @@
     border: 1px solid var(--table-border-color);
 }
 
+.activeCell {
+    background-color: var(--table-background-color-active);
+}
+
 .inputCell {
-    background-color: yellowgreen;
     border: 1px solid var(--table-border-color);
 }
 
 .inputTable {
+    color: var(--inputTable-color);
+    background-color: var(--inputTable-background-color);
     border: 3px solid var(--table-border-color);
     border-spacing: 0;
+}
+
+.inputTable.inputTableActive {
+    color: var(--inputTable-color-active);
+    background-color: var(--inputTable-background-color-active);
 }
 
 .row:nth-child(3) .cell,
