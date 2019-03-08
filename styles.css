@@ -1,4 +1,6 @@
 :root {
+    --table-color: black;
+    --clueCell-color: grey;
     --table-border-color: grey;
     --table-background-color: pink;
     --table-background-color-active: white;
@@ -22,6 +24,11 @@
     height: 40px;
     width: 40px;
     border: 1px solid var(--table-border-color);
+}
+
+.clueCell {
+    color: var(--clueCell-color);
+
 }
 
 .activeCell {

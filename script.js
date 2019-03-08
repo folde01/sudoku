@@ -1,7 +1,7 @@
 'use strict';
 
 // Easy Puzzle 8,835,213,384 from websudoku.com
-var cellValues = [
+const cellValues = [
     0, 5, 0, 0, 0, 1, 0, 0, 6,
     0, 0, 0, 0, 5, 7, 0, 0, 0,
     2, 4, 0, 3, 0, 9, 1, 7, 5,
@@ -13,10 +13,10 @@ var cellValues = [
     6, 0, 0, 5, 0, 0, 0, 1, 0
 ];
 
-var cells = document.querySelectorAll('.cell');
+const cells = document.querySelectorAll('.cell');
 
 
-var inputCells = document.querySelectorAll('.inputCell');
+const inputCells = document.querySelectorAll('.inputCell');
 
 inputCells.forEach(function (cell, index) {
     if (index < inputCells.length - 1) {
@@ -24,11 +24,18 @@ inputCells.forEach(function (cell, index) {
     }
 });
 
+
+function moveIsInvalid(){
+    return false;
+}
+
+
 var activeCellIndex = null;
 const inputTable = document.querySelector('.inputTable');
 
 cells.forEach(function (cell, cellIndex) {
     if (cellValues[cellIndex] === 0) {
+        cell.classList.add('inactiveCell');
         cell.innerHTML = '';
         cell.addEventListener('click', function () {
             if (activeCellIndex) {
@@ -43,11 +50,14 @@ cells.forEach(function (cell, cellIndex) {
                     cell.innerHTML = inputCell.innerHTML;
                     cell.classList.remove('activeCell');
                     inputTable.classList.remove('inputTableActive');
+                    inputCells.forEach(function(inputCell, inputCellIndex) {
+                        inputCell.onclick = function () { return false };
+                    });
                 };
             });
         });
     } else {
         cell.innerHTML = cellValues[cellIndex];
-        cell.style.color = 'grey';
+        cell.classList.add('clueCell');
     }
 });
