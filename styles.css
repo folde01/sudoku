@@ -8,6 +8,7 @@
     --inputTable-background-color-active: yellowgreen;
     --inputTable-color: grey;
     --inputTable-color-active: black;
+    --invalidMove-color: red;
 }
 
 .mainTable {
@@ -59,4 +60,8 @@
 .cell:nth-child(3),
 .cell:nth-child(6) {
     border-right: 3px solid var(--table-border-color);
+}
+
+.invalidMove {
+    color: var(--invalidMove-color);
 }
