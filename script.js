@@ -1,51 +1,32 @@
-// Easy Puzzle 8,835,213,384 from websudoku.com
-const cellValues = [
-    0, 5, 0, 0, 0, 1, 0, 0, 6,
-    0, 0, 0, 0, 5, 7, 0, 0, 0,
-    2, 4, 0, 3, 0, 9, 1, 7, 5,
-    0, 0, 0, 8, 6, 0, 0, 0, 7,
-    3, 2, 0, 1, 0, 5, 0, 6, 4,
-    9, 0, 0, 0, 4, 2, 0, 0, 0,
-    8, 7, 4, 9, 0, 6, 0, 5, 2,
-    0, 0, 0, 2, 7, 0, 0, 0, 0,
-    6, 0, 0, 5, 0, 0, 0, 1, 0
-];
+renderEmptyBoard();
 
+var initialCellValues = null;
+loadPuzzle();
+
+// Cache board cells from DOM
 const cells = document.querySelectorAll('.cell');
 
 // Build 2D array used to check move validity
 let cellValues2D = new Array(9);
+initializeCellValues2D();
 
-for (let i = 0; i < cellValues2D.length; i++) {
-    cellValues2D[i] = new Array(9);
-}
-
-for (let i = 0; i < cells.length; i++) {
-    // console.log('cell: ' + cells[i].innerText);
-    const x = i % 9;
-    const y = Math.floor(i / 9);
-    cellValues2D[x][y] = cells[i].innerText;
-}
-
-// Populate cells (DOM cell nodes) and cellValues2D (for checking move validity) arrays with values from cellValues. 
+// Populate cells and cellValues2D (for checking move validity) arrays with values from initialCellValues. 
 cells.forEach(function (cell, cellIndex) {
     const cellX = cellIndex % 9;
     const cellY = Math.floor(cellIndex / 9);
     let cellValue = null;
 
-    if (cellValues[cellIndex] === 0) {
+    if (initialCellValues[cellIndex] === 0) {
         // It's an empty cell.
         cellValue = '';
     } else {
         // It's a clue cell.
-        cellValue = cellValues[cellIndex].toString();
+        cellValue = initialCellValues[cellIndex].toString();
         cell.classList.add('clueCell');
     }
     cell.innerText = cellValue;
     cellValues2D[cellX][cellY] = cellValue;
 });
-
-// console.log('INIT cellValues2D: ' + cellValues2D);
 
 // Set up keypad
 const inputCells = document.querySelectorAll('.inputCell');
@@ -64,7 +45,7 @@ let activeCellIndex = null;
 // Add event listeners to all cells except clue cells.
 cells.forEach(function (cell, cellIndex) {
     // Non-clue cells
-    if (cellValues[cellIndex] === 0) {
+    if (initialCellValues[cellIndex] === 0) {
 
         cell.addEventListener('click', function () {
 
@@ -112,7 +93,7 @@ cells.forEach(function (cell, cellIndex) {
         });
     } else {
         // Clue cell
-        cell.innerText = cellValues[cellIndex];
+        cell.innerText = initialCellValues[cellIndex];
         cell.classList.add('clueCell');
     }
 });
@@ -196,3 +177,45 @@ function moveIsValid(cellIndex, moveValue) {
     return rowIsValid() && columnIsValid() && boxIsValid();
 }
 
+
+function renderEmptyBoard() {
+    const board = document.querySelector('.board');
+    const boardSize = 9;
+
+    for (let i = 0; i < boardSize; i++) {
+        const rowNode = document.createElement('tr');
+        rowNode.setAttribute('class', 'row');
+        board.appendChild(rowNode);
+
+        for (let j = 0; j < boardSize; j++) {
+            const cellNode = document.createElement('td');
+            cellNode.setAttribute('class', 'cell');
+            rowNode.appendChild(cellNode);
+        }
+    }
+}
+
+function initializeCellValues2D() {
+    for (let i = 0; i < cellValues2D.length; i++) {
+        cellValues2D[i] = new Array(9);
+    }
+
+    for (let i = 0; i < cells.length; i++) {
+        const x = i % 9;
+        const y = Math.floor(i / 9);
+        cellValues2D[x][y] = cells[i].innerText;
+    }
+}
+
+function loadPuzzle() {
+    const xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            const response = JSON.parse(xhttp.responseText);
+            initialCellValues = response.initialCellValues;
+            console.log(initialCellValues);
+        }
+    }
+    xhttp.open('GET', 'example-puzzle.json', false);
+    xhttp.send();
+}

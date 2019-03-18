@@ -1,9 +1,9 @@
 :root {
-    --table-color: black;
+    --board-color: black;
     --clueCell-color: grey;
-    --table-border-color: grey;
-    --table-background-color: pink;
-    --table-background-color-active: white;
+    --board-border-color: grey;
+    --board-background-color: pink;
+    --board-background-color-active: white;
     --inputTable-background-color: white;
     --inputTable-background-color-active: yellowgreen;
     --inputTable-color: grey;
@@ -11,9 +11,9 @@
     --invalidMove-color: red;
 }
 
-.mainTable {
-    border: 5px solid var(--table-border-color);
-    background-color: var(--table-background-color);
+.board {
+    border: 5px solid var(--board-border-color);
+    background-color: var(--board-background-color);
     border-spacing: 0;
 }
 
@@ -24,7 +24,7 @@
     padding: 0;
     height: 40px;
     width: 40px;
-    border: 1px solid var(--table-border-color);
+    border: 1px solid var(--board-border-color);
 }
 
 .clueCell {
@@ -33,17 +33,17 @@
 }
 
 .activeCell {
-    background-color: var(--table-background-color-active);
+    background-color: var(--board-background-color-active);
 }
 
 .inputCell {
-    border: 1px solid var(--table-border-color);
+    border: 1px solid var(--board-border-color);
 }
 
 .inputTable {
     color: var(--inputTable-color);
     background-color: var(--inputTable-background-color);
-    border: 3px solid var(--table-border-color);
+    border: 3px solid var(--board-border-color);
     border-spacing: 0;
 }
 
@@ -54,12 +54,12 @@
 
 .row:nth-child(3) .cell,
 .row:nth-child(6) .cell {
-    border-bottom: 3px solid var(--table-border-color);
+    border-bottom: 3px solid var(--board-border-color);
 } 
 
 .cell:nth-child(3),
 .cell:nth-child(6) {
-    border-right: 3px solid var(--table-border-color);
+    border-right: 3px solid var(--board-border-color);
 }
 
 .invalidMove {
