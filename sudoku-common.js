@@ -1,6 +1,6 @@
 var sudokuCommon = {
 
-    renderEmptyBoard: function(boardSize) {
+    renderEmptyBoard: function (boardSize) {
         const board = document.querySelector('.board');
 
         for (let i = 0; i < boardSize; i++) {
@@ -16,7 +16,7 @@ var sudokuCommon = {
         }
     },
 
-    loadDummyPuzzle: function() {
+    loadDummyPuzzle: function () {
         const xhttp = new XMLHttpRequest();
         let initialCellValues = null;
         xhttp.onreadystatechange = function () {
@@ -30,7 +30,7 @@ var sudokuCommon = {
         return initialCellValues;
     },
 
-    init: function() {
+    play: function () {
 
         const boardSize = 9;
         this.renderEmptyBoard(boardSize);
@@ -40,12 +40,12 @@ var sudokuCommon = {
         // Cache board cells from DOM
         const cells = document.querySelectorAll('.cell');
 
-        let cellValues2D = initializeCellValues2D();
+        let cellValues2D = initializeCellValues2D(boardSize);
 
         // Populate cells and cellValues2D (for checking move validity) arrays with values from initialCellValues. 
         cells.forEach(function (cell, cellIndex) {
-            const cellX = cellIndex % 9;
-            const cellY = Math.floor(cellIndex / 9);
+            const cellX = cellIndex % boardSize;
+            const cellY = Math.floor(cellIndex / boardSize);
             let cellValue = null;
 
             if (initialCellValues[cellIndex] === 0) {
@@ -63,7 +63,7 @@ var sudokuCommon = {
         // Set up keypad
         const inputCells = document.querySelectorAll('.inputCell');
 
-        inputCells.forEach(function(cell, index) {
+        inputCells.forEach(function (cell, index) {
             if (index < inputCells.length - 1) {
                 cell.innerText = (index + 1).toString();
             }
@@ -75,7 +75,7 @@ var sudokuCommon = {
         let activeCellIndex = null;
 
         // Add event listeners to all cells except clue cells.
-        cells.forEach(function(cell, cellIndex) {
+        cells.forEach(function (cell, cellIndex) {
             // Non-clue cells
             if (initialCellValues[cellIndex] === 0) {
 
@@ -94,7 +94,7 @@ var sudokuCommon = {
                         const moveValue = inputCell.innerText;
 
                         // Use onClick instead of addEventListener as we need to replace a handler, not add one.
-                        inputCell.onclick = function() {
+                        inputCell.onclick = function () {
                             if (!moveIsValid(cellIndex, moveValue)) {
                                 console.log('INVALID MOVE');
 
@@ -108,8 +108,8 @@ var sudokuCommon = {
                             cell.innerText = moveValue;
 
                             // Set cell value in 2D array used to check move validity
-                            const cellX = cellIndex % 9;
-                            const cellY = Math.floor(cellIndex / 9);
+                            const cellX = cellIndex % boardSize;
+                            const cellY = Math.floor(cellIndex / boardSize);
                             cellValues2D[cellX][cellY] = moveValue;
 
                             // Deactivate cell 
@@ -135,7 +135,7 @@ var sudokuCommon = {
         const hintsButton = document.querySelector('.hintsButton');
 
         // what if you enable hints part-way through. Do you see past invalid moves?
-        hintsButton.addEventListener('click', function() {
+        hintsButton.addEventListener('click', function () {
             hintsEnabled = !hintsEnabled;
 
             if (hintsEnabled) {
@@ -149,15 +149,15 @@ var sudokuCommon = {
 
         function moveIsValid(cellIndex, moveValue) {
 
-            const cellX = cellIndex % 9;
-            const cellY = Math.floor(cellIndex / 9);
+            const cellX = cellIndex % boardSize;
+            const cellY = Math.floor(cellIndex / boardSize);
 
             function rowIsValid() {
                 console.log('rowIsValid?');
-    
+
                 let result = true;
-    
-                for (let i = 0; i < 9; i++) {
+
+                for (let i = 0; i < boardSize; i++) {
                     // console.log([cellValues2D[i][cellY], moveValue].join());
                     // console.log([typeof(cellValues2D[i][cellY]), typeof(moveValue)].join());
                     if (cellValues2D[i][cellY] !== '' && cellValues2D[i][cellY] === moveValue) {
@@ -167,32 +167,32 @@ var sudokuCommon = {
                 console.log(result);
                 return result;
             }
-    
+
             function columnIsValid() {
                 console.log('columnIsValid?');
-    
+
                 let result = true;
-    
-                for (let j = 0; j < 9; j++) {
+
+                for (let j = 0; j < boardSize; j++) {
                     if (cellValues2D[cellX][j] !== '' && cellValues2D[cellX][j] === moveValue) {
                         result = false;
                     }
                 }
-    
+
                 console.log(result);
                 return result;
             }
-    
+
             function boxIsValid() {
                 console.log('boxIsValid?');
-    
+
                 let result = true;
-    
+
                 const startRow = Math.floor(cellY / 3) * 3;
                 const endRow = startRow + 2;
                 const startColumn = Math.floor(cellX / 3) * 3;
                 const endColumn = startColumn + 2;
-    
+
                 for (j = startRow; j <= endRow; j++) {
                     for (i = startColumn; i <= endColumn; i++) {
                         if (cellValues2D[i][j] !== '' && cellValues2D[i][j] === moveValue) {
@@ -211,22 +211,162 @@ var sudokuCommon = {
 
 
 
-        function initializeCellValues2D() {
+        function initializeCellValues2D(boardSize) {
             // Build 2D array used to check move validity
-            let cellValues2D = new Array(9);
+            let cellValues2D = new Array(boardSize);
             for (let i = 0; i < cellValues2D.length; i++) {
-                cellValues2D[i] = new Array(9);
+                cellValues2D[i] = new Array(boardSize);
             }
-    
+
             console.log(this);
-    
+
             for (let i = 0; i < cells.length; i++) {
-                const x = i % 9;
-                const y = Math.floor(i / 9);
+                const x = i % boardSize;
+                const y = Math.floor(i / boardSize);
                 cellValues2D[x][y] = cells[i].innerText;
             }
             return cellValues2D;
         }
 
+    },
+
+    generate: function (boardSize) {
+
+        // organize as one instance of class Board with many Moves?
+
+        class Move {
+            constructor(cellX, cellY, moveValue) {
+                this.cellX = cellX || this._getRandomInt(0, boardSize - 1);
+                this.cellY = cellY || this._getRandomInt(0, boardSize - 1);
+                this.moveValue = moveValue || this._getRandomInt(1, 9);
+            }
+
+            _getRandomInt(min, max) {
+                // https://stackoverflow.com/a/1527820
+                min = Math.ceil(min);
+                max = Math.floor(max);
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+        }
+
+        class Board {
+            constructor(boardSize) {
+                this.boardSize = boardSize;
+                this.cellValues2D = this.initializeCellValues2D(boardSize);
+                this.validMoveCount = 0;
+                this.moveAttempts = 0;
+                this.numCells = boardSize * boardSize;
+            }
+
+            initializeCellValues2D(boardSize) {
+                // Build 2D array used to check move validity
+                let cellValues2D = new Array(boardSize);
+
+                for (let i = 0; i < boardSize; i++) {
+                    cellValues2D[i] = new Array(boardSize);
+                    
+                    for (let j = 0; j < boardSize; j++) {
+                        cellValues2D[i][j] = '';
+                    }
+
+                }
+    
+                return cellValues2D;
+            }
+
+            playMove(move) {
+                if (this.cellIsEmpty(move.cellX, move.cellY) && this.moveIsValid(move)) {
+                    this.cellValues2D[move.cellX][move.cellY] = move.moveValue;
+                    this.validMoveCount++;
+                    console.log('-------- Played ----------- ' + JSON.stringify(move));
+                    console.log('2D: ' + JSON.stringify(this.cellValues2D));
+                } else {
+                    console.log('NOT Played: ' + JSON.stringify(move));
+                }
+                this.moveAttempts++;
+            }
+
+            cellIsEmpty(cellX, cellY){
+                if (this.cellValues2D[cellX][cellY] === '') {
+                    console.log('EMPTY');
+                    return true;
+                }
+                console.log('FULL');
+                return false;
+            }
+
+            fillBoard() {
+                // while (this.validMoveCount < this.numCells) {
+                // while (this.moveAttempts < this.numCells) {
+                while (this.moveAttempts < 2000) {
+                    const move = new Move();
+                    this.playMove(move);
+                }
+                console.log('DONE: ' + this.cellValues2D);
+                console.log('ATTEMPTS: ' + this.moveAttempts);
+                console.log('FILLED: ' + this.validMoveCount);
+            }
+
+            moveIsValid(move) {
+                return this.rowIsValid(move) && this.columnIsValid(move) && this.boxIsValid(move);
+            }
+
+            rowIsValid(move) {
+                console.log('rowIsValid?');
+
+                let result = true;
+
+                for (let i = 0; i < this.boardSize; i++) {
+                    // console.log([cellValues2D[i][cellY], moveValue].join());
+                    // console.log([typeof(cellValues2D[i][cellY]), typeof(moveValue)].join());
+                    if (this.cellValues2D[i][move.cellY] !== '' && this.cellValues2D[i][move.cellY] === move.moveValue) {
+                        result = false;
+                    }
+                }
+                console.log(result);
+                return result;
+            }
+
+            columnIsValid(move) {
+                console.log('columnIsValid?');
+
+                let result = true;
+
+                for (let j = 0; j < this.boardSize; j++) {
+                    if (this.cellValues2D[move.cellX][j] !== '' && this.cellValues2D[move.cellX][j] === move.moveValue) {
+                        result = false;
+                    }
+                }
+
+                console.log(result);
+                return result;
+            }
+
+            boxIsValid(move) {
+                console.log('boxIsValid?');
+
+                let result = true;
+
+                const startRow = Math.floor(move.cellY / 3) * 3;
+                const endRow = startRow + 2;
+                const startColumn = Math.floor(move.cellX / 3) * 3;
+                const endColumn = startColumn + 2;
+
+                for (let j = startRow; j <= endRow; j++) {
+                    for (let i = startColumn; i <= endColumn; i++) {
+                        if (this.cellValues2D[i][j] !== '' && this.cellValues2D[i][j] === move.moveValue) {
+                            result = false;
+                        }
+                    }
+                }
+                console.log(result);
+                return result;
+            }
+
+        }
+
+        const board = new Board(boardSize);
+        board.fillBoard();
     }
 };

@@ -1,1 +1,1 @@
-window.sudokuCommon.init();
+window.sudokuCommon.play();
