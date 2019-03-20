@@ -230,7 +230,7 @@ var sudokuCommon = {
 
     },
 
-    generate: function (boardSize) {
+    generateSolutionArray: function (boardSize) {
 
         // organize as one instance of class Board with many Moves?
 
@@ -265,13 +265,13 @@ var sudokuCommon = {
 
                 for (let i = 0; i < boardSize; i++) {
                     cellValues2D[i] = new Array(boardSize);
-                    
+
                     for (let j = 0; j < boardSize; j++) {
-                        cellValues2D[i][j] = '';
+                        cellValues2D[i][j] = 0;
                     }
 
                 }
-    
+
                 return cellValues2D;
             }
 
@@ -287,8 +287,8 @@ var sudokuCommon = {
                 this.moveAttempts++;
             }
 
-            cellIsEmpty(cellX, cellY){
-                if (this.cellValues2D[cellX][cellY] === '') {
+            cellIsEmpty(cellX, cellY) {
+                if (this.cellValues2D[cellX][cellY] === 0) {
                     console.log('EMPTY');
                     return true;
                 }
@@ -296,7 +296,7 @@ var sudokuCommon = {
                 return false;
             }
 
-            fillBoard() {
+            getSolutionArray() {
                 // while (this.validMoveCount < this.numCells) {
                 // while (this.moveAttempts < this.numCells) {
                 while (this.moveAttempts < 2000) {
@@ -306,6 +306,7 @@ var sudokuCommon = {
                 console.log('DONE: ' + this.cellValues2D);
                 console.log('ATTEMPTS: ' + this.moveAttempts);
                 console.log('FILLED: ' + this.validMoveCount);
+                return this.cellValues2D;
             }
 
             moveIsValid(move) {
@@ -320,7 +321,7 @@ var sudokuCommon = {
                 for (let i = 0; i < this.boardSize; i++) {
                     // console.log([cellValues2D[i][cellY], moveValue].join());
                     // console.log([typeof(cellValues2D[i][cellY]), typeof(moveValue)].join());
-                    if (this.cellValues2D[i][move.cellY] !== '' && this.cellValues2D[i][move.cellY] === move.moveValue) {
+                    if (this.cellValues2D[i][move.cellY] !== 0 && this.cellValues2D[i][move.cellY] === move.moveValue) {
                         result = false;
                     }
                 }
@@ -334,7 +335,7 @@ var sudokuCommon = {
                 let result = true;
 
                 for (let j = 0; j < this.boardSize; j++) {
-                    if (this.cellValues2D[move.cellX][j] !== '' && this.cellValues2D[move.cellX][j] === move.moveValue) {
+                    if (this.cellValues2D[move.cellX][j] !== 0 && this.cellValues2D[move.cellX][j] === move.moveValue) {
                         result = false;
                     }
                 }
@@ -355,7 +356,7 @@ var sudokuCommon = {
 
                 for (let j = startRow; j <= endRow; j++) {
                     for (let i = startColumn; i <= endColumn; i++) {
-                        if (this.cellValues2D[i][j] !== '' && this.cellValues2D[i][j] === move.moveValue) {
+                        if (this.cellValues2D[i][j] !== 0 && this.cellValues2D[i][j] === move.moveValue) {
                             result = false;
                         }
                     }
@@ -366,7 +367,34 @@ var sudokuCommon = {
 
         }
 
-        const board = new Board(boardSize);
-        board.fillBoard();
+        const arrays = new Board(boardSize).getSolutionArray();
+        const merged = [].concat.apply([], arrays);
+        return merged;
+    },
+
+    populateBoard: function (cellValues) {
+
+        // Cache board cells from DOM
+        const cells = document.querySelectorAll('.cell');
+        const rows = document.querySelectorAll('.row');
+
+        // Populate cells and cellValues2D (for checking move validity) arrays with values from cellValues. 
+        cells.forEach(function (cell, cellIndex) {
+            const cellX = cellIndex % boardSize;
+            const cellY = Math.floor(cellIndex / boardSize);
+            let cellValue = null;
+
+            if (cellValues[cellIndex] === 0) {
+                // It's an empty cell.
+                cellValue = '';
+            } else {
+                // It's a clue cell.
+                cellValue = cellValues[cellIndex].toString();
+                cell.classList.add('clueCell');
+            }
+            cell.innerText = cellValue;
+            // cellValues2D[cellX][cellY] = cellValue;
+        });
+
     }
 };
