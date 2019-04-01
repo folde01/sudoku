@@ -236,18 +236,25 @@ var sudokuCommon = {
 
         class Move {
             constructor(cellX, cellY, moveValue) {
-                this.cellX = cellX || this._getRandomInt(0, boardSize - 1);
-                this.cellY = cellY || this._getRandomInt(0, boardSize - 1);
-                this.moveValue = moveValue || this._getRandomInt(1, 9);
+                this.cellX = cellX || new RandomInt(0, boardSize - 1).newInt();
+                // this.cellX = cellX;
+                this.cellY = cellY || new RandomInt(0, boardSize - 1).newInt();
+                // this.cellY = cellY || new RandomInt(0, boardSize - 1).newInt();
+                this.moveValue = moveValue || new RandomInt(1, 9).newInt;
             }
+        }
 
-            _getRandomInt(min, max) {
+        class RandomInt {
+            constructor(min, max) {
+                this.min = min;
+                this.max = max;
+            }
+            newInt() {
                 // https://stackoverflow.com/a/1527820
-                min = Math.ceil(min);
-                max = Math.floor(max);
+                const min = Math.ceil(this.min);
+                const max = Math.floor(this.max);
                 return Math.floor(Math.random() * (max - min + 1)) + min;
             }
-
         }
 
         class Board {
@@ -257,6 +264,7 @@ var sudokuCommon = {
                 this.validMoveCount = 0;
                 this.moveAttempts = 0;
                 this.numCells = boardSize * boardSize;
+                this.moves = [];
             }
 
             initializeCellValues2D(boardSize) {
@@ -275,16 +283,30 @@ var sudokuCommon = {
                 return cellValues2D;
             }
 
-            playMove(move) {
+
+
+            tryMove(move) {
+                this.moveAttempts++;
+
                 if (this.cellIsEmpty(move.cellX, move.cellY) && this.moveIsValid(move)) {
                     this.cellValues2D[move.cellX][move.cellY] = move.moveValue;
+                    this.moves.push(move);
                     this.validMoveCount++;
                     console.log('-------- Played ----------- ' + JSON.stringify(move));
                     console.log('2D: ' + JSON.stringify(this.cellValues2D));
+                    return true;
                 } else {
                     console.log('NOT Played: ' + JSON.stringify(move));
+                    return false;
                 }
-                this.moveAttempts++;
+            }
+
+            undoLastMove() {
+                if (!this.moves.length) {
+                    return false;
+                }
+                const move = this.moves.pop();
+                this.cellValues2D[move.cellX][move.cellY] = 0;
             }
 
             cellIsEmpty(cellX, cellY) {
@@ -296,17 +318,125 @@ var sudokuCommon = {
                 return false;
             }
 
-            getSolutionArray() {
+            getSolutionArrayRandom() {
                 // while (this.validMoveCount < this.numCells) {
                 // while (this.moveAttempts < this.numCells) {
+
                 while (this.moveAttempts < 2000) {
                     const move = new Move();
-                    this.playMove(move);
+                    const moveMade = this.tryMove(move);
                 }
+
                 console.log('DONE: ' + this.cellValues2D);
                 console.log('ATTEMPTS: ' + this.moveAttempts);
                 console.log('FILLED: ' + this.validMoveCount);
                 return this.cellValues2D;
+            }
+
+            getSolutionArray() {
+                this.getSolutionArrayRandom();
+            }
+
+            getSolutionArrayFoo() {
+                let cellX = 0;
+                let cellY = null;
+                let cellValue = 1;
+                let cellValuesCount = new Array(this.boardSize + 1).fill(0);
+
+                while (this.moveAttempts < 6000) {
+
+                    if (cellValuesCount[cellValue] === this.boardSize) {
+                        ++cellValue;
+                        cellX = 0;
+                    }
+
+                    cellY = new RandomInt(0, this.boardSize).newInt();
+
+                    const move = new Move(cellX, cellY, cellValue);
+                    const moveMade = this.tryMove(move);
+
+                    if (moveMade) {
+                        ++cellValuesCount[cellValue];
+                    } else {
+                        let newCellY = cellY;
+
+                        while (newCellY !== cellY) {
+                            ++newCellY;
+                            if (newCellY === this.boardSize) {
+                                newCellY = 0;
+                            }
+                            const newMove = new Move(cellX, newCellY, cellValue);
+                            const newMoveMade = this.tryMove(newMove);
+
+                            if (moveMade) {
+                                ++cellValuesCount[cellValue];
+                            } else {
+                                this.undoLastMove();
+                                // todo: move logic into tryMove and undoLastMove. Make new method decideMove.
+                                // have numToUndo
+                            }
+                        }
+                    }
+                }
+            }
+
+            getSolutionArrayBroken() {
+                let cellX = 0;
+                let cellY = null;
+                let cellValue = 1;
+                let cellValuesCount = new Array(this.boardSize + 1).fill(0);
+                let numToUndo = 1;
+
+                while (this.moveAttempts < 100) {
+
+                    if (cellValuesCount[cellValue] === this.boardSize) {
+                        ++cellValue;
+                        cellX = 0;
+                    }
+
+
+                    cellY = new RandomInt(0, this.boardSize).newInt();
+
+                    const move = new Move(cellX, cellY, cellValue);
+                    const moveMade = this.tryMove(move);
+
+                    if (moveMade) {
+                        ++cellValuesCount[cellValue];
+                        ++cellX;
+
+                        if (cellX === this.boardSize) {
+                            cellX = 0;
+                        }
+
+                    } else {
+                        let newCellY = cellY;
+
+                        while (newCellY !== cellY) {
+                            ++newCellY;
+                            if (newCellY === this.boardSize) {
+                                newCellY = 0;
+                            }
+                            const newMove = new Move(cellX, newCellY, cellValue);
+                            const newMoveMade = this.tryMove(newMove);
+
+                            if (moveMade) {
+                                ++cellValuesCount[cellValue];
+                                ++cellX;
+
+                                if (cellX === this.boardSize) {
+                                    cellX = 0;
+                                }
+                            } else {
+                                for (i = 0; i < numToUndo; i++) {
+                                    this.undoLastMove();
+                                }
+                                ++numToUndo;
+                                // todo: move logic into tryMove and undoLastMove. Make new method decideMove.
+                                // have numToUndo
+                            }
+                        }
+                    }
+                }
             }
 
             moveIsValid(move) {
@@ -314,7 +444,7 @@ var sudokuCommon = {
             }
 
             rowIsValid(move) {
-                console.log('rowIsValid?');
+                // console.log('rowIsValid?');
 
                 let result = true;
 
@@ -325,12 +455,12 @@ var sudokuCommon = {
                         result = false;
                     }
                 }
-                console.log(result);
+                // console.log(result);
                 return result;
             }
 
             columnIsValid(move) {
-                console.log('columnIsValid?');
+                // console.log('columnIsValid?');
 
                 let result = true;
 
@@ -340,12 +470,12 @@ var sudokuCommon = {
                     }
                 }
 
-                console.log(result);
+                // console.log(result);
                 return result;
             }
 
             boxIsValid(move) {
-                console.log('boxIsValid?');
+                // console.log('boxIsValid?');
 
                 let result = true;
 
@@ -361,7 +491,7 @@ var sudokuCommon = {
                         }
                     }
                 }
-                console.log(result);
+                // console.log(result);
                 return result;
             }
 
