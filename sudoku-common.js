@@ -1,6 +1,151 @@
+class Move {
+    constructor(cellX, cellY, moveValue) {
+        this.cellX = cellX || this._getRandomInt(0, boardSize - 1);
+        this.cellY = cellY || this._getRandomInt(0, boardSize - 1);
+        this.moveValue = moveValue || this._getRandomInt(1, 9);
+    }
+
+    _getRandomInt(min, max) {
+        // https://stackoverflow.com/a/1527820
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+}
+
+class Board {
+    constructor(boardSize) {
+        this.boardSize = boardSize;
+        this.cellValues2D = this.initializeCellValues2D(boardSize);
+        this.validMoveCount = 0;
+        this.moveAttempts = 0;
+        this.numCells = boardSize * boardSize;
+        this.moves = [];
+    }
+
+    initializeCellValues2D(boardSize) {
+        // Build 2D array used to check move validity
+        let cellValues2D = new Array(boardSize);
+
+        for (let i = 0; i < boardSize; i++) {
+            cellValues2D[i] = new Array(boardSize);
+
+            for (let j = 0; j < boardSize; j++) {
+                cellValues2D[i][j] = 0;
+            }
+
+        }
+
+        return cellValues2D;
+    }
+
+    makeMove(move) {
+        if (this.cellIsEmpty(move.cellX, move.cellY) && this.moveIsValid(move)) {
+            this.cellValues2D[move.cellX][move.cellY] = move.moveValue;
+            this.validMoveCount++;
+            this.moves.push(move);
+            console.log('-------- Played ----------- ' + JSON.stringify(move));
+            console.log('2D: ' + JSON.stringify(this.cellValues2D));
+        } else {
+            console.log('NOT Played: ' + JSON.stringify(move));
+        }
+        this.moveAttempts++;
+    }
+
+    cellIsEmpty(cellX, cellY) {
+        if (this.cellValues2D[cellX][cellY] === 0) {
+            console.log('EMPTY');
+            return true;
+        }
+        console.log('FULL');
+        return false;
+    }
+
+    getCurrentBoardValues() {
+    }
+
+    getSolutionArray() {
+        // while (this.validMoveCount < this.numCells) {
+        // while (this.moveAttempts < this.numCells) {
+        while (this.moveAttempts < 2000) {
+            const move = new Move();
+            this.makeMove(move);
+        }
+        console.log('DONE: ' + this.cellValues2D);
+        console.log('ATTEMPTS: ' + this.moveAttempts);
+        console.log('FILLED: ' + this.validMoveCount);
+        return this.cellValues2D;
+    }
+
+    moveIsValid(move) {
+        if (boardSize === 9) {
+            return this.rowIsValid(move) && this.columnIsValid(move) && this.boxIsValid(move);
+        } else if (boardSize < 9) {
+            return this.rowIsValid(move) && this.columnIsValid(move);
+        }
+        else return false;
+    }
+
+    rowIsValid(move) {
+        console.log('rowIsValid?');
+
+        let result = true;
+
+        for (let i = 0; i < this.boardSize; i++) {
+            // console.log([cellValues2D[i][cellY], moveValue].join());
+            // console.log([typeof(cellValues2D[i][cellY]), typeof(moveValue)].join());
+            if (this.cellValues2D[i][move.cellY] !== 0 && this.cellValues2D[i][move.cellY] === move.moveValue) {
+                result = false;
+            }
+        }
+        console.log(result);
+        return result;
+    }
+
+    columnIsValid(move) {
+        console.log('columnIsValid?');
+
+        let result = true;
+
+        for (let j = 0; j < this.boardSize; j++) {
+            if (this.cellValues2D[move.cellX][j] !== 0 && this.cellValues2D[move.cellX][j] === move.moveValue) {
+                result = false;
+            }
+        }
+
+        console.log(result);
+        return result;
+    }
+
+    boxIsValid(move) {
+        console.log('boxIsValid?');
+
+        let result = true;
+
+        const startRow = Math.floor(move.cellY / 3) * 3;
+        const endRow = startRow + 2;
+        const startColumn = Math.floor(move.cellX / 3) * 3;
+        const endColumn = startColumn + 2;
+
+        for (let j = startRow; j <= endRow; j++) {
+            for (let i = startColumn; i <= endColumn; i++) {
+                if (this.cellValues2D[i][j] !== 0 && this.cellValues2D[i][j] === move.moveValue) {
+                    result = false;
+                }
+            }
+        }
+        console.log(result);
+        return result;
+    }
+
+}
+
+
 var sudokuCommon = {
 
     renderEmptyBoard: function (boardSize) {
+
         const board = document.querySelector('.board');
 
         for (let i = 0; i < boardSize; i++) {
@@ -13,6 +158,19 @@ var sudokuCommon = {
                 cellNode.setAttribute('class', 'cell');
                 rowNode.appendChild(cellNode);
             }
+        }
+
+        if (boardSize === 9) {
+            const cellsInRows3and6 = document.querySelectorAll(".row:nth-child(3) .cell, .row:nth-child(6) .cell");
+            cellsInRows3and6.forEach(function (cell, index) {
+                cell.classList.add('specialBottomBorder');
+            });
+
+            const cellsInColumns3and6 = document.querySelectorAll(".cell:nth-child(3), .cell:nth-child(6)");
+            cellsInColumns3and6.forEach(function (cell, index) {
+                cell.classList.add('specialRightBorder');
+            });
+
         }
     },
 
@@ -231,145 +389,14 @@ var sudokuCommon = {
     },
 
     generateSolutionArray: function (boardSize) {
-
-        // organize as one instance of class Board with many Moves?
-
-        class Move {
-            constructor(cellX, cellY, moveValue) {
-                this.cellX = cellX || this._getRandomInt(0, boardSize - 1);
-                this.cellY = cellY || this._getRandomInt(0, boardSize - 1);
-                this.moveValue = moveValue || this._getRandomInt(1, 9);
-            }
-
-            _getRandomInt(min, max) {
-                // https://stackoverflow.com/a/1527820
-                min = Math.ceil(min);
-                max = Math.floor(max);
-                return Math.floor(Math.random() * (max - min + 1)) + min;
-            }
-
-        }
-
-        class Board {
-            constructor(boardSize) {
-                this.boardSize = boardSize;
-                this.cellValues2D = this.initializeCellValues2D(boardSize);
-                this.validMoveCount = 0;
-                this.moveAttempts = 0;
-                this.numCells = boardSize * boardSize;
-            }
-
-            initializeCellValues2D(boardSize) {
-                // Build 2D array used to check move validity
-                let cellValues2D = new Array(boardSize);
-
-                for (let i = 0; i < boardSize; i++) {
-                    cellValues2D[i] = new Array(boardSize);
-
-                    for (let j = 0; j < boardSize; j++) {
-                        cellValues2D[i][j] = 0;
-                    }
-
-                }
-
-                return cellValues2D;
-            }
-
-            playMove(move) {
-                if (this.cellIsEmpty(move.cellX, move.cellY) && this.moveIsValid(move)) {
-                    this.cellValues2D[move.cellX][move.cellY] = move.moveValue;
-                    this.validMoveCount++;
-                    console.log('-------- Played ----------- ' + JSON.stringify(move));
-                    console.log('2D: ' + JSON.stringify(this.cellValues2D));
-                } else {
-                    console.log('NOT Played: ' + JSON.stringify(move));
-                }
-                this.moveAttempts++;
-            }
-
-            cellIsEmpty(cellX, cellY) {
-                if (this.cellValues2D[cellX][cellY] === 0) {
-                    console.log('EMPTY');
-                    return true;
-                }
-                console.log('FULL');
-                return false;
-            }
-
-            getSolutionArray() {
-                // while (this.validMoveCount < this.numCells) {
-                // while (this.moveAttempts < this.numCells) {
-                while (this.moveAttempts < 2000) {
-                    const move = new Move();
-                    this.playMove(move);
-                }
-                console.log('DONE: ' + this.cellValues2D);
-                console.log('ATTEMPTS: ' + this.moveAttempts);
-                console.log('FILLED: ' + this.validMoveCount);
-                return this.cellValues2D;
-            }
-
-            moveIsValid(move) {
-                return this.rowIsValid(move) && this.columnIsValid(move) && this.boxIsValid(move);
-            }
-
-            rowIsValid(move) {
-                console.log('rowIsValid?');
-
-                let result = true;
-
-                for (let i = 0; i < this.boardSize; i++) {
-                    // console.log([cellValues2D[i][cellY], moveValue].join());
-                    // console.log([typeof(cellValues2D[i][cellY]), typeof(moveValue)].join());
-                    if (this.cellValues2D[i][move.cellY] !== 0 && this.cellValues2D[i][move.cellY] === move.moveValue) {
-                        result = false;
-                    }
-                }
-                console.log(result);
-                return result;
-            }
-
-            columnIsValid(move) {
-                console.log('columnIsValid?');
-
-                let result = true;
-
-                for (let j = 0; j < this.boardSize; j++) {
-                    if (this.cellValues2D[move.cellX][j] !== 0 && this.cellValues2D[move.cellX][j] === move.moveValue) {
-                        result = false;
-                    }
-                }
-
-                console.log(result);
-                return result;
-            }
-
-            boxIsValid(move) {
-                console.log('boxIsValid?');
-
-                let result = true;
-
-                const startRow = Math.floor(move.cellY / 3) * 3;
-                const endRow = startRow + 2;
-                const startColumn = Math.floor(move.cellX / 3) * 3;
-                const endColumn = startColumn + 2;
-
-                for (let j = startRow; j <= endRow; j++) {
-                    for (let i = startColumn; i <= endColumn; i++) {
-                        if (this.cellValues2D[i][j] !== 0 && this.cellValues2D[i][j] === move.moveValue) {
-                            result = false;
-                        }
-                    }
-                }
-                console.log(result);
-                return result;
-            }
-
-        }
-
         const arrays = new Board(boardSize).getSolutionArray();
         const merged = [].concat.apply([], arrays);
         return merged;
+    },
+
+    // have this take a board so we can start from a given state and see if we can finish it
+    generateSolutionArrayFromBoard: function (board) {
+
     },
 
     populateBoard: function (cellValues) {
@@ -395,6 +422,6 @@ var sudokuCommon = {
             cell.innerText = cellValue;
             // cellValues2D[cellX][cellY] = cellValue;
         });
+    },
 
-    }
 };

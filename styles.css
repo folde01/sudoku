@@ -52,13 +52,11 @@
     background-color: var(--inputTable-background-color-active);
 }
 
-.row:nth-child(3) .cell,
-.row:nth-child(6) .cell {
+.specialBottomBorder {
     border-bottom: 3px solid var(--board-border-color);
 } 
 
-.cell:nth-child(3),
-.cell:nth-child(6) {
+.specialRightBorder {
     border-right: 3px solid var(--board-border-color);
 }
 
