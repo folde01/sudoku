@@ -1,8 +1,14 @@
 class Move {
     constructor(cellX, cellY, moveValue) {
-        this.cellX = cellX || this._getRandomInt(0, boardSize - 1);
-        this.cellY = cellY || this._getRandomInt(0, boardSize - 1);
-        this.moveValue = moveValue || this._getRandomInt(1, boardSize);
+        if (arguments.length !== 3) {
+            this.cellX = this._getRandomInt(0, boardSize - 1);
+            this.cellY = this._getRandomInt(0, boardSize - 1);
+            this.moveValue = this._getRandomInt(1, boardSize);
+        } else {
+            this.cellX = cellX;
+            this.cellY = cellY;
+            this.moveValue = moveValue;
+        }
     }
 
     _getRandomInt(min, max) {
@@ -40,9 +46,17 @@ class Board {
         return cellValues2D;
     }
 
+    setCellValue(cellX, cellY, cellValue) {
+        this.cellValues2D[cellY][cellX] = cellValue;
+    }
+
+    getCellValue(cellX, cellY) {
+        return this.cellValues2D[cellY][cellX];
+    }
+
     makeMove(move) {
         if (this.cellIsEmpty(move.cellX, move.cellY) && this.moveIsValid(move)) {
-            this.cellValues2D[move.cellX][move.cellY] = move.moveValue;
+            this.setCellValue(move.cellX, move.cellY, move.moveValue);
             this.validMoveCount++;
             this.moves.push(move);
             console.log('-------- Played ----------- ' + JSON.stringify(move));
@@ -53,8 +67,17 @@ class Board {
         this.moveAttempts++;
     }
 
+    makeMoves(moves) {
+        const self = this;
+        moves.forEach(function (move, index) {
+            self.makeMove(move);
+        });
+    }
+
+
     cellIsEmpty(cellX, cellY) {
-        if (this.cellValues2D[cellX][cellY] === 0) {
+        // if (this.cellValues2D[cellX][cellY] === 0) {
+        if (this.getCellValue(cellX, cellY) === 0) {
             console.log('EMPTY');
             return true;
         }
@@ -63,6 +86,9 @@ class Board {
     }
 
     getCurrentBoardValues() {
+        console.log('2D!!!!: ' + this.cellValues2D);
+        const merged = [].concat.apply([], this.cellValues2D);
+        return merged;
     }
 
     getSolutionArray() {
@@ -77,6 +103,8 @@ class Board {
         console.log('FILLED: ' + this.validMoveCount);
         return this.cellValues2D;
     }
+
+
 
     moveIsValid(move) {
         if (boardSize === 9) {
@@ -95,7 +123,7 @@ class Board {
         for (let i = 0; i < this.boardSize; i++) {
             // console.log([cellValues2D[i][cellY], moveValue].join());
             // console.log([typeof(cellValues2D[i][cellY]), typeof(moveValue)].join());
-            if (this.cellValues2D[i][move.cellY] !== 0 && this.cellValues2D[i][move.cellY] === move.moveValue) {
+            if (this.getCellValue(i, move.cellY) !== 0 && this.getCellValue(i, move.cellY) === move.moveValue) {
                 result = false;
             }
         }
@@ -109,7 +137,7 @@ class Board {
         let result = true;
 
         for (let j = 0; j < this.boardSize; j++) {
-            if (this.cellValues2D[move.cellX][j] !== 0 && this.cellValues2D[move.cellX][j] === move.moveValue) {
+            if (this.getCellValue(move.cellX, j) !== 0 && this.getCellValue(move.cellX, j) === move.moveValue) {
                 result = false;
             }
         }
@@ -130,7 +158,7 @@ class Board {
 
         for (let j = startRow; j <= endRow; j++) {
             for (let i = startColumn; i <= endColumn; i++) {
-                if (this.cellValues2D[i][j] !== 0 && this.cellValues2D[i][j] === move.moveValue) {
+                if (this.getCellValue(i, j) !== 0 && this.getCellValue(i, j) === move.moveValue) {
                     result = false;
                 }
             }
