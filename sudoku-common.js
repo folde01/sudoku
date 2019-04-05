@@ -2,7 +2,7 @@ class Move {
     constructor(cellX, cellY, moveValue) {
         this.cellX = cellX || this._getRandomInt(0, boardSize - 1);
         this.cellY = cellY || this._getRandomInt(0, boardSize - 1);
-        this.moveValue = moveValue || this._getRandomInt(1, 9);
+        this.moveValue = moveValue || this._getRandomInt(1, boardSize);
     }
 
     _getRandomInt(min, max) {
