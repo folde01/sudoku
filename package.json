@@ -1,0 +1,23 @@
+{
+  "name": "sudoku",
+  "version": "1.0.0",
+  "description": "",
+  "main": "sudoku-common.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/folde01/sudoku.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/folde01/sudoku/issues"
+  },
+  "homepage": "https://github.com/folde01/sudoku#readme",
+  "devDependencies": {
+    "jest": "^24.7.1"
+  }
+}

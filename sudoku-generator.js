@@ -11,10 +11,39 @@ sudokuCommon.populateBoard(solutionArray);
 
 // OK:
 
-// const boardSize = 2;
-// const moves = [
-//     new Move(0, 0, 1),
-//     new Move(1, 1, 2)];
+const testCases = {
+    "case-2-1": {
+        boardSize: 2,
+        moves: [new Move(0, 0, 1), new Move(1, 1, 2)],
+        outcome:  [{"cellX":0,"cellY":0,"cellValue":1},{"cellX":1,"cellY":1,"cellValue":1},{"cellX":0,"cellY":1,"cellValue":2},{"cellX":1,"cellY":0,"cellValue":2}]
+    },
+    "case-2-2": {
+        boardSize: 2,
+        moves: [],
+        outcome:  [{"cellX":0,"cellY":0,"cellValue":1},{"cellX":1,"cellY":1,"cellValue":1},{"cellX":0,"cellY":1,"cellValue":2},{"cellX":1,"cellY":0,"cellValue":2}]
+    },
+    "case-2-3": {
+        boardSize: 2,
+        moves: [new Move(0, 0, 1)],
+        outcome: [{"cellX":0,"cellY":0,"cellValue":1},{"cellX":1,"cellY":1,"cellValue":1},{"cellX":0,"cellY":1,"cellValue":2},{"cellX":1,"cellY":0,"cellValue":2}]
+    },
+    "case-2-4": {
+        boardSize: 2,
+        moves: [new Move(0, 0, 2)],
+        outcome: [{"cellX":0,"cellY":0,"cellValue":2},{"cellX":0,"cellY":1,"cellValue":1},{"cellX":1,"cellY":0,"cellValue":1},{"cellX":1,"cellY":1,"cellValue":2}]
+    },
+    "case-2-5": {
+        boardSize: 2,
+        moves: [new Move(1, 1, 2)],
+        outcome: []
+    },
+} 
+
+const testCaseID = "case-2-5";
+// const testCaseID = "case-2-5";
+
+const boardSize = testCases[testCaseID].boardSize;
+const moves =  testCases[testCaseID].moves;
 
 // const boardSize = 2;
 // const moves = [
@@ -26,10 +55,10 @@ sudokuCommon.populateBoard(solutionArray);
 
 // TODO:
 
-const boardSize = 2;
-const moves = [
-    new Move(1, 1, 2)
-];
+// const boardSize = 2;
+// const moves = [
+//     new Move(1, 1, 2)
+// ];
 
 // const boardSize = 3;
 // const moves = [
@@ -58,7 +87,6 @@ const moves = [
 
 const board = new Board(boardSize);
 board.makeMoves(moves);
-
 board.solve();
 
 const boardValues = board.getCurrentBoardValues();
@@ -66,3 +94,12 @@ console.log('BOARD VALUES: ' + boardValues);
 sudokuCommon = window.sudokuCommon;
 sudokuCommon.renderEmptyBoard(boardSize);
 sudokuCommon.populateBoard(boardValues);
+
+const allMoves = board.getMoves();
+console.log('MOVES: ' + JSON.stringify(board.getMoves()));
+
+// testCases.forEach(function(testCase, index) {
+//     console.assert(JSON.stringify(allMoves) === JSON.stringify(testCase.outcome), 
+//     {allMoves: allMoves, errorMsg: testCase.name + " - did not get the expected list of moves"}); 
+// });
+

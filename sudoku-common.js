@@ -21,6 +21,23 @@ class Move {
 
 }
 
+function randomInt(min, max, besidesArr) {
+    const ceilMin = Math.ceil(min);
+    const floorMax = Math.floor(max);
+    const result = Math.floor(Math.random() * (floorMax - ceilMin + 1)) + ceilMin;
+
+    if (arguments.length === 2 || besidesArr.length === 0) {
+        return result;
+    } else {
+        let besidesMatch = false;
+        besidesArr.forEach(function (n, index) {
+            if (result === n) {
+                return randomInt(min, max, besidesArr.shift());
+            }
+        });
+    }
+}
+
 class Board {
     constructor(boardSize) {
         this.boardSize = boardSize;
@@ -51,6 +68,10 @@ class Board {
         return cellValues2D;
     }
 
+    getMoves() {
+        return this.moves;
+    }
+
     setCellValue(cellX, cellY, cellValue) {
         this.cellValues2D[cellY][cellX] = cellValue;
     }
@@ -64,24 +85,23 @@ class Board {
     }
 
     incrementCellValueCount(cellValue) {
-        console.log('incrBefore: ' + cellValue + ': ' + this.getCellValueCount(cellValue));
-        console.log(this.cellValueCounts);
+        // console.log(this.cellValueCounts);
 
+        console.log('-INCR-');
         this.cellValueCounts[cellValue]++;
-        
+
         if (this.cellValueCounts[cellValue] === boardSize) {
             this.countCompleteCellValues++;
         }
-        console.log('incrAfter: ' + cellValue + ': ' + this.getCellValueCount(cellValue));
-        console.log(this.cellValueCounts);
+        // console.log(this.cellValueCounts);
 
 
 
     }
 
     decrementCellValueCount(cellValue) {
-        console.log('decrBefore: ' + cellValue + ': ' + this.getCellValueCount(cellValue));
-        console.log(this.cellValueCounts);
+        // console.log(this.cellValueCounts);
+        console.log('-DECR-');
 
 
         if (this.cellValueCounts[cellValue] === boardSize) {
@@ -90,8 +110,8 @@ class Board {
 
         this.cellValueCounts[cellValue]--;
 
-        console.log('decrAfter: ' + cellValue + ': ' + this.getCellValueCount(cellValue));
-        console.log(this.cellValueCounts);
+        // console.log('decrAfter: ' + cellValue + ': ' + this.getCellValueCount(cellValue));
+        // console.log(this.cellValueCounts);
 
 
     }
@@ -164,7 +184,7 @@ class Board {
 
         while (!this.boardIsComplete()) {
 
-        // while (i < 1) {
+        // while (i < 5) {
             console.log('****************SOLVING***************     ' + i);
 
             console.log('complete? ' + this.boardIsComplete());
@@ -190,28 +210,27 @@ class Board {
 
                 for (let row = 0; row < boardSize; row++) {
                     for (let column = 0; column < boardSize; column++) {
+                        // for (let column = 0; column < boardSize; column++) {
+                        //     const row = randomInt(0, boardSize - 1);
 
                         const move = new Move(row, column, cellValue);
 
-                        if (this.makeMove(move)) {
-                            this.incrementCellValueCount(move.cellValue);
-                        }
+                        // if (this.makeMove(move)) {
+                        //     this.incrementCellValueCount(move.cellValue);
+                        // }
+                        this.makeMove(move);
                     }
                 }
 
                 if (this.getCellValueCount(cellValue) === oldCellValueCount) {
                     console.log('- - B L O C K E D - -');
-                    // undo 001 or 112? last good move... then try again
-                    // const lastMove = this.moves[moves.length - 1];
                     const lastMove = this.undoLastMove();
                     savedCellValue = cellValue;
                 }
 
             }
-
-
+            console.log('complete NOW? ' + this.boardIsComplete());
         }
-        console.log('complete NOW? ' + this.boardIsComplete());
     }
 
     getSolutionArray() {
