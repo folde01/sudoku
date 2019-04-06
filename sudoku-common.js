@@ -1,14 +1,15 @@
 class Move {
-    constructor(cellX, cellY, moveValue) {
+    constructor(cellX, cellY, cellValue) {
         if (arguments.length !== 3) {
             this.cellX = this._getRandomInt(0, boardSize - 1);
             this.cellY = this._getRandomInt(0, boardSize - 1);
-            this.moveValue = this._getRandomInt(1, boardSize);
+            this.cellValue = this._getRandomInt(1, boardSize);
         } else {
             this.cellX = cellX;
             this.cellY = cellY;
-            this.moveValue = moveValue;
+            this.cellValue = cellValue;
         }
+        console.log('MOVE CREATED: ' + this.cellX + ', ' + this.cellY + ', ' + this.cellValue);
     }
 
     _getRandomInt(min, max) {
@@ -28,6 +29,10 @@ class Board {
         this.moveAttempts = 0;
         this.numCells = boardSize * boardSize;
         this.moves = [];
+        this.cellValueCounts = new Array(boardSize + 1).fill(0);
+        this.countCompleteCellValues = 0;
+        this.completeCellValueCounts = new Array(boardSize).fill(boardSize);
+
     }
 
     initializeCellValues2D(boardSize) {
@@ -54,18 +59,76 @@ class Board {
         return this.cellValues2D[cellY][cellX];
     }
 
+    getCellValueCount(cellValue) {
+        return this.cellValueCounts[cellValue];
+    }
+
+    incrementCellValueCount(cellValue) {
+        console.log('incrBefore: ' + cellValue + ': ' + this.getCellValueCount(cellValue));
+        console.log(this.cellValueCounts);
+
+        this.cellValueCounts[cellValue]++;
+        
+        if (this.cellValueCounts[cellValue] === boardSize) {
+            this.countCompleteCellValues++;
+        }
+        console.log('incrAfter: ' + cellValue + ': ' + this.getCellValueCount(cellValue));
+        console.log(this.cellValueCounts);
+
+
+
+    }
+
+    decrementCellValueCount(cellValue) {
+        console.log('decrBefore: ' + cellValue + ': ' + this.getCellValueCount(cellValue));
+        console.log(this.cellValueCounts);
+
+
+        if (this.cellValueCounts[cellValue] === boardSize) {
+            this.countCompleteCellValues--;
+        }
+
+        this.cellValueCounts[cellValue]--;
+
+        console.log('decrAfter: ' + cellValue + ': ' + this.getCellValueCount(cellValue));
+        console.log(this.cellValueCounts);
+
+
+    }
+
+    boardIsComplete() {
+        return this.countCompleteCellValues === boardSize;
+    }
+
     makeMove(move) {
+        this.moveAttempts++;
         if (this.cellIsEmpty(move.cellX, move.cellY) && this.moveIsValid(move)) {
-            this.setCellValue(move.cellX, move.cellY, move.moveValue);
+            this.setCellValue(move.cellX, move.cellY, move.cellValue);
             this.validMoveCount++;
             this.moves.push(move);
+            this.incrementCellValueCount(move.cellValue);
             console.log('-------- Played ----------- ' + JSON.stringify(move));
             console.log('2D: ' + JSON.stringify(this.cellValues2D));
+            return true;
         } else {
             console.log('NOT Played: ' + JSON.stringify(move));
+            return false;
         }
-        this.moveAttempts++;
+
     }
+
+    undoLastMove() {
+        if (this.moves.length > 0) {
+            const lastMove = this.moves.pop();
+            this.setCellValue(lastMove.cellX, lastMove.cellY, 0);
+            this.decrementCellValueCount(lastMove.cellValue);
+            console.log('###### move undone: ' + JSON.stringify(lastMove));
+            return lastMove;
+        } else {
+            console.log('no moves left to undo');
+        }
+    }
+
 
     makeMoves(moves) {
         const self = this;
@@ -91,7 +154,71 @@ class Board {
         return merged;
     }
 
+    solve() {
+
+        // let cellValueCount = {};
+        // cellValueCount[1] = 1;
+        // cellValueCount[2] = 1;
+
+        let i = 0;
+
+        while (!this.boardIsComplete()) {
+
+        // while (i < 1) {
+            console.log('****************SOLVING***************     ' + i);
+
+            console.log('complete? ' + this.boardIsComplete());
+            ++i;
+
+            let savedCellValue = null;
+
+            for (let cellValue = 1; cellValue <= boardSize; cellValue++) {
+
+                if (savedCellValue) {
+                    cellValue = savedCellValue;
+                }
+
+                savedCellValue = null;
+
+                if (this.getCellValueCount(cellValue) === boardSize) {
+                    console.log('DONE with cellValue: ' + cellValue);
+                    continue;
+                }
+                console.log('working on cellValue: ' + cellValue);
+
+                const oldCellValueCount = this.getCellValueCount(cellValue);
+
+                for (let row = 0; row < boardSize; row++) {
+                    for (let column = 0; column < boardSize; column++) {
+
+                        const move = new Move(row, column, cellValue);
+
+                        if (this.makeMove(move)) {
+                            this.incrementCellValueCount(move.cellValue);
+                        }
+                    }
+                }
+
+                if (this.getCellValueCount(cellValue) === oldCellValueCount) {
+                    console.log('- - B L O C K E D - -');
+                    // undo 001 or 112? last good move... then try again
+                    // const lastMove = this.moves[moves.length - 1];
+                    const lastMove = this.undoLastMove();
+                    savedCellValue = cellValue;
+                }
+
+            }
+
+
+        }
+        console.log('complete NOW? ' + this.boardIsComplete());
+    }
+
     getSolutionArray() {
+        this.getSolutionArrayRandom();
+    }
+
+    getSolutionArrayRandom() {
         // while (this.validMoveCount < this.numCells) {
         // while (this.moveAttempts < this.numCells) {
         while (this.moveAttempts < 2000) {
@@ -121,9 +248,9 @@ class Board {
         let result = true;
 
         for (let i = 0; i < this.boardSize; i++) {
-            // console.log([cellValues2D[i][cellY], moveValue].join());
-            // console.log([typeof(cellValues2D[i][cellY]), typeof(moveValue)].join());
-            if (this.getCellValue(i, move.cellY) !== 0 && this.getCellValue(i, move.cellY) === move.moveValue) {
+            // console.log([cellValues2D[i][cellY], cellValue].join());
+            // console.log([typeof(cellValues2D[i][cellY]), typeof(cellValue)].join());
+            if (this.getCellValue(i, move.cellY) !== 0 && this.getCellValue(i, move.cellY) === move.cellValue) {
                 result = false;
             }
         }
@@ -137,7 +264,7 @@ class Board {
         let result = true;
 
         for (let j = 0; j < this.boardSize; j++) {
-            if (this.getCellValue(move.cellX, j) !== 0 && this.getCellValue(move.cellX, j) === move.moveValue) {
+            if (this.getCellValue(move.cellX, j) !== 0 && this.getCellValue(move.cellX, j) === move.cellValue) {
                 result = false;
             }
         }
@@ -158,7 +285,7 @@ class Board {
 
         for (let j = startRow; j <= endRow; j++) {
             for (let i = startColumn; i <= endColumn; i++) {
-                if (this.getCellValue(i, j) !== 0 && this.getCellValue(i, j) === move.moveValue) {
+                if (this.getCellValue(i, j) !== 0 && this.getCellValue(i, j) === move.cellValue) {
                     result = false;
                 }
             }
@@ -277,11 +404,11 @@ var sudokuCommon = {
                     // Activate keypad.
                     inputTable.classList.add('inputTableActive');
                     inputCells.forEach(function (inputCell, inputCellIndex) {
-                        const moveValue = inputCell.innerText;
+                        const cellValue = inputCell.innerText;
 
                         // Use onClick instead of addEventListener as we need to replace a handler, not add one.
                         inputCell.onclick = function () {
-                            if (!moveIsValid(cellIndex, moveValue)) {
+                            if (!moveIsValid(cellIndex, cellValue)) {
                                 console.log('INVALID MOVE');
 
                                 // Show that the move breaks the sudoku rules.
@@ -291,12 +418,12 @@ var sudokuCommon = {
                             }
 
                             // Set cell value in DOM
-                            cell.innerText = moveValue;
+                            cell.innerText = cellValue;
 
                             // Set cell value in 2D array used to check move validity
                             const cellX = cellIndex % boardSize;
                             const cellY = Math.floor(cellIndex / boardSize);
-                            cellValues2D[cellX][cellY] = moveValue;
+                            cellValues2D[cellX][cellY] = cellValue;
 
                             // Deactivate cell 
                             cell.classList.remove('activeCell');
@@ -333,7 +460,7 @@ var sudokuCommon = {
         });
 
 
-        function moveIsValid(cellIndex, moveValue) {
+        function moveIsValid(cellIndex, cellValue) {
 
             const cellX = cellIndex % boardSize;
             const cellY = Math.floor(cellIndex / boardSize);
@@ -344,9 +471,9 @@ var sudokuCommon = {
                 let result = true;
 
                 for (let i = 0; i < boardSize; i++) {
-                    // console.log([cellValues2D[i][cellY], moveValue].join());
-                    // console.log([typeof(cellValues2D[i][cellY]), typeof(moveValue)].join());
-                    if (cellValues2D[i][cellY] !== '' && cellValues2D[i][cellY] === moveValue) {
+                    // console.log([cellValues2D[i][cellY], cellValue].join());
+                    // console.log([typeof(cellValues2D[i][cellY]), typeof(cellValue)].join());
+                    if (cellValues2D[i][cellY] !== '' && cellValues2D[i][cellY] === cellValue) {
                         result = false;
                     }
                 }
@@ -360,7 +487,7 @@ var sudokuCommon = {
                 let result = true;
 
                 for (let j = 0; j < boardSize; j++) {
-                    if (cellValues2D[cellX][j] !== '' && cellValues2D[cellX][j] === moveValue) {
+                    if (cellValues2D[cellX][j] !== '' && cellValues2D[cellX][j] === cellValue) {
                         result = false;
                     }
                 }
@@ -381,7 +508,7 @@ var sudokuCommon = {
 
                 for (j = startRow; j <= endRow; j++) {
                     for (i = startColumn; i <= endColumn; i++) {
-                        if (cellValues2D[i][j] !== '' && cellValues2D[i][j] === moveValue) {
+                        if (cellValues2D[i][j] !== '' && cellValues2D[i][j] === cellValue) {
                             result = false;
                         }
                     }
