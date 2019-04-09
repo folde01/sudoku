@@ -29,10 +29,11 @@ function randomInt(min, max, besidesArr) {
     if (arguments.length === 2 || besidesArr.length === 0) {
         return result;
     } else {
-        let besidesMatch = false;
+        // let besidesMatch = false;
+        console.log('besidesArr: ' + besidesArr);   
         besidesArr.forEach(function (n, index) {
             if (result === n) {
-                return randomInt(min, max, besidesArr.shift());
+                return randomInt(min, max, besidesArr.slice(0, -1));
             }
         });
     }
@@ -175,30 +176,26 @@ class Board {
     }
 
     solve() {
+        // this.solveByIteratingDownEachColumn();
+        this.solveByPickingRandomRowFromColumn();
+    }
 
-        // let cellValueCount = {};
-        // cellValueCount[1] = 1;
-        // cellValueCount[2] = 1;
-
-        let i = 0;
-
+    solveByPickingRandomRowFromColumn() {
+        
         while (!this.boardIsComplete()) {
 
-        // while (i < 5) {
-            console.log('****************SOLVING***************     ' + i);
+            console.log('****************SOLVING***************     ');
 
-            console.log('complete? ' + this.boardIsComplete());
-            ++i;
+            // console.log('complete? ' + this.boardIsComplete());
 
-            let savedCellValue = null;
+            let lastCellValue = null;
 
             for (let cellValue = 1; cellValue <= boardSize; cellValue++) {
 
-                if (savedCellValue) {
-                    cellValue = savedCellValue;
+                if (lastCellValue) {
+                    cellValue = lastCellValue;
+                    lastCellValue = null;
                 }
-
-                savedCellValue = null;
 
                 if (this.getCellValueCount(cellValue) === boardSize) {
                     console.log('DONE with cellValue: ' + cellValue);
@@ -206,26 +203,78 @@ class Board {
                 }
                 console.log('working on cellValue: ' + cellValue);
 
-                const oldCellValueCount = this.getCellValueCount(cellValue);
+                const cellValueCount = this.getCellValueCount(cellValue);
 
-                for (let row = 0; row < boardSize; row++) {
-                    for (let column = 0; column < boardSize; column++) {
+                for (let cellX = 0; cellX < boardSize; cellX++) {
+                    // let triedCellY = [];
+
+                    for (let n = 0; n < boardSize; n++) {
+                        // const cellY = randomInt(0, boardSize - 1, triedCellY);
+                        const cellY = randomInt(0, boardSize - 1);
+                        console.log('pushing: ' + cellY);
+                        const move = new Move(cellX, cellY, cellValue);
+                        this.makeMove(move);
+                        // triedCellY.push(n);
+                    }
+                }
+
+                if (this.getCellValueCount(cellValue) === cellValueCount) {
+                    console.log('- - B L O C K E D - -');
+                    const lastMove = this.undoLastMove();
+                    lastCellValue = cellValue;
+                }
+
+            }
+            // console.log('complete NOW? ' + this.boardIsComplete());
+            console.log('^^^^^ MOVE ATTEMPTS ^^^^^ ' + this.moveAttempts);    
+        }
+    }
+
+
+    solveByIteratingDownEachColumn() {
+
+        let i = 0;
+
+        while (!this.boardIsComplete()) {
+
+            // while (i < 5) {
+            console.log('****************SOLVING***************     ' + i);
+
+            console.log('complete? ' + this.boardIsComplete());
+            ++i;
+
+            let lastCellValue = null;
+
+            for (let cellValue = 1; cellValue <= boardSize; cellValue++) {
+
+                if (lastCellValue) {
+                    cellValue = lastCellValue;
+                    lastCellValue = null;
+                }
+
+                if (this.getCellValueCount(cellValue) === boardSize) {
+                    console.log('DONE with cellValue: ' + cellValue);
+                    continue;
+                }
+                console.log('working on cellValue: ' + cellValue);
+
+                const cellValueCount = this.getCellValueCount(cellValue);
+
+                for (let cellX = 0; cellX < boardSize; cellX++) {
+                    for (let cellY = 0; cellY < boardSize; cellY++) {
+
                         // for (let column = 0; column < boardSize; column++) {
                         //     const row = randomInt(0, boardSize - 1);
 
-                        const move = new Move(row, column, cellValue);
-
-                        // if (this.makeMove(move)) {
-                        //     this.incrementCellValueCount(move.cellValue);
-                        // }
+                        const move = new Move(cellX, cellY, cellValue);
                         this.makeMove(move);
                     }
                 }
 
-                if (this.getCellValueCount(cellValue) === oldCellValueCount) {
+                if (this.getCellValueCount(cellValue) === cellValueCount) {
                     console.log('- - B L O C K E D - -');
                     const lastMove = this.undoLastMove();
-                    savedCellValue = cellValue;
+                    lastCellValue = cellValue;
                 }
 
             }
