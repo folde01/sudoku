@@ -12,7 +12,7 @@ class Move {
             this.cellX = cellX;
             this.cellY = cellY;
             this.cellValue = cellValue;
-        } 
+        }
         if (arguments.length === 4) {
             this.previousMove = previousMove;
         }
@@ -103,13 +103,13 @@ class Board {
     incrementCellValueCount(cellValue) {
         // console.log(this.cellValueCounts);
 
-        console.log('-INCR-');
+        // console.log('-INCR-');
         this.cellValueCounts[cellValue]++;
 
         if (this.cellValueCounts[cellValue] === boardSize) {
             this.countCompleteCellValues++;
         }
-        console.log('cellValueCounts: ' + this.cellValueCounts);
+        // console.log('cellValueCounts: ' + this.cellValueCounts);
 
 
 
@@ -117,7 +117,7 @@ class Board {
 
     decrementCellValueCount(cellValue) {
         // console.log(this.cellValueCounts);
-        console.log('-DECR-');
+        // console.log('-DECR-');
 
 
         if (this.cellValueCounts[cellValue] === boardSize) {
@@ -128,7 +128,7 @@ class Board {
 
         // console.log('decrAfter: ' + cellValue + ': ' + this.getCellValueCount(cellValue));
         // console.log(this.cellValueCounts);
-        console.log('cellValueCounts: ' + this.cellValueCounts);
+        // console.log('cellValueCounts: ' + this.cellValueCounts);
 
 
 
@@ -150,7 +150,7 @@ class Board {
             this.validMoveCount++;
             this.moves.push(move);
             this.incrementCellValueCount(move.cellValue);
-            console.log('-------- Played ----------- ' + JSON.stringify(move));
+            console.log('   PLAYED  ' + JSON.stringify(move));
             // console.log('2D: ' + JSON.stringify(this.cellValues2D));
             return true;
         } else {
@@ -169,7 +169,8 @@ class Board {
 
             lastMove.getPreviousMove().deadEndNextMoves.push(lastMove);
 
-            console.log('###### move undone: ' + JSON.stringify(lastMove));
+            // console.log('###### move undone: ' + JSON.stringify(lastMove));
+            console.log('###### move undone: ' + lastMove.cellX + lastMove.cellY + lastMove.cellValue);
             return lastMove;
         } else {
             console.log('no moves left to undo');
@@ -188,10 +189,10 @@ class Board {
     cellIsEmpty(cellX, cellY) {
         // if (this.cellValues2D[cellX][cellY] === 0) {
         if (this.getCellValue(cellX, cellY) === 0) {
-            console.log('EMPTY');
+            // console.log('EMPTY');
             return true;
         }
-        console.log('FULL');
+        // console.log('FULL');
         return false;
     }
 
@@ -218,7 +219,7 @@ class Board {
     }
 
     getCurrentBoardValues() {
-        console.log('2D!!!!: ' + this.cellValues2D);
+        // console.log('2D!!!!: ' + this.cellValues2D);
         const merged = [].concat.apply([], this.cellValues2D);
         return merged;
     }
@@ -235,10 +236,12 @@ class Board {
         let possibleCellYs = [];
 
         for (let i = 0; i < this.boardSize; i++) {
-            possibleCellYs.push(i);
+            if (i != move.cellY) {
+                possibleCellYs.push(i);
+            }
         }
 
-        console.log('move: ' + JSON.stringify(move));
+        // console.log('move: ' + JSON.stringify(move));
         let cellValue = move.cellValue;
         let cellValueCount = this.getCellValueCount(cellValue);
 
@@ -262,32 +265,41 @@ class Board {
     solveByPickingRandomPossibleNextMove() {
         console.log('****************SOLVING***************');
 
-        let lastMove = this.getLastMove();
-        let cellValue = lastMove.cellValue;
+        let cellValue = this.getLastMove().cellValue;
 
-        while (this.getCellValueCount(cellValue) < this.boardSize) {
-            lastMove = this.getLastMove();
-
+        while (this.getCellValueCount(cellValue) < this.boardSize && (!this.boardIsComplete())) {
+            let lastMove = this.getLastMove();
             let possibleNextMoves = this.getPossibleNextMoves(lastMove);
 
-            if (possibleNextMoves.length > 0) {
-                let moveMade = false;
-                while (!moveMade) {
-                    console.log('possibleNextMoves: length=' + possibleNextMoves.length + ' ' + JSON.stringify(possibleNextMoves));
-                    const moveToTry = pickRandomElementFromArray(possibleNextMoves);
-                    console.log('moveToTry: ' + JSON.stringify(moveToTry));
-                    moveMade = this.tryMove(moveToTry);
-                    if (!moveMade) {
-                        possibleNextMoves.splice(possibleNextMoves.indexOf(moveToTry), 1);
-                    } else {
-                        moveToTry.setPreviousMove(lastMove);
-                    }
+            // if (possibleNextMoves.length > 0) {
+            let moveMade = false;
+            // while ((!moveMade) && (possibleNextMoves.length > 0)) {
+
+            while (!moveMade) {
+
+                if (possibleNextMoves.length === 0) {
+                    console.log('   BLOCKED')
+                    this.undoLastMove();
+                    lastMove = this.getLastMove();
+                    possibleNextMoves = this.getPossibleNextMoves(lastMove);
                 }
-            } else {
-                // blocked
+
+                console.log('possibleNextMoves: length=' + possibleNextMoves.length + ' ' + JSON.stringify(possibleNextMoves));
+                const moveCandidate = pickRandomElementFromArray(possibleNextMoves);
+                // console.log('moveCandidate: ' + JSON.stringify(moveCandidate));
+                moveMade = this.tryMove(moveCandidate);
+                if (moveMade) {
+                    moveCandidate.setPreviousMove(lastMove);
+                    if (cellValue < this.boardSize) {
+                        cellValue++;
+                    }
+                } else {
+                    possibleNextMoves.splice(possibleNextMoves.indexOf(moveCandidate), 1);
+                }
             }
         }
     }
+
 
     solveByPickingRandomEmptyCellFromColumn() {
 
@@ -442,7 +454,7 @@ class Board {
     }
 
     rowIsValid(move) {
-        console.log('rowIsValid?');
+        // console.log('rowIsValid?');
 
         let result = true;
 
@@ -453,12 +465,12 @@ class Board {
                 result = false;
             }
         }
-        console.log(result);
+        // console.log(result);
         return result;
     }
 
     columnIsValid(move) {
-        console.log('columnIsValid?');
+        // console.log('columnIsValid?');
 
         let result = true;
 
@@ -468,12 +480,12 @@ class Board {
             }
         }
 
-        console.log(result);
+        // console.log(result);
         return result;
     }
 
     boxIsValid(move) {
-        console.log('boxIsValid?');
+        // console.log('boxIsValid?');
 
         let result = true;
 
@@ -489,7 +501,7 @@ class Board {
                 }
             }
         }
-        console.log(result);
+        // console.log(result);
         return result;
     }
 

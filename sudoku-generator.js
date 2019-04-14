@@ -58,14 +58,27 @@ const testCases = {
     "case-5-2": {
         boardSize: 5,
         moves: [ new Move(0, 4, 1) ],
-    }
+    },
+    "case-6-1": {
+        boardSize: 6,
+        moves: [ new Move(0, 4, 1) ],
+    },
+    "case-7-1": {
+        boardSize: 7,
+        moves: [ new Move(0, 4, 1) ],
+    },
+    "case-8-1": {
+        boardSize: 8,
+        moves: [ new Move(0, 4, 1) ],
+    },
 
 
 };
 
 // const testCaseID = "case-2-3";
-const testCaseID = "case-3-2";
+// const testCaseID = "case-3-2";
 // const testCaseID = "case-2-5";
+const testCaseID = "case-8-1";
 
 const boardSize = testCases[testCaseID].boardSize;
 const moves =  testCases[testCaseID].moves;
@@ -82,7 +95,7 @@ sudokuCommon.renderEmptyBoard(boardSize);
 sudokuCommon.populateBoard(boardValues);
 
 const allMoves = board.getMoves();
-console.log('MOVES: ' + JSON.stringify(board.getMoves()));
+// console.log('MOVES: ' + JSON.stringify(board.getMoves()));
 
 // testCases.forEach(function(testCase, index) {
 //     console.assert(JSON.stringify(allMoves) === JSON.stringify(testCase.outcome), 
