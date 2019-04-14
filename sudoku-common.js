@@ -1,15 +1,31 @@
 class Move {
-    constructor(cellX, cellY, cellValue) {
-        if (arguments.length !== 3) {
+    constructor(cellX, cellY, cellValue, previousMove) {
+        this.previousMove = null;
+        this.isDeadEnd = false;
+        this.deadEndNextMoves = [];
+
+        if (arguments.length < 3) {
             this.cellX = this._getRandomInt(0, boardSize - 1);
             this.cellY = this._getRandomInt(0, boardSize - 1);
             this.cellValue = this._getRandomInt(1, boardSize);
-        } else {
+        } else if (arguments.length >= 3) {
             this.cellX = cellX;
             this.cellY = cellY;
             this.cellValue = cellValue;
+        } 
+        if (arguments.length === 4) {
+            this.previousMove = previousMove;
         }
+
         console.log('MOVE CREATED: ' + this.cellX + ', ' + this.cellY + ', ' + this.cellValue);
+    }
+
+    setPreviousMove(move) {
+        this.previousMove = move;
+    }
+
+    getPreviousMove() {
+        return this.previousMove;
     }
 
     _getRandomInt(min, max) {
@@ -21,23 +37,22 @@ class Move {
 
 }
 
-function randomInt(min, max, besidesArr) {
+function randomInt(min, max) {
     const ceilMin = Math.ceil(min);
     const floorMax = Math.floor(max);
     const result = Math.floor(Math.random() * (floorMax - ceilMin + 1)) + ceilMin;
-
-    if (arguments.length === 2 || besidesArr.length === 0) {
-        return result;
-    } else {
-        // let besidesMatch = false;
-        console.log('besidesArr: ' + besidesArr);   
-        besidesArr.forEach(function (n, index) {
-            if (result === n) {
-                return randomInt(min, max, besidesArr.slice(0, -1));
-            }
-        });
-    }
 }
+
+function pickRandomElementFromArray(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// From https://stackoverflow.com/a/4026828:
+Array.prototype.diff = function (arr) {
+    return this.filter(function (i) {
+        return arr.indexOf(i) < 0;
+    });
+};
 
 class Board {
     constructor(boardSize) {
@@ -94,7 +109,7 @@ class Board {
         if (this.cellValueCounts[cellValue] === boardSize) {
             this.countCompleteCellValues++;
         }
-        // console.log(this.cellValueCounts);
+        console.log('cellValueCounts: ' + this.cellValueCounts);
 
 
 
@@ -113,6 +128,8 @@ class Board {
 
         // console.log('decrAfter: ' + cellValue + ': ' + this.getCellValueCount(cellValue));
         // console.log(this.cellValueCounts);
+        console.log('cellValueCounts: ' + this.cellValueCounts);
+
 
 
     }
@@ -121,7 +138,12 @@ class Board {
         return this.countCompleteCellValues === boardSize;
     }
 
-    makeMove(move) {
+    getLastMove() {
+        return this.moves[this.moves.length - 1];
+    }
+
+    tryMove(move) {
+        console.log('trying: ' + JSON.stringify(move));
         this.moveAttempts++;
         if (this.cellIsEmpty(move.cellX, move.cellY) && this.moveIsValid(move)) {
             this.setCellValue(move.cellX, move.cellY, move.cellValue);
@@ -129,7 +151,7 @@ class Board {
             this.moves.push(move);
             this.incrementCellValueCount(move.cellValue);
             console.log('-------- Played ----------- ' + JSON.stringify(move));
-            console.log('2D: ' + JSON.stringify(this.cellValues2D));
+            // console.log('2D: ' + JSON.stringify(this.cellValues2D));
             return true;
         } else {
             console.log('NOT Played: ' + JSON.stringify(move));
@@ -141,8 +163,12 @@ class Board {
     undoLastMove() {
         if (this.moves.length > 0) {
             const lastMove = this.moves.pop();
+            lastMove.deadEnd = true;
             this.setCellValue(lastMove.cellX, lastMove.cellY, 0);
             this.decrementCellValueCount(lastMove.cellValue);
+
+            lastMove.getPreviousMove().deadEndNextMoves.push(lastMove);
+
             console.log('###### move undone: ' + JSON.stringify(lastMove));
             return lastMove;
         } else {
@@ -154,7 +180,7 @@ class Board {
     makeMoves(moves) {
         const self = this;
         moves.forEach(function (move, index) {
-            self.makeMove(move);
+            self.tryMove(move);
         });
     }
 
@@ -169,20 +195,104 @@ class Board {
         return false;
     }
 
+    getEmptyCellsInColumn(cellX) {
+        let emptyCells = [];
+
+        for (let cellY = 0; cellY < this.boardSize; cellY++) {
+            if (this.cellIsEmpty(cellX, cellY)) {
+                emptyCells.push(cellY);
+            }
+        }
+
+        console.log('========= EMPTY ======== ' + emptyCells);
+        return emptyCells;
+    }
+
+    columnContainsCellValue(cellX, cellValue) {
+        for (let cellY = 0; cellY < this.boardSize; cellY++) {
+            if (cellValue === this.getCellValue(cellX, cellY)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     getCurrentBoardValues() {
         console.log('2D!!!!: ' + this.cellValues2D);
         const merged = [].concat.apply([], this.cellValues2D);
         return merged;
     }
 
+
+
     solve() {
+        this.solveByPickingRandomPossibleNextMove();
         // this.solveByIteratingDownEachColumn();
-        this.solveByPickingRandomRowFromColumn();
+        // this.solveByPickingRandomEmptyCellFromColumn();
     }
 
-    solveByPickingRandomRowFromColumn() {
-        
+    getPossibleNextMoves(move) {
+        let possibleCellYs = [];
+
+        for (let i = 0; i < this.boardSize; i++) {
+            possibleCellYs.push(i);
+        }
+
+        console.log('move: ' + JSON.stringify(move));
+        let cellValue = move.cellValue;
+        let cellValueCount = this.getCellValueCount(cellValue);
+
+        if (cellValueCount === this.boardSize) {
+            ++cellValue;
+
+            // Todo: Rather than throw an exception here, we should handle any board, 
+            // not just boards made with the board generation algorithm used here.
+            if (this.getCellValueCount(cellValue) === this.boardSize) {
+                throw "Unexpected cell value count. Terminating.";
+            }
+        }
+
+        const deadEndCellYs = move.deadEndNextMoves.map(mv => mv.cellY);
+        let cellX = (move.cellX + 1) % this.boardSize;
+        const possibleNextMoves = possibleCellYs.diff(deadEndCellYs).map(cellY => new Move(cellX, cellY, cellValue));
+
+        return possibleNextMoves;
+    }
+
+    solveByPickingRandomPossibleNextMove() {
+        console.log('****************SOLVING***************');
+
+        let lastMove = this.getLastMove();
+        let cellValue = lastMove.cellValue;
+
+        while (this.getCellValueCount(cellValue) < this.boardSize) {
+            lastMove = this.getLastMove();
+
+            let possibleNextMoves = this.getPossibleNextMoves(lastMove);
+
+            if (possibleNextMoves.length > 0) {
+                let moveMade = false;
+                while (!moveMade) {
+                    console.log('possibleNextMoves: length=' + possibleNextMoves.length + ' ' + JSON.stringify(possibleNextMoves));
+                    const moveToTry = pickRandomElementFromArray(possibleNextMoves);
+                    console.log('moveToTry: ' + JSON.stringify(moveToTry));
+                    moveMade = this.tryMove(moveToTry);
+                    if (!moveMade) {
+                        possibleNextMoves.splice(possibleNextMoves.indexOf(moveToTry), 1);
+                    } else {
+                        moveToTry.setPreviousMove(lastMove);
+                    }
+                }
+            } else {
+                // blocked
+            }
+        }
+    }
+
+    solveByPickingRandomEmptyCellFromColumn() {
+
         while (!this.boardIsComplete()) {
+            debugger;
 
             console.log('****************SOLVING***************     ');
 
@@ -190,35 +300,56 @@ class Board {
 
             let lastCellValue = null;
 
-            for (let cellValue = 1; cellValue <= boardSize; cellValue++) {
+            const lastMove = this.moves.slice(-1)[0];
 
+            let cellValueCount = null;
+
+            for (let cellValue = lastMove.cellValue; cellValue <= this.boardSize; cellValue++) {
                 if (lastCellValue) {
                     cellValue = lastCellValue;
                     lastCellValue = null;
                 }
 
-                if (this.getCellValueCount(cellValue) === boardSize) {
+                // when to set????????????????? only once????
+                if (!cellValueCount) {
+                    cellValueCount = this.getCellValueCount(cellValue);
+                }
+
+                if (cellValueCount === this.boardSize) {
                     console.log('DONE with cellValue: ' + cellValue);
                     continue;
                 }
                 console.log('working on cellValue: ' + cellValue);
 
-                const cellValueCount = this.getCellValueCount(cellValue);
 
-                for (let cellX = 0; cellX < boardSize; cellX++) {
-                    // let triedCellY = [];
+                for (let cellX = 0; cellX < this.boardSize; cellX++) {
 
-                    for (let n = 0; n < boardSize; n++) {
-                        // const cellY = randomInt(0, boardSize - 1, triedCellY);
-                        const cellY = randomInt(0, boardSize - 1);
-                        console.log('pushing: ' + cellY);
+                    if (this.columnContainsCellValue(cellX, cellValue)) {
+                        continue;
+                    }
+
+                    const arrOfCellY = board.getEmptyCellsInColumn(cellX);
+                    let moveNotMadeInColumnYet = true;
+
+                    while (moveNotMadeInColumnYet && arrOfCellY.length > 0) {
+                        const cellY = arrOfCellY[Math.floor(Math.random() * arrOfCellY.length)];
+                        const cellYIndex = arrOfCellY.indexOf(cellY);
+                        // arrOfCellY.splice(cellYIndex, 1);
+                        arrOfCellY.splice(arrOfCellY.indexOf(cellYIndex), 1);
                         const move = new Move(cellX, cellY, cellValue);
-                        this.makeMove(move);
-                        // triedCellY.push(n);
+
+                        if (this.tryMove(move)) {
+                            moveNotMadeInColumnYet = false;
+                        }
                     }
                 }
 
-                if (this.getCellValueCount(cellValue) === cellValueCount) {
+                // move 313 is being undone in a loop... could testing cellValueCount at a different time prevent this?
+
+                // is 4 high or 3 low????????????
+                const newCellValueCount = this.getCellValueCount(cellValue);
+
+                if (newCellValueCount <= cellValueCount) {
                     console.log('- - B L O C K E D - -');
                     const lastMove = this.undoLastMove();
                     lastCellValue = cellValue;
@@ -226,7 +357,7 @@ class Board {
 
             }
             // console.log('complete NOW? ' + this.boardIsComplete());
-            console.log('^^^^^ MOVE ATTEMPTS ^^^^^ ' + this.moveAttempts);    
+            console.log('^^^^^ MOVE ATTEMPTS ^^^^^ ' + this.moveAttempts);
         }
     }
 
@@ -267,7 +398,7 @@ class Board {
                         //     const row = randomInt(0, boardSize - 1);
 
                         const move = new Move(cellX, cellY, cellValue);
-                        this.makeMove(move);
+                        this.tryMove(move);
                     }
                 }
 
@@ -291,7 +422,7 @@ class Board {
         // while (this.moveAttempts < this.numCells) {
         while (this.moveAttempts < 2000) {
             const move = new Move();
-            this.makeMove(move);
+            this.tryMove(move);
         }
         console.log('DONE: ' + this.cellValues2D);
         console.log('ATTEMPTS: ' + this.moveAttempts);
