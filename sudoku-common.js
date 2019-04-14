@@ -139,6 +139,9 @@ class Board {
     }
 
     getLastMove() {
+        if (this.moves.length === 0) {
+            return null;
+        }
         return this.moves[this.moves.length - 1];
     }
 
@@ -265,10 +268,23 @@ class Board {
     solveByPickingRandomPossibleNextMove() {
         console.log('****************SOLVING***************');
 
-        let cellValue = this.getLastMove().cellValue;
+        let lastMove = this.getLastMove();
+        let cellValue = null;
+
+        if (lastMove) {
+            cellValue = lastMove.cellValue;
+        } else {
+            cellValue = 1;
+        }
 
         while (this.getCellValueCount(cellValue) < this.boardSize && (!this.boardIsComplete())) {
-            let lastMove = this.getLastMove();
+            lastMove = this.getLastMove();
+
+            if (!lastMove) {
+                // no moves yet
+                lastMove = new Move(-1, -1, cellValue);
+            }
+
             let possibleNextMoves = this.getPossibleNextMoves(lastMove);
 
             // if (possibleNextMoves.length > 0) {

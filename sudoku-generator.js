@@ -71,14 +71,24 @@ const testCases = {
         boardSize: 8,
         moves: [ new Move(0, 4, 1) ],
     },
-
-
+    "case-8-2": {
+        boardSize: 8,
+        moves: [],
+    },
+    "case-9-1": {
+        boardSize: 9,
+        moves: [ new Move(0, 4, 1) ],
+    },
+    "case-9-2": {
+        boardSize: 9,
+        moves: [],
+    },
 };
 
 // const testCaseID = "case-2-3";
 // const testCaseID = "case-3-2";
 // const testCaseID = "case-2-5";
-const testCaseID = "case-8-1";
+const testCaseID = "case-9-2";
 
 const boardSize = testCases[testCaseID].boardSize;
 const moves =  testCases[testCaseID].moves;
