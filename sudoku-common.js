@@ -37,11 +37,7 @@ class Move {
 
 }
 
-function randomInt(min, max) {
-    const ceilMin = Math.ceil(min);
-    const floorMax = Math.floor(max);
-    const result = Math.floor(Math.random() * (floorMax - ceilMin + 1)) + ceilMin;
-}
+
 
 function pickRandomElementFromArray(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
@@ -66,6 +62,12 @@ class Board {
         this.countCompleteCellValues = 0;
         this.completeCellValueCounts = new Array(boardSize).fill(boardSize);
 
+    }
+
+    randomInt(min, max) {
+        const ceilMin = Math.ceil(min);
+        const floorMax = Math.floor(max);
+        return Math.floor(Math.random() * (floorMax - ceilMin + 1)) + ceilMin;
     }
 
     initializeCellValues2D(boardSize) {
@@ -294,7 +296,7 @@ class Board {
             while (!moveMade) {
 
                 if (possibleNextMoves.length === 0) {
-                    console.log('   BLOCKED')
+                    console.log('   BLOCKED');
                     this.undoLastMove();
                     lastMove = this.getLastMove();
                     possibleNextMoves = this.getPossibleNextMoves(lastMove);
@@ -317,10 +319,101 @@ class Board {
     }
 
 
+    removeValueFromCell(cellX, cellY) {
+        this.setCellValue(cellX, cellY, 0);
+    }
+
+    removeValuesFromSolvedBoard() {
+        /* 
+
+        We need to remove some values from the solved board so it can be played. Removing values must leave the board with rotational symmetry.
+
+        The set of valid removals for center box, to achieve this symmetry: 
+        1) remove the value of the middle cell
+        2) remove values from any pair of cells where the cells aren't on same side and there is a cell in between them
+        3) any combination of 1 and 2
+
+        The valid removals are then: middle, ne-sw, nw-se, e-w, and n-s, plus all combination of these.
+
+        To be able to select any combination of these, randomly select DO or SKIP for each one.
+
+        In case all are skipped, in order to avoid having a fully populated box, pick one of the valid removals at random and do it.
+
+        An easy board at websudoku.com seems to have 33-36 filled cells ('clues'), depending on the number of filled cells in the center box (nCenter). 
+        
+        If nCenter is even: nClues = 34 or 36, X = nClues - nCenter. A set of four adjacent boxes is chosen and shares X/2 clues. Until the total number of clues in these boxes is X/2, randomly choose one of the boxes and randomly add a clue. Do the same to the rotationally symmetric cells in the other four boxes. 
+        
+        If nCenter is odd: nClues = 33 or 35, X = nClues - (nCenter + 1). Repeat as above.
+        */
+        removeValuesFromCenterBox();
+    }
+
+    removeValuesFromCenterBox() {
+        // 33 43 53   nw n ne 
+        // 34 44 54 = w  m  e
+        // 35 45 55   sw s se
+
+        let removals = {
+            'nw-se': [{ cellX: 3, cellY: 3 }, { cellX: 5, cellY: 5 }],
+            'sw-ne': [{ cellX: 3, cellY: 5 }, { cellX: 5, cellY: 3 }],
+            'e-w': [{ cellX: 3, cellY: 4 }, { cellX: 5, cellY: 4 }],
+            'n-s': [{ cellX: 4, cellY: 3 }, { cellX: 4, cellY: 5 }],
+            'm': [{ cellX: 4, cellY: 4 }]
+        };
+
+        // this.removeValueFromCell(4, 4);
+
+
+
+        const removalKeys = Object.keys(removals);
+
+        let booleans = [];
+        let allRemoved = true;
+        let noneRemoved = true;
+
+        for (let i = 0; i < removalKeys.length; i++) {
+            const bool = Math.random() >= 0.5;
+            booleans[i] = bool;
+
+            if (bool) {
+                noneRemoved = false;
+            } else {
+                allRemoved = false;
+            }
+        }
+
+        if (noneRemoved || allRemoved) {
+            console.log('CENTER BOX MISTAKE');
+            console.log('BEFORE: ' + booleans);
+
+            const randIndex = this.randomInt(0, removalKeys.length - 1);
+            console.log('randIndex: ' + randIndex);
+            booleans[randIndex] = !booleans[randIndex];
+            console.log('FIXED: ' + booleans);
+
+        }
+
+        // for (const [removalName, cellList] of removalKeys) {
+
+        const board = this;
+
+        for (let k = 0; k < removalKeys.length; k++) {
+            const bool = booleans[k];
+            const key = removalKeys[k];
+            console.log(bool + ' ' + key);
+
+            if (bool) {
+                removals[key].forEach(function (cell, index) {
+                    board.removeValueFromCell(cell.cellX, cell.cellY);
+                });
+            }
+        }
+    }
+
     solveByPickingRandomEmptyCellFromColumn() {
 
         while (!this.boardIsComplete()) {
-            debugger;
+            // debugger;
 
             console.log('****************SOLVING***************     ');
 
