@@ -37,64 +37,6 @@ class Move {
 
 }
 
-class Box {
-    constructor(board, region) {
-        this.board = board;
-        this.region = region;
-    }
-
-
-    getBoxStartColumn() {
-
-        // return startColumns[this.region];
-    }
-
-    getBoxEndColumn() {
-        const boxEndColumns = {
-
-        };
-
-        return endColumns[this.region];
-    }
-    getBoxStartRow() {
-        const boxStartRows = {
-            'nw': 2, 'n': 5, 'ne': 8,
-            'w': 2, 'c': 5, 'e': 8,
-            'sw': 2, 's': 5, 'se': 8
-        };
-
-        return endColumns[this.region];
-    }
-    getEndRow() {
-
-    }
-    getCounterpartBox() {
-
-    }
-    removeValue(boxX, boxY) {
-
-    }
-    removeRandomValue() {
-        // return [boxX, boxY];
-    }
-    rotate(boxX, boxY) {
-        // return [boxX2, boxY2];
-    }
-}
-
-Box.startColumns = {
-    'nw': 0, 'n': 3, 'ne': 6,
-    'w': 0, 'c': 3, 'e': 6,
-    'sw': 0, 's': 3, 'se': 6
-}
-
-Box.endColumns = {
-    'nw': 2, 'n': 5, 'ne': 8,
-    'w': 2, 'c': 5, 'e': 8,
-    'sw': 2, 's': 5, 'se': 8
-}
-
-
 
 function pickRandomElementFromArray(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
@@ -120,7 +62,7 @@ class Board {
         this.completeCellValueCounts = new Array(boardSize).fill(boardSize);
 
         if (boardSize === 9) {
-            this.boxInfoByRegion = {
+            this.regionInfo = {
                 'nw': { startCellX: 0, endCellX: 2, startCellY: 0, endCellY: 2, counterpart: 'se' },
                 'n': { startCellX: 3, endCellX: 5, startCellY: 0, endCellY: 2, counterpart: 's' },
                 'ne': { startCellX: 6, endCellX: 8, startCellY: 0, endCellY: 2, counterpart: 'sw' },
@@ -130,7 +72,7 @@ class Board {
                 'sw': { startCellX: 0, endCellX: 2, startCellY: 6, endCellY: 8, counterpart: 'ne' },
                 's': { startCellX: 3, endCellX: 5, startCellY: 6, endCellY: 8, counterpart: 'n' },
                 'se': { startCellX: 6, endCellX: 8, startCellY: 6, endCellY: 8, counterpart: 'nw' },
-            }
+            };
         }
     }
 
@@ -173,37 +115,19 @@ class Board {
     }
 
     incrementCellValueCount(cellValue) {
-        // console.log(this.cellValueCounts);
-
-        // console.log('-INCR-');
         this.cellValueCounts[cellValue]++;
 
         if (this.cellValueCounts[cellValue] === boardSize) {
             this.countCompleteCellValues++;
         }
-        // console.log('cellValueCounts: ' + this.cellValueCounts);
-
-
-
     }
 
     decrementCellValueCount(cellValue) {
-        // console.log(this.cellValueCounts);
-        // console.log('-DECR-');
-
-
         if (this.cellValueCounts[cellValue] === boardSize) {
             this.countCompleteCellValues--;
         }
 
         this.cellValueCounts[cellValue]--;
-
-        // console.log('decrAfter: ' + cellValue + ': ' + this.getCellValueCount(cellValue));
-        // console.log(this.cellValueCounts);
-        // console.log('cellValueCounts: ' + this.cellValueCounts);
-
-
-
     }
 
     boardIsComplete() {
@@ -226,7 +150,6 @@ class Board {
             this.moves.push(move);
             this.incrementCellValueCount(move.cellValue);
             console.log('   PLAYED  ' + JSON.stringify(move));
-            // console.log('2D: ' + JSON.stringify(this.cellValues2D));
             return true;
         } else {
             console.log('NOT Played: ' + JSON.stringify(move));
@@ -241,10 +164,7 @@ class Board {
             lastMove.deadEnd = true;
             this.setCellValue(lastMove.cellX, lastMove.cellY, 0);
             this.decrementCellValueCount(lastMove.cellValue);
-
             lastMove.getPreviousMove().deadEndNextMoves.push(lastMove);
-
-            // console.log('###### move undone: ' + JSON.stringify(lastMove));
             console.log('###### move undone: ' + lastMove.cellX + lastMove.cellY + lastMove.cellValue);
             return lastMove;
         } else {
@@ -262,12 +182,9 @@ class Board {
 
 
     cellIsEmpty(cellX, cellY) {
-        // if (this.cellValues2D[cellX][cellY] === 0) {
         if (this.getCellValue(cellX, cellY) === 0) {
-            // console.log('EMPTY');
             return true;
         }
-        // console.log('FULL');
         return false;
     }
 
@@ -294,7 +211,6 @@ class Board {
     }
 
     getCurrentBoardValues() {
-        // console.log('2D!!!!: ' + this.cellValues2D);
         const merged = [].concat.apply([], this.cellValues2D);
         return merged;
     }
@@ -303,8 +219,6 @@ class Board {
 
     solve() {
         this.solveByPickingRandomPossibleNextMove();
-        // this.solveByIteratingDownEachColumn();
-        // this.solveByPickingRandomEmptyCellFromColumn();
     }
 
     getPossibleNextMoves(move) {
@@ -316,13 +230,11 @@ class Board {
             }
         }
 
-        // console.log('move: ' + JSON.stringify(move));
         let cellValue = move.cellValue;
         let cellValueCount = this.getCellValueCount(cellValue);
 
         if (cellValueCount === this.boardSize) {
             ++cellValue;
-
             // Todo: Rather than throw an exception here, we should handle any board, 
             // not just boards made with the board generation algorithm used here.
             if (this.getCellValueCount(cellValue) === this.boardSize) {
@@ -358,10 +270,7 @@ class Board {
             }
 
             let possibleNextMoves = this.getPossibleNextMoves(lastMove);
-
-            // if (possibleNextMoves.length > 0) {
             let moveMade = false;
-            // while ((!moveMade) && (possibleNextMoves.length > 0)) {
 
             while (!moveMade) {
 
@@ -374,7 +283,6 @@ class Board {
 
                 console.log('possibleNextMoves: length=' + possibleNextMoves.length + ' ' + JSON.stringify(possibleNextMoves));
                 const moveCandidate = pickRandomElementFromArray(possibleNextMoves);
-                // console.log('moveCandidate: ' + JSON.stringify(moveCandidate));
                 moveMade = this.tryMove(moveCandidate);
                 if (moveMade) {
                     moveCandidate.setPreviousMove(lastMove);
@@ -398,7 +306,7 @@ class Board {
 
         We need to remove some values from the solved board so it can be played. Removing values must leave the board with rotational symmetry.
 
-        The set of valid removals for center box, to achieve this symmetry: 
+        The set of valid removals for center region, to achieve this symmetry: 
         1) remove the value of the centre cell
         2) remove values from any pair of cells where the cells aren't on same side and there is a cell in between them
         3) any combination of 1 and 2
@@ -407,35 +315,43 @@ class Board {
 
         To be able to select any combination of these, randomly select DO or SKIP for each one.
 
-        In case all are skipped, in order to avoid having a fully populated box, pick one of the valid removals at random and do it.
+        In case all are skipped, in order to avoid having a fully populated region, pick one of the valid removals at random and do it.
 
-        An easy board at websudoku.com seems to have 33-36 filled cells ('clues'), depending on the number of filled cells in the center box (nCenter). 
+        An easy board at websudoku.com seems to have 33-36 filled cells ('clues'), depending on the number of filled cells in the center region (nCenter). 
         
-        If nCenter is even: nClues = 34 or 36, X = nClues - nCenter. A set of four adjacent boxes is chosen and shares X/2 clues. Remove a value at random from each. Then, until the total number of clues in these boxes is X/2, randomly choose one of the boxes and randomly remove a value. Do the same to the rotationally symmetric cells in the other four boxes. 
+        If nCenter is even: nClues = 34 or 36, X = nClues - nCenter. A set of four adjacent regions is chosen and shares X/2 clues. Remove a value at random from each. Then, until the total number of clues in these regions is X/2, randomly choose one of the regions and randomly remove a value. Do the same to the rotationally symmetric cells in the other four regions. 
         
         If nCenter is odd: nClues = 33 or 35, X = nClues - (nCenter + 1). Repeat as above.
         */
 
         let clueCount = this.boardSize * this.boardSize; // 81
-        const centerBoxClueCount = this.boardSize - this.removeValuesFromCenterBox(); // eg. 2 or 3
+        const centerRegionClueCount = this.boardSize - this.removeValuesFromCenterRegion(); // eg. 2 or 3
 
-        clueCount -= centerBoxClueCount; // e.g. 79 or 78
+        clueCount -= centerRegionClueCount; // e.g. 79 or 78
         const clueCountTarget = (clueCount % 2 == 0) ? 35 : 34;
-        const clueCountTargetForOneSide = (clueCountTarget - centerBoxClueCount) / 2;
+        const clueCountTargetForOneSide = (clueCountTarget - centerRegionClueCount) / 2;
         console.log('clueCountTargetForOneSide: ' + clueCountTargetForOneSide);
-
-        // this.removeRandomClueFromBoxAndItsCounterpart('nw');
-        // this.removeRandomClueFromBoxAndItsCounterpart('w');
 
         const regionsOfOneSide = ['nw', 'w', 'sw', 's'];
 
         const board = this;
 
         regionsOfOneSide.forEach(function(region){
-            board.removeRandomClueFromBoxAndItsCounterpart(region);
+            board.removeRandomClueFromRegionAndItsCounterpart(region);
         });
 
-        clue
+        clueCount -= 2 * regionsOfOneSide.length;
+
+        console.log('clueCount: ' + clueCount);
+        console.log('clueCountTarget: ' + clueCountTarget);
+
+
+        while (clueCount > clueCountTarget) {
+            const region = regionsOfOneSide[Math.floor(Math.random() * regionsOfOneSide.length)];
+            this.removeRandomClueFromRegionAndItsCounterpart(region);
+            clueCount -= 2;
+        }
+
     }
 
     rotate(coordinate) {
@@ -457,7 +373,7 @@ class Board {
         return result;
     }
 
-    removeRandomClueFromBoxAndItsCounterpart(region) {
+    removeRandomClueFromRegionAndItsCounterpart(region) {
         // 00 10 20     
         // 01 11 21
         // 02 12 22
@@ -466,31 +382,30 @@ class Board {
         //          68 78 88
 
 
-        const boxInfo = this.boxInfoByRegion[region];
-        const startCellX = boxInfo.startCellX;
-        const endCellX = boxInfo.endCellX;
-        const startCellY = boxInfo.startCellY;
-        const endCellY = boxInfo.endCellY;
-        const counterpartRegion = boxInfo.counterpart;
+        const regionInfo = this.regionInfo[region];
+        const startCellX = regionInfo.startCellX;
+        const endCellX = regionInfo.endCellX;
+        const startCellY = regionInfo.startCellY;
+        const endCellY = regionInfo.endCellY;
+        const counterpartRegion = regionInfo.counterpart;
         const cellX = this.randomInt(startCellX, endCellX);
         const cellY = this.randomInt(startCellY, endCellY);
 
         board.removeValueFromCell(cellX, cellY);
 
-        const boxInfo2 = this.boxInfoByRegion[counterpartRegion]
-        const startCellX2 = boxInfo2.startCellX;
-        const endCellX2 = boxInfo2.endCellX;
-        const startCellY2 = boxInfo2.startCellY;
-        const endCellY2 = boxInfo2.endCellY;
+        const regionInfo2 = this.regionInfo[counterpartRegion];
+        const startCellX2 = regionInfo2.startCellX;
+        const endCellX2 = regionInfo2.endCellX;
+        const startCellY2 = regionInfo2.startCellY;
+        const endCellY2 = regionInfo2.endCellY;
         
         const cellX2 = this.rotate(cellX % 3) + startCellX2;
         const cellY2 = this.rotate(cellY % 3) + startCellY2;
-        console.log('startCellY2: ' + startCellY2);
 
         board.removeValueFromCell(cellX2, cellY2);
     }
 
-    removeValuesFromCenterBox() {
+    removeValuesFromCenterRegion() {
         // 33 43 53   nw n ne 
         // 34 44 54 = w  c  e
         // 35 45 55   sw s se
@@ -531,10 +446,8 @@ class Board {
 
         }
 
-        // for (const [removalName, cellList] of removalKeys) {
 
         const board = this;
-
         let removedValueCount = 0;
 
         for (let k = 0; k < removalKeys.length; k++) {
@@ -560,8 +473,6 @@ class Board {
 
             console.log('****************SOLVING***************     ');
 
-            // console.log('complete? ' + this.boardIsComplete());
-
             let lastCellValue = null;
 
             const lastMove = this.moves.slice(-1)[0];
@@ -574,7 +485,6 @@ class Board {
                     lastCellValue = null;
                 }
 
-                // when to set????????????????? only once????
                 if (!cellValueCount) {
                     cellValueCount = this.getCellValueCount(cellValue);
                 }
@@ -608,9 +518,7 @@ class Board {
                     }
                 }
 
-                // move 313 is being undone in a loop... could testing cellValueCount at a different time prevent this?
 
-                // is 4 high or 3 low????????????
                 const newCellValueCount = this.getCellValueCount(cellValue);
 
                 if (newCellValueCount <= cellValueCount) {
@@ -620,7 +528,6 @@ class Board {
                 }
 
             }
-            // console.log('complete NOW? ' + this.boardIsComplete());
             console.log('^^^^^ MOVE ATTEMPTS ^^^^^ ' + this.moveAttempts);
         }
     }
@@ -632,7 +539,6 @@ class Board {
 
         while (!this.boardIsComplete()) {
 
-            // while (i < 5) {
             console.log('****************SOLVING***************     ' + i);
 
             console.log('complete? ' + this.boardIsComplete());
@@ -657,10 +563,6 @@ class Board {
 
                 for (let cellX = 0; cellX < boardSize; cellX++) {
                     for (let cellY = 0; cellY < boardSize; cellY++) {
-
-                        // for (let column = 0; column < boardSize; column++) {
-                        //     const row = randomInt(0, boardSize - 1);
-
                         const move = new Move(cellX, cellY, cellValue);
                         this.tryMove(move);
                     }
@@ -698,7 +600,7 @@ class Board {
 
     moveIsValid(move) {
         if (boardSize === 9) {
-            return this.rowIsValid(move) && this.columnIsValid(move) && this.boxIsValid(move);
+            return this.rowIsValid(move) && this.columnIsValid(move) && this.regionIsValid(move);
         } else if (boardSize < 9) {
             return this.rowIsValid(move) && this.columnIsValid(move);
         }
@@ -736,8 +638,8 @@ class Board {
         return result;
     }
 
-    boxIsValid(move) {
-        // console.log('boxIsValid?');
+    regionIsValid(move) {
+        // console.log('regionIsValid?');
 
         let result = true;
 
@@ -757,6 +659,7 @@ class Board {
         return result;
     }
 
+    
 }
 
 
@@ -959,8 +862,8 @@ var sudokuCommon = {
                 return result;
             }
 
-            function boxIsValid() {
-                console.log('boxIsValid?');
+            function regionIsValid() {
+                console.log('regionIsValid?');
 
                 let result = true;
 
@@ -980,7 +883,7 @@ var sudokuCommon = {
                 return result;
             }
 
-            return rowIsValid() && columnIsValid() && boxIsValid();
+            return rowIsValid() && columnIsValid() && regionIsValid();
 
             // console.log('cellValues2D: ' + cellValues2D);
         }

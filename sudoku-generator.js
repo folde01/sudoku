@@ -90,8 +90,11 @@ const testCases = {
 // const testCaseID = "case-2-5";
 const testCaseID = "case-9-2";
 
-const boardSize = testCases[testCaseID].boardSize;
-const moves =  testCases[testCaseID].moves;
+// const boardSize = testCases[testCaseID].boardSize;
+// const moves =  testCases[testCaseID].moves;
+
+const boardSize = 9;
+const moves =  [];
 
 
 const board = new Board(boardSize);
@@ -105,7 +108,8 @@ sudokuCommon = window.sudokuCommon;
 sudokuCommon.renderEmptyBoard(boardSize);
 sudokuCommon.populateBoard(boardValues);
 
-const allMoves = board.getMoves();
+
+// const allMoves = board.getMoves();
 // console.log('MOVES: ' + JSON.stringify(board.getMoves()));
 
 // testCases.forEach(function(testCase, index) {
