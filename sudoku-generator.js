@@ -97,7 +97,7 @@ const moves =  testCases[testCaseID].moves;
 const board = new Board(boardSize);
 board.makeMoves(moves);
 board.solve();
-board.removeValuesFromCenterBox();
+board.removeValuesFromSolvedBoard();
 
 const boardValues = board.getCurrentBoardValues();
 console.log('BOARD VALUES: ' + boardValues);

@@ -37,6 +37,63 @@ class Move {
 
 }
 
+class Box {
+    constructor(board, region) {
+        this.board = board;
+        this.region = region;
+    }
+
+
+    getBoxStartColumn() {
+
+        // return startColumns[this.region];
+    }
+
+    getBoxEndColumn() {
+        const boxEndColumns = {
+
+        };
+
+        return endColumns[this.region];
+    }
+    getBoxStartRow() {
+        const boxStartRows = {
+            'nw': 2, 'n': 5, 'ne': 8,
+            'w': 2, 'c': 5, 'e': 8,
+            'sw': 2, 's': 5, 'se': 8
+        };
+
+        return endColumns[this.region];
+    }
+    getEndRow() {
+
+    }
+    getCounterpartBox() {
+
+    }
+    removeValue(boxX, boxY) {
+
+    }
+    removeRandomValue() {
+        // return [boxX, boxY];
+    }
+    rotate(boxX, boxY) {
+        // return [boxX2, boxY2];
+    }
+}
+
+Box.startColumns = {
+    'nw': 0, 'n': 3, 'ne': 6,
+    'w': 0, 'c': 3, 'e': 6,
+    'sw': 0, 's': 3, 'se': 6
+}
+
+Box.endColumns = {
+    'nw': 2, 'n': 5, 'ne': 8,
+    'w': 2, 'c': 5, 'e': 8,
+    'sw': 2, 's': 5, 'se': 8
+}
+
 
 
 function pickRandomElementFromArray(arr) {
@@ -62,6 +119,19 @@ class Board {
         this.countCompleteCellValues = 0;
         this.completeCellValueCounts = new Array(boardSize).fill(boardSize);
 
+        if (boardSize === 9) {
+            this.boxInfoByRegion = {
+                'nw': { startCellX: 0, endCellX: 2, startCellY: 0, endCellY: 2, counterpart: 'se' },
+                'n': { startCellX: 3, endCellX: 5, startCellY: 0, endCellY: 2, counterpart: 's' },
+                'ne': { startCellX: 6, endCellX: 8, startCellY: 0, endCellY: 2, counterpart: 'sw' },
+                'w': { startCellX: 0, endCellX: 2, startCellY: 3, endCellY: 5, counterpart: 'e' },
+                'c': { startCellX: 3, endCellX: 5, startCellY: 3, endCellY: 5, counterpart: 'c' },
+                'e': { startCellX: 6, endCellX: 8, startCellY: 3, endCellY: 5, counterpart: 'w' },
+                'sw': { startCellX: 0, endCellX: 2, startCellY: 6, endCellY: 8, counterpart: 'ne' },
+                's': { startCellX: 3, endCellX: 5, startCellY: 6, endCellY: 8, counterpart: 'n' },
+                'se': { startCellX: 6, endCellX: 8, startCellY: 6, endCellY: 8, counterpart: 'nw' },
+            }
+        }
     }
 
     randomInt(min, max) {
@@ -329,11 +399,11 @@ class Board {
         We need to remove some values from the solved board so it can be played. Removing values must leave the board with rotational symmetry.
 
         The set of valid removals for center box, to achieve this symmetry: 
-        1) remove the value of the middle cell
+        1) remove the value of the centre cell
         2) remove values from any pair of cells where the cells aren't on same side and there is a cell in between them
         3) any combination of 1 and 2
 
-        The valid removals are then: middle, ne-sw, nw-se, e-w, and n-s, plus all combination of these.
+        The valid removals are then: centre, ne-sw, nw-se, e-w, and n-s, plus all combination of these.
 
         To be able to select any combination of these, randomly select DO or SKIP for each one.
 
@@ -341,16 +411,88 @@ class Board {
 
         An easy board at websudoku.com seems to have 33-36 filled cells ('clues'), depending on the number of filled cells in the center box (nCenter). 
         
-        If nCenter is even: nClues = 34 or 36, X = nClues - nCenter. A set of four adjacent boxes is chosen and shares X/2 clues. Until the total number of clues in these boxes is X/2, randomly choose one of the boxes and randomly add a clue. Do the same to the rotationally symmetric cells in the other four boxes. 
+        If nCenter is even: nClues = 34 or 36, X = nClues - nCenter. A set of four adjacent boxes is chosen and shares X/2 clues. Remove a value at random from each. Then, until the total number of clues in these boxes is X/2, randomly choose one of the boxes and randomly remove a value. Do the same to the rotationally symmetric cells in the other four boxes. 
         
         If nCenter is odd: nClues = 33 or 35, X = nClues - (nCenter + 1). Repeat as above.
         */
-        removeValuesFromCenterBox();
+
+        let clueCount = this.boardSize * this.boardSize; // 81
+        const centerBoxClueCount = this.boardSize - this.removeValuesFromCenterBox(); // eg. 2 or 3
+
+        clueCount -= centerBoxClueCount; // e.g. 79 or 78
+        const clueCountTarget = (clueCount % 2 == 0) ? 35 : 34;
+        const clueCountTargetForOneSide = (clueCountTarget - centerBoxClueCount) / 2;
+        console.log('clueCountTargetForOneSide: ' + clueCountTargetForOneSide);
+
+        // this.removeRandomClueFromBoxAndItsCounterpart('nw');
+        // this.removeRandomClueFromBoxAndItsCounterpart('w');
+
+        const regionsOfOneSide = ['nw', 'w', 'sw', 's'];
+
+        const board = this;
+
+        regionsOfOneSide.forEach(function(region){
+            board.removeRandomClueFromBoxAndItsCounterpart(region);
+        });
+
+        clue
+    }
+
+    rotate(coordinate) {
+        let result = -1;
+
+        switch (coordinate) {
+            case 0:
+                result = 2;
+                break;
+            case 1:
+                result = 1;
+                break;
+            case 2:
+                result = 0;
+                break;
+        }
+
+        console.log('rotated: ' + coordinate + result);
+        return result;
+    }
+
+    removeRandomClueFromBoxAndItsCounterpart(region) {
+        // 00 10 20     
+        // 01 11 21
+        // 02 12 22
+        //          66 76 86
+        //          67 77 87
+        //          68 78 88
+
+
+        const boxInfo = this.boxInfoByRegion[region];
+        const startCellX = boxInfo.startCellX;
+        const endCellX = boxInfo.endCellX;
+        const startCellY = boxInfo.startCellY;
+        const endCellY = boxInfo.endCellY;
+        const counterpartRegion = boxInfo.counterpart;
+        const cellX = this.randomInt(startCellX, endCellX);
+        const cellY = this.randomInt(startCellY, endCellY);
+
+        board.removeValueFromCell(cellX, cellY);
+
+        const boxInfo2 = this.boxInfoByRegion[counterpartRegion]
+        const startCellX2 = boxInfo2.startCellX;
+        const endCellX2 = boxInfo2.endCellX;
+        const startCellY2 = boxInfo2.startCellY;
+        const endCellY2 = boxInfo2.endCellY;
+        
+        const cellX2 = this.rotate(cellX % 3) + startCellX2;
+        const cellY2 = this.rotate(cellY % 3) + startCellY2;
+        console.log('startCellY2: ' + startCellY2);
+
+        board.removeValueFromCell(cellX2, cellY2);
     }
 
     removeValuesFromCenterBox() {
         // 33 43 53   nw n ne 
-        // 34 44 54 = w  m  e
+        // 34 44 54 = w  c  e
         // 35 45 55   sw s se
 
         let removals = {
@@ -358,12 +500,8 @@ class Board {
             'sw-ne': [{ cellX: 3, cellY: 5 }, { cellX: 5, cellY: 3 }],
             'e-w': [{ cellX: 3, cellY: 4 }, { cellX: 5, cellY: 4 }],
             'n-s': [{ cellX: 4, cellY: 3 }, { cellX: 4, cellY: 5 }],
-            'm': [{ cellX: 4, cellY: 4 }]
+            'c': [{ cellX: 4, cellY: 4 }]
         };
-
-        // this.removeValueFromCell(4, 4);
-
-
 
         const removalKeys = Object.keys(removals);
 
@@ -397,6 +535,8 @@ class Board {
 
         const board = this;
 
+        let removedValueCount = 0;
+
         for (let k = 0; k < removalKeys.length; k++) {
             const bool = booleans[k];
             const key = removalKeys[k];
@@ -405,9 +545,12 @@ class Board {
             if (bool) {
                 removals[key].forEach(function (cell, index) {
                     board.removeValueFromCell(cell.cellX, cell.cellY);
+                    ++removedValueCount;
                 });
             }
         }
+
+        return removedValueCount;
     }
 
     solveByPickingRandomEmptyCellFromColumn() {
