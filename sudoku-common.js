@@ -336,7 +336,7 @@ class Board {
 
         const board = this;
 
-        regionsOfOneSide.forEach(function(region){
+        regionsOfOneSide.forEach(function (region) {
             board.removeRandomClueFromRegionAndItsCounterpart(region);
         });
 
@@ -398,7 +398,7 @@ class Board {
         const endCellX2 = regionInfo2.endCellX;
         const startCellY2 = regionInfo2.startCellY;
         const endCellY2 = regionInfo2.endCellY;
-        
+
         const cellX2 = this.rotate(cellX % 3) + startCellX2;
         const cellY2 = this.rotate(cellY % 3) + startCellY2;
 
@@ -599,27 +599,33 @@ class Board {
 
 
     moveIsValid(move) {
+        let result = false;
+
         if (boardSize === 9) {
-            return this.rowIsValid(move) && this.columnIsValid(move) && this.regionIsValid(move);
+            result = this.rowIsValid(move) && this.columnIsValid(move) && this.regionIsValid(move);
         } else if (boardSize < 9) {
-            return this.rowIsValid(move) && this.columnIsValid(move);
+            result = this.rowIsValid(move) && this.columnIsValid(move);
         }
-        else return false;
+
+        console.log('moveIsValid: ' + result);
+        return result;
     }
 
     rowIsValid(move) {
         // console.log('rowIsValid?');
 
         let result = true;
-
-        for (let i = 0; i < this.boardSize; i++) {
+        
+        for (let cellX = 0; cellX < this.boardSize; cellX++) {
             // console.log([cellValues2D[i][cellY], cellValue].join());
             // console.log([typeof(cellValues2D[i][cellY]), typeof(cellValue)].join());
-            if (this.getCellValue(i, move.cellY) !== 0 && this.getCellValue(i, move.cellY) === move.cellValue) {
+            // console.log('xyvtMt: ' + cellX + move.cellY + this.getCellValue(cellX, move.cellY) + typeof(this.getCellValue(cellX, move.cellY)) + typeof(move.cellValue));
+            if (this.getCellValue(cellX, move.cellY) !== 0 && this.getCellValue(cellX, move.cellY) === move.cellValue) {
                 result = false;
             }
         }
         // console.log(result);
+        console.log('rowIsValid: ' + result);
         return result;
     }
 
@@ -635,6 +641,7 @@ class Board {
         }
 
         // console.log(result);
+        console.log('columnIsValid: ' + result);
         return result;
     }
 
@@ -656,10 +663,193 @@ class Board {
             }
         }
         // console.log(result);
+        console.log('regionIsValid: ' + result);
         return result;
     }
 
-    
+    play() {
+        const boardSize = this.boardSize;
+
+        // this.renderEmptyBoard(boardSize);
+
+        // var initialCellValues = this.loadDummyPuzzle();
+
+        // Cache board cells from DOM
+        const cells = document.querySelectorAll('.cell');
+
+        // let cellValues2D = initializeCellValues2D(boardSize);
+
+        // Populate cells and cellValues2D (for checking move validity) arrays with values from initialCellValues.         
+        // cells.forEach(function (cell, cellIndex) {
+        //     const cellX = cellIndex % boardSize;
+        //     const cellY = Math.floor(cellIndex / boardSize);
+        //     let cellValue = null;
+
+        //     if (initialCellValues[cellIndex] === 0) {
+        //         // It's an empty cell.
+        //         cellValue = '';
+        //     } else {
+        //         // It's a clue cell.
+        //         cellValue = initialCellValues[cellIndex].toString();
+        //         cell.classList.add('clueCell');
+        //     }
+        //     cell.innerText = cellValue;
+        //     cellValues2D[cellX][cellY] = cellValue;
+        // });
+
+
+        // Set up keypad
+        const inputCells = document.querySelectorAll('.inputCell');
+
+        inputCells.forEach(function (cell, index) {
+            if (index < inputCells.length - 1) {
+                cell.innerText = (index + 1).toString();
+            }
+        });
+        const inputTable = document.querySelector('.inputTable');
+
+
+        // Helps ensure only one cell is active (selected) at a time
+        let activeCellIndex = null;
+
+        // Adds event listeners to all cells except clue cells.
+        const board = this;
+
+        cells.forEach(function (cell, cellIndex) {
+            // Non-clue cells
+            // if (initialCellValues[cellIndex] === 0) {
+            const cellX = cellIndex % boardSize;
+            const cellY = Math.floor(cellIndex / boardSize);
+
+            // if (initialCellValues[cellIndex] === 0) {
+            if (board.getCellValue(cellX, cellY) === 0) {
+
+                cell.addEventListener('click', function () {
+
+                    // Deactivates active cell if there is one, then activates selected cell. 
+                    if (activeCellIndex !== null) {
+                        cells[activeCellIndex].classList.remove('activeCell');
+                    }
+                    activeCellIndex = cellIndex;
+                    cells[activeCellIndex].classList.add('activeCell');
+
+                    // Activates keypad.
+                    inputTable.classList.add('inputTableActive');
+                    inputCells.forEach(function (inputCell, inputCellIndex) {
+
+                        const renderedCellValue = inputCell.innerText;
+                        let numericCellValue = -1;
+                        
+                        if (renderedCellValue === '') {
+                            numericCellValue = 0;
+                        } else {
+                            numericCellValue = Number(renderedCellValue);
+                        }
+
+                        // Uses onClick instead of addEventListener (as we need to replace a handler, not add one)
+                        inputCell.onclick = function () {
+
+                            const move = new Move(cellX, cellY, numericCellValue);
+                            const validMove = board.tryMove(move);
+
+                            if (!validMove) {
+                                console.log('INVALID MOVE');
+                                // Show that the move breaks the sudoku rules.
+                                cell.classList.add('invalidMove');
+                            } else {
+                                // Todo: only remove the class if the element has it.
+                                cell.classList.remove('invalidMove');
+                            }
+
+                            // Sets cell value in DOM.
+                            cell.innerText = renderedCellValue;
+
+                            // Sets cell value in 2D array used to check move validity
+                            // const cellX = cellIndex % boardSize;
+                            // const cellY = Math.floor(cellIndex / boardSize);
+                            // cellValues2D[cellX][cellY] = cellValue;
+
+                            // Deactivates cell 
+                            cell.classList.remove('activeCell');
+
+                            // Deactivates input keypad
+                            inputTable.classList.remove('inputTableActive');
+                            inputCells.forEach(function (inputCell, inputCellIndex) {
+                                inputCell.onclick = function () { return false; };
+                            });
+                        };
+                    });
+                });
+                // } else {
+                //     // Clue cell
+                //     cell.innerText = initialCellValues[cellIndex];
+                //     cell.classList.add('clueCell');
+            }
+        });
+
+    }
+
+    renderEmptyBoard() {
+
+        const boardSize = this.boardSize;
+        const board = document.querySelector('.board');
+
+        for (let i = 0; i < boardSize; i++) {
+            const rowNode = document.createElement('tr');
+            rowNode.setAttribute('class', 'row');
+            board.appendChild(rowNode);
+
+            for (let j = 0; j < boardSize; j++) {
+                const cellNode = document.createElement('td');
+                cellNode.setAttribute('class', 'cell');
+                rowNode.appendChild(cellNode);
+            }
+        }
+
+        if (boardSize === 9) {
+            const cellsInRows3and6 = document.querySelectorAll(".row:nth-child(3) .cell, .row:nth-child(6) .cell");
+            cellsInRows3and6.forEach(function (cell, index) {
+                cell.classList.add('specialBottomBorder');
+            });
+
+            const cellsInColumns3and6 = document.querySelectorAll(".cell:nth-child(3), .cell:nth-child(6)");
+            cellsInColumns3and6.forEach(function (cell, index) {
+                cell.classList.add('specialRightBorder');
+            });
+
+        }
+    }
+
+    populateBoard() {
+
+        // Cache board cells from DOM
+        const cells = document.querySelectorAll('.cell');
+        const rows = document.querySelectorAll('.row');
+        const board = this;
+
+        // Populate cells and cellValues2D (for checking move validity) arrays with values from cellValues. 
+        cells.forEach(function (cell, cellIndex) {
+            const cellX = cellIndex % boardSize;
+            const cellY = Math.floor(cellIndex / boardSize);
+            const cellValue = board.getCellValue(cellX, cellY);
+            let cellValueToRender = null;
+
+            // if (cellValues[cellIndex] === 0) {
+
+            if (cellValue === 0) {
+                // It's an empty cell.
+                cellValueToRender = '';
+            } else {
+                // It's a clue cell.
+                // cellValue = cellValues[cellIndex].toString();
+                cellValueToRender = cellValue.toString();
+                cell.classList.add('clueCell');
+            }
+            cell.innerText = cellValueToRender;
+            // cellValues2D[cellX][cellY] = cellValue;
+        });
+    }
+
 }
 
 

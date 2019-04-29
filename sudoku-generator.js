@@ -109,11 +109,4 @@ sudokuCommon.renderEmptyBoard(boardSize);
 sudokuCommon.populateBoard(boardValues);
 
 
-// const allMoves = board.getMoves();
-// console.log('MOVES: ' + JSON.stringify(board.getMoves()));
-
-// testCases.forEach(function(testCase, index) {
-//     console.assert(JSON.stringify(allMoves) === JSON.stringify(testCase.outcome), 
-//     {allMoves: allMoves, errorMsg: testCase.name + " - did not get the expected list of moves"}); 
-// });
 
