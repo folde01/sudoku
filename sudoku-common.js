@@ -298,7 +298,13 @@ class Board {
 
 
     removeValueFromCell(cellX, cellY) {
+
+        if (this.getCellValue(cellX, cellY) === 0) {
+            return false;
+        }
+
         this.setCellValue(cellX, cellY, 0);
+        return true;
     }
 
     removeValuesFromSolvedBoard() {
@@ -325,32 +331,51 @@ class Board {
         */
 
         let clueCount = this.boardSize * this.boardSize; // 81
-        const centerRegionClueCount = this.boardSize - this.removeValuesFromCenterRegion(); // eg. 2 or 3
+        const numCluesRemovedFromCenterRegion = this.removeValuesFromCenterRegion();
+        const centerRegionClueCount = this.boardSize - numCluesRemovedFromCenterRegion; // eg. 2 or 3
+        // console.log('centerRegionClueCount: ' + centerRegionClueCount);
 
-        clueCount -= centerRegionClueCount; // e.g. 79 or 78
+        clueCount -= numCluesRemovedFromCenterRegion; // e.g. 79 or 78
+        // clueCount -= centerRegionClueCount; // e.g. 79 or 78
+        // console.log('clueCount10: ' + clueCount);
+
         const clueCountTarget = (clueCount % 2 == 0) ? 35 : 34;
-        const clueCountTargetForOneSide = (clueCountTarget - centerRegionClueCount) / 2;
+        // console.log('clueCountTarget: ' + clueCountTarget);
+
+        // const clueCountTargetForOneSide = (clueCountTarget - centerRegionClueCount) / 2;
+        const clueCountTargetForOneSide = Math.floor((clueCountTarget - centerRegionClueCount) / 2);
         console.log('clueCountTargetForOneSide: ' + clueCountTargetForOneSide);
 
         const regionsOfOneSide = ['nw', 'w', 'sw', 's'];
+        let removalCountByRegion = { 'nw': 0, 'w': 0, 'sw': 0, 's': 0 };
 
         const board = this;
 
+        // remove a value from each region and its counterpart
         regionsOfOneSide.forEach(function (region) {
             board.removeRandomClueFromRegionAndItsCounterpart(region);
+            removalCountByRegion[region]++;
         });
 
         clueCount -= 2 * regionsOfOneSide.length;
-
-        console.log('clueCount: ' + clueCount);
-        console.log('clueCountTarget: ' + clueCountTarget);
-
+        // console.log('clueCount15: ' + clueCount);
 
         while (clueCount > clueCountTarget) {
             const region = regionsOfOneSide[Math.floor(Math.random() * regionsOfOneSide.length)];
-            this.removeRandomClueFromRegionAndItsCounterpart(region);
-            clueCount -= 2;
+            // console.log('region: ' + region);
+
+            // Removes unless 8 have already been removed from region
+            if (removalCountByRegion[region] < this.boardSize - 1) {
+                this.removeRandomClueFromRegionAndItsCounterpart(region);
+                removalCountByRegion[region]++;
+                clueCount -= 2;
+                // console.log('clueCountG: ' + clueCount);
+            }
         }
+
+        // console.log('clueCountF: ' + clueCount);
+
+
 
     }
 
@@ -369,7 +394,7 @@ class Board {
                 break;
         }
 
-        console.log('rotated: ' + coordinate + result);
+        // console.log('rotated: ' + coordinate + result);
         return result;
     }
 
@@ -382,27 +407,47 @@ class Board {
         //          68 78 88
 
 
-        const regionInfo = this.regionInfo[region];
-        const startCellX = regionInfo.startCellX;
-        const endCellX = regionInfo.endCellX;
-        const startCellY = regionInfo.startCellY;
-        const endCellY = regionInfo.endCellY;
-        const counterpartRegion = regionInfo.counterpart;
-        const cellX = this.randomInt(startCellX, endCellX);
-        const cellY = this.randomInt(startCellY, endCellY);
+        let triedCells = new Set();
+        let firstValueWasRemoved = false;
 
-        board.removeValueFromCell(cellX, cellY);
+        // Loops until we actually remove values
 
-        const regionInfo2 = this.regionInfo[counterpartRegion];
-        const startCellX2 = regionInfo2.startCellX;
-        const endCellX2 = regionInfo2.endCellX;
-        const startCellY2 = regionInfo2.startCellY;
-        const endCellY2 = regionInfo2.endCellY;
+        while (!firstValueWasRemoved && triedCells.size < this.boardSize) {
 
-        const cellX2 = this.rotate(cellX % 3) + startCellX2;
-        const cellY2 = this.rotate(cellY % 3) + startCellY2;
+            // Tries to remove the value of a cell in region:
 
-        board.removeValueFromCell(cellX2, cellY2);
+            const regionInfo = this.regionInfo[region];
+            const startCellX = regionInfo.startCellX;
+            const endCellX = regionInfo.endCellX;
+            const startCellY = regionInfo.startCellY;
+            const endCellY = regionInfo.endCellY;
+            const counterpartRegion = regionInfo.counterpart;
+
+            const cellX = this.randomInt(startCellX, endCellX);
+            const cellY = this.randomInt(startCellY, endCellY);
+
+            // Keeps track of cells seen so far, so we don't loop forever.
+
+            triedCells.add(cellX.toString() + cellY.toString());
+
+            firstValueWasRemoved = board.removeValueFromCell(cellX, cellY);
+            console.log('removed: ' + firstValueWasRemoved);
+
+            // Tries to remove the value of the corresponding cell in the counterpart region:
+
+            const regionInfo2 = this.regionInfo[counterpartRegion];
+            const startCellX2 = regionInfo2.startCellX;
+            const endCellX2 = regionInfo2.endCellX;
+            const startCellY2 = regionInfo2.startCellY;
+            const endCellY2 = regionInfo2.endCellY;
+
+            const cellX2 = this.rotate(cellX % 3) + startCellX2;
+            const cellY2 = this.rotate(cellY % 3) + startCellY2;
+
+            board.removeValueFromCell(cellX2, cellY2);
+        }
+
+        return firstValueWasRemoved;
     }
 
     removeValuesFromCenterRegion() {
@@ -615,7 +660,7 @@ class Board {
         // console.log('rowIsValid?');
 
         let result = true;
-        
+
         for (let cellX = 0; cellX < this.boardSize; cellX++) {
             // console.log([cellValues2D[i][cellY], cellValue].join());
             // console.log([typeof(cellValues2D[i][cellY]), typeof(cellValue)].join());
@@ -739,7 +784,7 @@ class Board {
 
                         const renderedCellValue = inputCell.innerText;
                         let numericCellValue = -1;
-                        
+
                         if (renderedCellValue === '') {
                             numericCellValue = 0;
                         } else {

@@ -11,6 +11,10 @@
     --invalidMove-color: red;
 }
 
+body {
+    background-color: #bbb;
+}
+
 .board {
     border: 5px solid var(--board-border-color);
     background-color: var(--board-background-color);
