@@ -1,7 +1,5 @@
-const boardSize = 9;
-const moves =  [];
-const board = new Board(boardSize);
-board.makeMoves(moves);
+const Board = require('./board');
+const board = new Board();
 board.solve();
 board.removeValuesFromSolvedBoard();
 board.renderEmptyBoard();

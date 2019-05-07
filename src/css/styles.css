@@ -12,7 +12,8 @@
 }
 
 body {
-    background-color: #bbb;
+    /* background-color: #bbb; */
+    background-color: black;
 }
 
 .board {

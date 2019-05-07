@@ -1,19 +1,19 @@
-const Move = require('./sudoku-move.js');
+const Move = require('./move');
 
 class Board {
-    constructor(boardSize) {
+    constructor() {
 
-        this.boardSize = boardSize;
-        this.cellValues2D = this.initializeCellValues2D(boardSize);
+        this.boardSize = 9;
+        this.cellValues2D = this.initializeCellValues2D(this.boardSize);
         this.validMoveCount = 0;
         this.moveAttempts = 0;
-        this.numCells = boardSize * boardSize;
+        this.numCells = this.boardSize * this.boardSize;
         this.moves = [];
-        this.cellValueCounts = new Array(boardSize + 1).fill(0);
+        this.cellValueCounts = new Array(this.boardSize + 1).fill(0);
         this.countCompleteCellValues = 0;
-        this.completeCellValueCounts = new Array(boardSize).fill(boardSize);
+        this.completeCellValueCounts = new Array(this.boardSize).fill(this.boardSize);
 
-        if (boardSize === 9) {
+        if (this.boardSize === 9) {
             this.regionInfo = {
                 'nw': { startCellX: 0, endCellX: 2, startCellY: 0, endCellY: 2, counterpart: 'se' },
                 'n': { startCellX: 3, endCellX: 5, startCellY: 0, endCellY: 2, counterpart: 's' },
@@ -320,6 +320,11 @@ class Board {
             removalCountByRegion[region]++;
         });
 
+        // regionsOfOneSide.forEach( (region) => {
+        //     this.removeRandomClueFromRegionAndItsCounterpart(region);
+        //     removalCountByRegion[region]++;
+        // });
+
         clueCount -= 2 * regionsOfOneSide.length;
 
         while (clueCount > clueCountTarget) {
@@ -327,6 +332,7 @@ class Board {
 
             // Removes unless 8 have already been removed from region
             if (removalCountByRegion[region] < this.boardSize - 1) {
+
                 this.removeRandomClueFromRegionAndItsCounterpart(region);
                 removalCountByRegion[region]++;
                 clueCount -= 2;
@@ -361,6 +367,8 @@ class Board {
         //          67 77 87
         //          68 78 88
 
+
+        const board = this;
 
         let triedCells = new Set();
         let firstValueWasRemoved = false;
@@ -825,6 +833,7 @@ class Board {
         const cells = document.querySelectorAll('.cell');
         const rows = document.querySelectorAll('.row');
         const board = this;
+        const boardSize = this.boardSize;
 
         // Populate cells and cellValues2D (for checking move validity) arrays with values from cellValues. 
         cells.forEach(function (cell, cellIndex) {

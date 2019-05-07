@@ -2,9 +2,10 @@
   "name": "sudoku",
   "version": "1.0.0",
   "description": "",
-  "main": "sudoku-common.js",
+  "main": "app.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
@@ -18,6 +19,10 @@
   },
   "homepage": "https://github.com/folde01/sudoku#readme",
   "devDependencies": {
-    "jest": "^24.7.1"
+    "css-loader": "^2.1.1",
+    "jest": "^24.7.1",
+    "style-loader": "^0.23.1",
+    "webpack": "^4.30.0",
+    "webpack-cli": "^3.3.2"
   }
 }
