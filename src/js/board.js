@@ -120,14 +120,13 @@ class Board {
         }
     }
 
-    tryMove2(move) {
-        console.log('tryMove2: ' + JSON.stringify(move));
-        this.moveAttempts++;
+    playMove(move) {
+        console.log('playMove: ' + JSON.stringify(move));
+        this.setCellValue(move.cellX, move.cellY, 0);
+        const moveIsValid = this.moveIsValid(move);
         this.setCellValue(move.cellX, move.cellY, move.cellValue);
-        this.validMoveCount++;
-        this.moves.push(move);
         this.incrementCellValueCount(move.cellValue);
-        return this.moveIsValid(move);
+        return moveIsValid;
     }
 
     undoLastMove() {
@@ -628,8 +627,8 @@ class Board {
             // console.log([cellValues2D[i][cellY], cellValue].join());
             // console.log([typeof(cellValues2D[i][cellY]), typeof(cellValue)].join());
             // console.log('xyvtMt: ' + cellX + move.cellY + this.getCellValue(cellX, move.cellY) + typeof(this.getCellValue(cellX, move.cellY)) + typeof(move.cellValue));
-            console.log('rowIsValid - xy: ' + cellX + move.cellY);
             if (this.getCellValue(cellX, move.cellY) !== 0 && this.getCellValue(cellX, move.cellY) === move.cellValue) {
+                console.log('rowIsValid invalid - xyv: ' + cellX + move.cellY + this.getCellValue(cellX, move.cellY));
                 result = false;
             }
         }
@@ -757,7 +756,8 @@ class Board {
                             // }
 
                             const move = new Move(cellX, cellY, numericCellValue);
-                            const validMove = board.tryMove2(move);
+                            // const validMove = board.tryMove2(move);
+                            const validMove = board.playMove(move);
 
                             if (!validMove) {
                                 console.log('INVALID MOVE');

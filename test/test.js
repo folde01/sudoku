@@ -4,7 +4,7 @@ const assert = require('assert');
 
 describe('Board', function () {
     describe('solve', function () {
-        it('should result in a board with 9 of each number', function () {
+        it('should result in a valid board (i.e. with 9 of each number)', function () {
             const boardSize = 9;
             const board = new Board();
             board.solve();
