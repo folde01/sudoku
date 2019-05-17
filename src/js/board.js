@@ -12,6 +12,7 @@ class Board {
         this.cellValueCounts = new Array(this.boardSize + 1).fill(0);
         this.countCompleteCellValues = 0;
         this.completeCellValueCounts = new Array(this.boardSize).fill(this.boardSize);
+        // this.cellConflicts = this.initializeCellConflicts();
 
         if (this.boardSize === 9) {
             this.regionInfo = {
@@ -60,6 +61,21 @@ class Board {
         }
         return cellValues2D;
     }
+
+    initializeCellConflicts() {
+        // Build 2D array used to check move validity
+        let cellConflicts = new Array(boardSize);
+
+        for (let i = 0; i < boardSize; i++) {
+            cellConflicts[i] = new Array(boardSize);
+
+            for (let j = 0; j < boardSize; j++) {
+                cellConflicts[i][j] = false;
+            }
+        }
+        return cellConflicts;
+    }
+
 
     getMoves() {
         return this.moves;
@@ -120,14 +136,6 @@ class Board {
         }
     }
 
-    playMove(move) {
-        console.log('playMove: ' + JSON.stringify(move));
-        this.setCellValue(move.cellX, move.cellY, 0);
-        const moveIsValid = this.moveIsValid(move);
-        this.setCellValue(move.cellX, move.cellY, move.cellValue);
-        this.incrementCellValueCount(move.cellValue);
-        return moveIsValid;
-    }
 
     undoLastMove() {
         if (this.moves.length > 0) {
@@ -603,8 +611,6 @@ class Board {
         return this.cellValues2D;
     }
 
-
-
     moveIsValid(move) {
         let result = false;
 
@@ -618,28 +624,132 @@ class Board {
         return result;
     }
 
-    rowIsValid(move) {
-        // console.log('rowIsValid?');
+    playMove(move) {
+        console.log('playMove: ' + JSON.stringify(move));
+        this.setCellValue(move.cellX, move.cellY, 0);
+        const moveIsValid = this.moveIsValid(move);
+        this.setCellValue(move.cellX, move.cellY, move.cellValue);
+        this.incrementCellValueCount(move.cellValue);
+        // this.updateConflicts(move);
+        return moveIsValid;
+    }
 
+    updateConflicts(move) {
+        if (move.cellValue === 0) {
+
+            this.setConflictStatus(move.cellX, move.cellY, false);
+
+            // Removes conflict for any cell in same row if that cell has move.cellValue and no other conflicts.
+            for (let cellX = 0; cellX < this.boardSize; cellX++) {
+
+                if (this.getConflictStatus(cellX, move.cellY) === true) {
+                    const candidateX = cellX;
+                    const candidateY = move.cellY;
+                    let foundAnotherConflict = false;
+
+                    // Checks cells which in same column as candidate cell:
+                    for (let cellY = 0; cellY < this.boardSize; cellY++) {
+                        if (cellY === candidateY) {
+                            continue;
+                        }
+                        
+                        if (this.getCellValue(candidateX, cellY) === move.cellValue) {
+                            foundAnotherConflict = true;
+                            break;
+                        }
+                    }
+
+                    if (foundAnotherConflict) {
+                        break;
+                    }
+                    
+                    // Checks cells which in same region as candidate cell:
+                    // Removes conflict for candidate cell, as we got this far:
+
+                }
+            // Removes conflict of cells in same column if candidate cell has no other conflicts.
+            // Removes conflict of cells in same region if candidate cell has no other conflicts.
+            }
+        } else {
+
+            // Adds row conflicts
+            for (let cellX = 0; cellX < this.boardSize; cellX++) {
+                if (this.getCellValue(cellX, move.cellY) !== 0 && this.getCellValue(cellX, move.cellY) === move.cellValue) {
+                    this.setConflictStatus(cellX, cellY, true);
+                    this.setConflictStatus(move.cellX, move.cellY, true);
+                }
+            }
+
+            // Adds column conflicts
+            for (let cellY = 0; cellY < this.boardSize; cellY++) {
+                if (this.getCellValue(cellX, move.cellY) !== 0 && this.getCellValue(cellX, move.cellY) === move.cellValue) {
+                    this.setConflictStatus(cellX, cellY, true);
+                    this.setConflictStatus(move.cellX, move.cellY, true);
+                }
+            }
+
+            // Adds region conflicts
+            const corners = this.getRegionCorners(move.cellX, move.cellY);
+
+            for (let cellY = corners.startRow; cellY <= corners.endRow; cellY++) {
+                for (let cellX = corners.startColumn; cellX <= corners.endColumn; cellX++) {
+                    if (this.getCellValue(cellX, cellY) !== 0 && this.getCellValue(cellX, cellY) === move.cellValue) {
+                        this.setConflictStatus(cellX, cellY, true);
+                        this.setConflictStatus(move.cellX, move.cellY, true);
+                    }
+                }
+            }
+        }
+    }
+
+    getRegionCorners(cellX, cellY) {
+        return {
+            'startRow': Math.floor(move.cellY / 3) * 3,
+            'endRow': startRow + 2,
+            'startColumn': Math.floor(move.cellX / 3) * 3,
+            'endColumn': startColumn + 2,
+        }
+    }
+
+    getConflictStatus(cellX, cellY) {
+        return this.cellConflicts[cellY][cellX];
+    }
+
+    setConflictStatus(cellX, cellY, newStatus) {
+
+        const status = this.getConflictStatus(cellX, cellY);
+
+        if (status === newStatus) {
+            return;
+        }
+
+        this.cellConflicts[cellY][cellX] = status;
+
+        const domCell = this.getDomCell(cellX, cellY)
+
+        if (newStatus === true) {
+            this.addConflictHighlighting(domCell);
+        } else {
+            this.removeConflictHighlighting(domCell);
+        }
+    }
+
+    rowIsValid(move) {
+        // todo: return if false
         let result = true;
 
         for (let cellX = 0; cellX < this.boardSize; cellX++) {
-            // console.log([cellValues2D[i][cellY], cellValue].join());
-            // console.log([typeof(cellValues2D[i][cellY]), typeof(cellValue)].join());
-            // console.log('xyvtMt: ' + cellX + move.cellY + this.getCellValue(cellX, move.cellY) + typeof(this.getCellValue(cellX, move.cellY)) + typeof(move.cellValue));
             if (this.getCellValue(cellX, move.cellY) !== 0 && this.getCellValue(cellX, move.cellY) === move.cellValue) {
                 console.log('rowIsValid invalid - xyv: ' + cellX + move.cellY + this.getCellValue(cellX, move.cellY));
                 result = false;
             }
         }
-        // console.log(result);
         console.log('rowIsValid: ' + result);
         return result;
     }
 
     columnIsValid(move) {
-        // console.log('columnIsValid?');
-
+        // todo: return if false
         let result = true;
 
         for (let j = 0; j < this.boardSize; j++) {
@@ -648,14 +758,12 @@ class Board {
             }
         }
 
-        // console.log(result);
         console.log('columnIsValid: ' + result);
         return result;
     }
 
     regionIsValid(move) {
-        // console.log('regionIsValid?');
-
+        // todo: return if false
         let result = true;
 
         const startRow = Math.floor(move.cellY / 3) * 3;
@@ -675,36 +783,34 @@ class Board {
         return result;
     }
 
+
+    // getDomCell(move) {
+    //     return document.querySelector('#cell' + move.cellX + move.cellY);
+    // }
+
+    getDomCell(cellX, cellY) {
+        return document.querySelector('#cell' + cellX + cellY);
+    }
+
+    // removeConflictHighlighting(domCell) {
+    //     domCell.classList.remove('invalidMove');
+    // }
+
+    removeConflictHighlighting(cellX, cellY) {
+        const domCell = this.getDomCell(cellX, cellY);
+        domCell.classList.remove('invalidMove');
+    }
+
+    addConflictHighlighting(cellX, cellY) {
+        const domCell = this.getDomCell(cellX, cellY);
+        domCell.classList.add('invalidMove');
+    }
+
     play() {
         const boardSize = this.boardSize;
 
-        // this.renderEmptyBoard(boardSize);
-
-        // var initialCellValues = this.loadDummyPuzzle();
-
         // Cache board cells from DOM
         const cells = document.querySelectorAll('.cell');
-
-        // let cellValues2D = initializeCellValues2D(boardSize);
-
-        // Populate cells and cellValues2D (for checking move validity) arrays with values from initialCellValues.         
-        // cells.forEach(function (cell, cellIndex) {
-        //     const cellX = cellIndex % boardSize;
-        //     const cellY = Math.floor(cellIndex / boardSize);
-        //     let cellValue = null;
-
-        //     if (initialCellValues[cellIndex] === 0) {
-        //         // It's an empty cell.
-        //         cellValue = '';
-        //     } else {
-        //         // It's a clue cell.
-        //         cellValue = initialCellValues[cellIndex].toString();
-        //         cell.classList.add('clueCell');
-        //     }
-        //     cell.innerText = cellValue;
-        //     cellValues2D[cellX][cellY] = cellValue;
-        // });
-
 
         // Set up keypad
         const inputCells = document.querySelectorAll('.inputCell');
@@ -720,16 +826,14 @@ class Board {
         // Helps ensure only one cell is active (selected) at a time
         let activeCellIndex = null;
 
-        // Adds event listeners to all cells except clue cells.
         const board = this;
 
+        // Adds event listeners to all cells except clue cells.
         cells.forEach(function (cell, cellIndex) {
             // Non-clue cells
-            // if (initialCellValues[cellIndex] === 0) {
             const cellX = cellIndex % boardSize;
             const cellY = Math.floor(cellIndex / boardSize);
 
-            // if (initialCellValues[cellIndex] === 0) {
             if (board.getCellValue(cellX, cellY) === 0) {
 
                 cell.addEventListener('click', function () {
@@ -751,12 +855,7 @@ class Board {
                         // Uses onClick instead of addEventListener (as we need to replace a handler, not add one)
                         inputCell.onclick = function () {
 
-                            // if (numericCellValue === 0) {
-                            //     this.undoLastMove();
-                            // }
-
                             const move = new Move(cellX, cellY, numericCellValue);
-                            // const validMove = board.tryMove2(move);
                             const validMove = board.playMove(move);
 
                             if (!validMove) {
@@ -765,16 +864,18 @@ class Board {
                                 cell.classList.add('invalidMove');
                             } else {
                                 // Todo: only remove the class if the element has it.
-                                cell.classList.remove('invalidMove');
+                                // cell.classList.remove('invalidMove');
+                                board.removeConflictHighlighting(move.cellX, move.cellY);
+
+                                // if (numericCellValue === 0) {
+                                //     board.resolveConflicts(move);
+                                // }
                             }
+
+                            // board.updateConflicts();
 
                             // Sets cell value in DOM.
                             cell.innerText = renderedCellValue;
-
-                            // Sets cell value in 2D array used to check move validity
-                            // const cellX = cellIndex % boardSize;
-                            // const cellY = Math.floor(cellIndex / boardSize);
-                            // cellValues2D[cellX][cellY] = cellValue;
 
                             // Deactivates cell 
                             cell.classList.remove('activeCell');
@@ -787,14 +888,12 @@ class Board {
                         };
                     });
                 });
-                // } else {
-                //     // Clue cell
-                //     cell.innerText = initialCellValues[cellIndex];
-                //     cell.classList.add('clueCell');
             }
         });
 
     }
+
+
 
     renderEmptyBoard() {
 
@@ -809,6 +908,7 @@ class Board {
             for (let j = 0; j < boardSize; j++) {
                 const cellNode = document.createElement('td');
                 cellNode.setAttribute('class', 'cell');
+                cellNode.setAttribute('id', 'cell' + i + j);
                 rowNode.appendChild(cellNode);
             }
         }
@@ -854,7 +954,6 @@ class Board {
                 cell.classList.add('clueCell');
             }
             cell.innerText = cellValueToRender;
-            // cellValues2D[cellX][cellY] = cellValue;
         });
     }
 }
