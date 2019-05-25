@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha --timeout 5000",
     "build": "webpack",
-    "start": "webpack-dev-server --entry ./src/js/app.js --output-filename ./dist/bundle.js"
+    "start": "webpack-dev-server --entry ./src/js/app.js --output-filename ./dist/bundle.js --devtool source-map"
   },
   "repository": {
     "type": "git",
