@@ -63,7 +63,7 @@ class Board {
     //     return cellValues2D;
     // }
 
-     initializeCellDB() {
+    initializeCellDB() {
 
         const boardSize = this.boardSize;
 
@@ -73,8 +73,8 @@ class Board {
             cellDB[i] = new Array(boardSize);
 
             for (let j = 0; j < boardSize; j++) {
-                cellDB[i][j] = { 
-                    cellValue: 0, 
+                cellDB[i][j] = {
+                    cellValue: 0,
                     conflicting: false,
                     isClue: true
                 };
@@ -86,7 +86,7 @@ class Board {
 
         return cellDB;
     }
-    
+
 
     // initializeCellConflicts() {
     //     // Build 2D array used to check move validity
@@ -391,7 +391,7 @@ class Board {
             }
         }
 
-        
+
     }
 
     rotate(coordinate) {
@@ -668,7 +668,7 @@ class Board {
 
 
     getRegionCorners(cellX, cellY) {
-        
+
         console.log('getRegionCorners this: ', this);
 
         const startRow = Math.floor(cellY / 3) * 3;
@@ -820,6 +820,9 @@ class Board {
 
                 cell.addEventListener('click', function () {
 
+                    // Removes any conflict highlighting from last move
+                    board.removeAllConflicts();
+
                     // Deactivates active cell if there is one, then activates selected cell. 
                     if (activeCellIndex !== null) {
                         cells[activeCellIndex].classList.remove('activeCell');
@@ -840,21 +843,7 @@ class Board {
                             const move = new Move(cellX, cellY, numericCellValue);
                             const validMove = board.playMove(move);
 
-                            // if (!validMove) {
-                            //     console.log('INVALID MOVE');
-                            //     // Show that the move breaks the sudoku rules.
-                            //     cell.classList.add('invalidMove');
-                            // } else {
-                            //     // Todo: only remove the class if the element has it.
-                            //     // cell.classList.remove('invalidMove');
-                            //     board.removeConflictHighlighting(move.cellX, move.cellY);
-
-                            //     // if (numericCellValue === 0) {
-                            //     //     board.resolveConflicts(move);
-                            //     // }
-                            // }
-
-                            board.updateConflicts(move);
+                            board.highlightIfConflicting(move);
 
                             // Sets cell value in DOM.
                             cell.innerText = renderedCellValue;
@@ -875,45 +864,91 @@ class Board {
 
     }
 
-    updateConflicts(move) {
+    updateConflicts2(move) {
+        console.log('update conflict: ', move.cellX, move.cellY, move.cellValue);
+
+        // Don't we need previous cell value we just cleared (or overwrote) !!!!????
+
         if (move.cellValue === 0) {
+            this.setConflictStatus(move.cellX, move.cellY, false);
 
-            console.log('update conflict: 0 !!!');
+            // try {
+            //     this.setConflictStatus(move.cellX, move.cellY, false);
+            // } catch (e) {
+            //     throw "updateConflicts: " + e;
+            // }
 
-            try {
-                this.setConflictStatus(move.cellX, move.cellY, false);
-            } catch (e) {
-                throw "updateConflicts: " + e;
-            }
-
-            // Removes conflict for any cell in same row if that cell has move.cellValue and no other conflicts.
+            // Searches row and removes conflict for any other cell if it has move.cellValue and no other conflicts.
             for (let cellX = 0; cellX < this.boardSize; cellX++) {
 
-                if (this.getConflictStatus(cellX, move.cellY) === true) {
-                    const candidateX = cellX;
-                    const candidateY = move.cellY;
-                    let foundAnotherConflict = false;
+                // Skips cells with a different cellValue and the cell which the move was made in.
+                if (this.getCellValue(cellX, move.cellY) !== move.cellValue || cellX === move.cellX) {
+                    continue;
+                }
 
-                    // Checks cells which in same column as candidate cell:
-                    for (let cellY = 0; cellY < this.boardSize; cellY++) {
-                        if (cellY === candidateY) {
-                            continue;
-                        }
+                // Considers a conflicting cell it finds as a 'candidate' for removing the conflict. A candidate
+                // only has its conflict removed if it has no other conflicts. So this checks for row, column and region conflicts.
+                const candidateX = cellX;
+                const candidateY = move.cellY;
+                let foundAnotherConflict = false;
 
-                        if (this.getCellValue(candidateX, cellY) === move.cellValue) {
-                            foundAnotherConflict = true;
-                            break;
-                        }
+                // Checks candidate for other row conflicts.
+                for (let cellX = 0; cellX < this.boardSize; cellX++) {
+
+                    if (cellX === move.cellX || cellX === candidateX) {
+                        continue;
                     }
 
-                    if (foundAnotherConflict) {
+                    if (this.getCellValue(candidateX, move.cellY) === move.cellValue) {
+                        foundAnotherConflict = true;
                         break;
                     }
-
-                    // Checks cells which in same region as candidate cell:
-                    // Removes conflict for candidate cell, as we got this far:
-
                 }
+
+                if (foundAnotherConflict) {
+                    continue; // So that outer loop checks next cell in row.
+                }
+
+                // // Checks candidate for column conflicts.
+                // for (let cellY = 0; cellY < this.boardSize; cellY++) {
+                //     if (cellY === candidateY) {
+                //         continue;
+                //     }
+
+                //     if (this.getCellValue(candidateX, cellY) === move.cellValue) {
+                //         foundAnotherConflict = true;
+                //         break;
+                //     }
+                // }
+
+                // if (foundAnotherConflict) {
+                //     continue; // So that outer loop checks next cell in row.
+                // }
+
+                // // Checks candidate for region conflicts.
+                // const corners = this.getRegionCorners(cellX, move.cellY);
+
+                // for (let cellY = corners.startRow; cellY <= corners.endRow; cellY++) {
+                //     for (let cellX = corners.startColumn; cellX <= corners.endColumn; cellX++) {
+                //         if (cellX !== move.cellX && cellY !== move.cellY) {
+                //             if (this.getCellValue(cellX, cellY) !== 0 && this.getCellValue(cellX, cellY) === move.cellValue) {
+                //                 console.log('region conflict: ', cellX, cellY);
+
+                //                 this.setConflictStatus(cellX, cellY, true);
+                //                 this.setConflictStatus(move.cellX, move.cellY, true);
+                //             }
+                //         }
+                //     }
+                // }
+
+
+                // Removes conflict for candidate cell, as we got this far:
+                this.setConflictStatus(cellX, move.cellY, false);
+
+
+
+
+
                 // Removes conflict of cells in same column if candidate cell has no other conflicts.
                 // Removes conflict of cells in same region if candidate cell has no other conflicts.
             }
@@ -969,7 +1004,7 @@ class Board {
                     if (cellX !== move.cellX && cellY !== move.cellY) {
                         if (this.getCellValue(cellX, cellY) !== 0 && this.getCellValue(cellX, cellY) === move.cellValue) {
                             console.log('region conflict: ', cellX, cellY);
-    
+
                             this.setConflictStatus(cellX, cellY, true);
                             this.setConflictStatus(move.cellX, move.cellY, true);
                         }
@@ -978,6 +1013,91 @@ class Board {
             }
         }
     }
+
+
+
+
+    highlightIfConflicting(move) {
+
+        // Searches for conflicts, breaking out of loop if it finds one, in which case highlighting is done. 
+
+        let conflictFound = false;
+        const boardSize = this.boardSize;
+
+        // Search row for conflict:
+
+        for (let cellX = 0; cellX < boardSize; cellX++) {
+
+            if (cellX === move.cellX) {
+                continue;
+            }
+
+            if (this.getCellValue(cellX, move.cellY) === move.cellValue) {
+                conflictFound = true;
+                break;
+            }
+        }
+
+        if (conflictFound) {
+            this.setConflictStatus(move.cellX, move.cellY, true);
+            return;
+        }
+
+        // Search column for conflict:
+        for (let cellY = 0; cellY < boardSize; cellY++) {
+
+            if (cellY === move.cellY) {
+                continue;
+            }
+
+            if (this.getCellValue(move.cellX, cellY) === move.cellValue) {
+                conflictFound = true;
+                break;
+            }
+        }
+
+        if (conflictFound) {
+            this.setConflictStatus(move.cellX, move.cellY, true);
+            return;
+        }
+
+        // Search region for conflict:
+        const corners = this.getRegionCorners(move.cellX, move.cellY);
+
+        for (let cellX = corners.startColumn; cellX <= corners.endColumn; cellX++) {
+
+            if (conflictFound) break;
+
+            for (let cellY = corners.startRow; cellY < corners.endRow; cellY++) {
+
+                if (cellX === move.cellX && cellY === move.cellY) {
+                    continue;
+                }
+
+                if (this.getCellValue(cellX, cellY) === move.cellValue) {
+                    conflictFound = true;
+                    break;
+                }
+            }
+        }
+
+        if (conflictFound) {
+            this.setConflictStatus(move.cellX, move.cellY, true);
+            return;
+        }
+
+    }
+
+
+    removeAllConflicts() {
+        for (let cellY = 0; cellY < this.boardSize; cellY++) {
+            for (let cellX = 0; cellX < this.boardSize; cellX++) {
+                this.setConflictStatus(cellX, cellY, false);
+            }
+        }
+    }
+
+
 
     getConflictStatus(cellX, cellY) {
         // return this.cellConflicts[cellY][cellX];
@@ -1004,7 +1124,7 @@ class Board {
                 throw "setConflictStatus caught exception: " + e;
             }
         } else {
-            this.removeConflictHighlighting(domCell);
+            this.removeConflictHighlighting(cellX, cellY);
         }
     }
 
