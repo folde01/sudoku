@@ -68,3 +68,7 @@ body {
 .invalidMove {
     color: var(--invalidMove-color);
 }
+
+.gameOver {
+    color: purple;
+}

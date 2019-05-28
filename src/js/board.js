@@ -59,7 +59,8 @@ class Board {
                 cellDB[i][j] = {
                     cellValue: 0,
                     conflicting: false,
-                    isClue: true
+                    isClue: true,
+                    solutionValue: null
                 };
             }
 
@@ -121,10 +122,23 @@ class Board {
         return this.moves[this.moves.length - 1];
     }
 
+    getCellSolutionValue(cellX, cellY) {
+        return this.cellDB[cellY][cellX].solutionValue;
+    }
+
+    setCellSolutionValue(cellX, cellY, solutionValue) {
+        this.cellDB[cellY][cellX].solutionValue = solutionValue;
+    }
+
+    removeCellSolutionValue(cellX, cellY) {
+        this.cellDB[cellY][cellX].solutionValue = null;
+    }
+
     tryMove(move) {
         this.moveAttempts++;
         if (this.cellIsEmpty(move.cellX, move.cellY) && this.moveIsValid(move)) {
             this.setCellValue(move.cellX, move.cellY, move.cellValue);
+            this.setCellSolutionValue(move.cellX, move.cellY, move.cellValue);
             this.validMoveCount++;
             this.moves.push(move);
             this.incrementCellValueCount(move.cellValue);
@@ -140,6 +154,7 @@ class Board {
             const lastMove = this.moves.pop();
             lastMove.deadEnd = true;
             this.setCellValue(lastMove.cellX, lastMove.cellY, 0);
+            this.removeCellSolutionValue(lastMove.cellX, lastMove.cellY);
             this.decrementCellValueCount(lastMove.cellValue);
             lastMove.getPreviousMove().deadEndNextMoves.push(lastMove);
             return lastMove;
@@ -307,7 +322,8 @@ class Board {
         const numCluesRemovedFromCenterRegion = this.removeValuesFromCenterRegion();
         const centerRegionClueCount = this.boardSize - numCluesRemovedFromCenterRegion; // eg. 2 or 3
         clueCount -= numCluesRemovedFromCenterRegion; // e.g. 79 or 78
-        const clueCountTarget = (clueCount % 2 == 0) ? 35 : 34;
+        // const clueCountTarget = (clueCount % 2 == 0) ? 35 : 34;
+        const clueCountTarget = (clueCount % 2 == 0) ? 75 : 74;
         const clueCountTargetForOneSide = Math.floor((clueCountTarget - centerRegionClueCount) / 2);
         const regionsOfOneSide = ['nw', 'w', 'sw', 's'];
         let removalCountByRegion = { 'nw': 0, 'w': 0, 'sw': 0, 's': 0 };
@@ -513,46 +529,6 @@ class Board {
         }
     }
 
-
-    solveByIteratingDownEachColumn() {
-
-        let i = 0;
-
-        while (!this.boardIsComplete()) {
-            ++i;
-
-            let lastCellValue = null;
-
-            for (let cellValue = 1; cellValue <= boardSize; cellValue++) {
-
-                if (lastCellValue) {
-                    cellValue = lastCellValue;
-                    lastCellValue = null;
-                }
-
-                if (this.getCellValueCount(cellValue) === boardSize) {
-                    continue;
-                }
-
-                const cellValueCount = this.getCellValueCount(cellValue);
-
-                for (let cellX = 0; cellX < boardSize; cellX++) {
-                    for (let cellY = 0; cellY < boardSize; cellY++) {
-                        const move = new Move(cellX, cellY, cellValue);
-                        this.tryMove(move);
-                    }
-                }
-
-                if (this.getCellValueCount(cellValue) === cellValueCount) {
-                    const lastMove = this.undoLastMove();
-                    lastCellValue = cellValue;
-                }
-
-            }
-        }
-    }
-
-
     moveIsValid(move) {
         let result = false;
 
@@ -677,6 +653,28 @@ class Board {
         }
     }
 
+    puzzleHasBeenSolved() {
+        const boardSize = this.boardSize;
+
+        for (let cellX = 0; cellX < boardSize; cellX++) {
+            for (let cellY = 0; cellY < boardSize; cellY++) {
+                const cellValue = this.getCellValue(cellX, cellY);
+                const solutionValue = this.getCellSolutionValue(cellX, cellY);
+                if (cellValue !== solutionValue) {
+                    console.log('not solved: ', cellX, cellY, ':', cellValue, solutionValue);
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    doGameOver() {
+        const gameOverNode = document.querySelector('.gameOver');
+        gameOverNode.innerText = 'WOOHOO YOU WON!';
+    }
+
     play() {
         const boardSize = this.boardSize;
 
@@ -744,8 +742,14 @@ class Board {
                             inputCells.forEach(function (inputCell, inputCellIndex) {
                                 inputCell.onclick = function () { return false; };
                             });
+
+                            if (board.puzzleHasBeenSolved()) {
+                                board.doGameOver();
+                            }
                         };
                     });
+
+
                 });
             }
         });
