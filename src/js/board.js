@@ -4,7 +4,6 @@ class Board {
     constructor() {
 
         this.boardSize = 9;
-        // this.cellValues2D = this.initializeCellValues2D(this.boardSize);
         this.cellDB = this.initializeCellDB();
         this.validMoveCount = 0;
         this.moveAttempts = 0;
@@ -13,7 +12,6 @@ class Board {
         this.cellValueCounts = new Array(this.boardSize + 1).fill(0);
         this.countCompleteCellValues = 0;
         this.completeCellValueCounts = new Array(this.boardSize).fill(this.boardSize);
-        // this.cellConflicts = this.initializeCellConflicts();
 
         if (this.boardSize === 9) {
             this.regionInfo = {
@@ -48,21 +46,6 @@ class Board {
         return Math.floor(Math.random() * (floorMax - ceilMin + 1)) + ceilMin;
     }
 
-    // initializeCellValues2D(boardSize) {
-    //     // Build 2D array used to check move validity
-    //     let cellValues2D = new Array(boardSize);
-
-    //     for (let i = 0; i < boardSize; i++) {
-    //         cellValues2D[i] = new Array(boardSize);
-
-    //         for (let j = 0; j < boardSize; j++) {
-    //             cellValues2D[i][j] = 0;
-    //         }
-
-    //     }
-    //     return cellValues2D;
-    // }
-
     initializeCellDB() {
 
         const boardSize = this.boardSize;
@@ -82,46 +65,23 @@ class Board {
 
         }
 
-        console.log('CELLDB: ', cellDB);
-
         return cellDB;
     }
-
-
-    // initializeCellConflicts() {
-    //     // Build 2D array used to check move validity
-
-    //     const boardSize = this.boardSize;
-    //     let cellConflicts = new Array(boardSize);
-
-    //     for (let i = 0; i < boardSize; i++) {
-    //         cellConflicts[i] = new Array(boardSize);
-
-    //         for (let j = 0; j < boardSize; j++) {
-    //             cellConflicts[i][j] = false;
-    //         }
-    //     }
-    //     return cellConflicts;
-    // }
-
 
     getMoves() {
         return this.moves;
     }
 
     setCellValue(cellX, cellY, cellValue) {
-        // this.cellValues2D[cellY][cellX] = cellValue;
         this.cellDB[cellY][cellX].cellValue = cellValue;
 
     }
 
     getCellValue(cellX, cellY) {
-        // return this.cellValues2D[cellY][cellX];
         return this.cellDB[cellY][cellX].cellValue;
     }
 
     setCellClueStatus(cellX, cellY, isClue) {
-        // this.cellValues2D[cellY][cellX] = cellValue;
         this.cellDB[cellY][cellX].isClue = isClue;
     }
 
@@ -162,17 +122,14 @@ class Board {
     }
 
     tryMove(move) {
-        console.log('trying: ' + JSON.stringify(move));
         this.moveAttempts++;
         if (this.cellIsEmpty(move.cellX, move.cellY) && this.moveIsValid(move)) {
             this.setCellValue(move.cellX, move.cellY, move.cellValue);
             this.validMoveCount++;
             this.moves.push(move);
             this.incrementCellValueCount(move.cellValue);
-            console.log('   PLAYED  ' + JSON.stringify(move));
             return true;
         } else {
-            console.log('NOT Played: ' + JSON.stringify(move));
             return false;
         }
     }
@@ -185,10 +142,9 @@ class Board {
             this.setCellValue(lastMove.cellX, lastMove.cellY, 0);
             this.decrementCellValueCount(lastMove.cellValue);
             lastMove.getPreviousMove().deadEndNextMoves.push(lastMove);
-            console.log('###### move undone: ' + lastMove.cellX + lastMove.cellY + lastMove.cellValue);
             return lastMove;
         } else {
-            console.log('no moves left to undo');
+            return;
         }
     }
 
@@ -217,7 +173,6 @@ class Board {
             }
         }
 
-        console.log('========= EMPTY ======== ' + emptyCells);
         return emptyCells;
     }
 
@@ -231,7 +186,6 @@ class Board {
     }
 
     getCurrentBoardValues() {
-        // const merged = [].concat.apply([], this.cellValues2D);
         const merged = [].concat.apply([], this.cellDB.map((elem) => elem.cellValue));
         return merged;
     }
@@ -256,8 +210,7 @@ class Board {
 
         if (cellValueCount === this.boardSize) {
             ++cellValue;
-            // Todo: Rather than throw an exception here, we should handle any board, 
-            // not just boards made with the board generation algorithm used here.
+
             if (this.getCellValueCount(cellValue) === this.boardSize) {
                 throw "Unexpected cell value count. Terminating.";
             }
@@ -271,8 +224,6 @@ class Board {
     }
 
     solveByPickingRandomPossibleNextMove() {
-        console.log('****************SOLVING***************');
-
         let lastMove = this.getLastMove();
         let cellValue = null;
 
@@ -296,13 +247,11 @@ class Board {
             while (!moveMade) {
 
                 if (possibleNextMoves.length === 0) {
-                    console.log('   BLOCKED');
                     this.undoLastMove();
                     lastMove = this.getLastMove();
                     possibleNextMoves = this.getPossibleNextMoves(lastMove);
                 }
 
-                console.log('possibleNextMoves: length=' + possibleNextMoves.length + ' ' + JSON.stringify(possibleNextMoves));
                 const moveCandidate = this.pickRandomElementFromArray(possibleNextMoves);
                 moveMade = this.tryMove(moveCandidate);
                 if (moveMade) {
@@ -360,22 +309,16 @@ class Board {
         clueCount -= numCluesRemovedFromCenterRegion; // e.g. 79 or 78
         const clueCountTarget = (clueCount % 2 == 0) ? 35 : 34;
         const clueCountTargetForOneSide = Math.floor((clueCountTarget - centerRegionClueCount) / 2);
-        console.log('clueCountTargetForOneSide: ' + clueCountTargetForOneSide);
         const regionsOfOneSide = ['nw', 'w', 'sw', 's'];
         let removalCountByRegion = { 'nw': 0, 'w': 0, 'sw': 0, 's': 0 };
 
         const board = this;
 
-        // remove a value from each region and its counterpart
+        // Removes a value from each region and its counterpart
         regionsOfOneSide.forEach(function (region) {
             board.removeRandomClueFromRegionAndItsCounterpart(region);
             removalCountByRegion[region]++;
         });
-
-        // regionsOfOneSide.forEach( (region) => {
-        //     this.removeRandomClueFromRegionAndItsCounterpart(region);
-        //     removalCountByRegion[region]++;
-        // });
 
         clueCount -= 2 * regionsOfOneSide.length;
 
@@ -409,26 +352,16 @@ class Board {
                 break;
         }
 
-        // console.log('rotated: ' + coordinate + result);
         return result;
     }
 
     removeRandomClueFromRegionAndItsCounterpart(region) {
-        // 00 10 20     
-        // 01 11 21
-        // 02 12 22
-        //          66 76 86
-        //          67 77 87
-        //          68 78 88
-
-
         const board = this;
 
         let triedCells = new Set();
         let firstValueWasRemoved = false;
 
         // Loops until we actually remove values
-
         while (!firstValueWasRemoved && triedCells.size < this.boardSize) {
 
             // Tries to remove the value of a cell in region:
@@ -448,7 +381,6 @@ class Board {
             triedCells.add(cellX.toString() + cellY.toString());
 
             firstValueWasRemoved = board.removeClue(cellX, cellY);
-            console.log('removed: ' + firstValueWasRemoved);
 
             // Tries to remove the value of the corresponding cell in the counterpart region:
 
@@ -498,14 +430,8 @@ class Board {
         }
 
         if (noneRemoved || allRemoved) {
-            console.log('CENTER BOX MISTAKE');
-            console.log('BEFORE: ' + booleans);
-
             const randIndex = this.randomInt(0, removalKeys.length - 1);
-            console.log('randIndex: ' + randIndex);
             booleans[randIndex] = !booleans[randIndex];
-            console.log('FIXED: ' + booleans);
-
         }
 
 
@@ -515,7 +441,6 @@ class Board {
         for (let k = 0; k < removalKeys.length; k++) {
             const bool = booleans[k];
             const key = removalKeys[k];
-            console.log(bool + ' ' + key);
 
             if (bool) {
                 removals[key].forEach(function (cell, index) {
@@ -532,8 +457,6 @@ class Board {
 
         while (!this.boardIsComplete()) {
             // debugger;
-
-            console.log('****************SOLVING***************     ');
 
             let lastCellValue = null;
 
@@ -552,10 +475,8 @@ class Board {
                 }
 
                 if (cellValueCount === this.boardSize) {
-                    console.log('DONE with cellValue: ' + cellValue);
                     continue;
                 }
-                console.log('working on cellValue: ' + cellValue);
 
 
                 for (let cellX = 0; cellX < this.boardSize; cellX++) {
@@ -584,13 +505,11 @@ class Board {
                 const newCellValueCount = this.getCellValueCount(cellValue);
 
                 if (newCellValueCount <= cellValueCount) {
-                    console.log('- - B L O C K E D - -');
                     const lastMove = this.undoLastMove();
                     lastCellValue = cellValue;
                 }
 
             }
-            console.log('^^^^^ MOVE ATTEMPTS ^^^^^ ' + this.moveAttempts);
         }
     }
 
@@ -600,10 +519,6 @@ class Board {
         let i = 0;
 
         while (!this.boardIsComplete()) {
-
-            console.log('****************SOLVING***************     ' + i);
-
-            console.log('complete? ' + this.boardIsComplete());
             ++i;
 
             let lastCellValue = null;
@@ -616,10 +531,8 @@ class Board {
                 }
 
                 if (this.getCellValueCount(cellValue) === boardSize) {
-                    console.log('DONE with cellValue: ' + cellValue);
                     continue;
                 }
-                console.log('working on cellValue: ' + cellValue);
 
                 const cellValueCount = this.getCellValueCount(cellValue);
 
@@ -631,13 +544,11 @@ class Board {
                 }
 
                 if (this.getCellValueCount(cellValue) === cellValueCount) {
-                    console.log('- - B L O C K E D - -');
                     const lastMove = this.undoLastMove();
                     lastCellValue = cellValue;
                 }
 
             }
-            console.log('complete NOW? ' + this.boardIsComplete());
         }
     }
 
@@ -651,12 +562,10 @@ class Board {
             result = this.rowIsValid(move) && this.columnIsValid(move);
         }
 
-        console.log('moveIsValid: ' + result);
         return result;
     }
 
     playMove(move) {
-        console.log('playMove: ' + JSON.stringify(move));
         this.setCellValue(move.cellX, move.cellY, 0);
         const moveIsValid = this.moveIsValid(move);
         this.setCellValue(move.cellX, move.cellY, move.cellValue);
@@ -668,9 +577,6 @@ class Board {
 
 
     getRegionCorners(cellX, cellY) {
-
-        console.log('getRegionCorners this: ', this);
-
         const startRow = Math.floor(cellY / 3) * 3;
         const endRow = startRow + 2;
         const startColumn = Math.floor(cellX / 3) * 3;
@@ -694,11 +600,9 @@ class Board {
 
         for (let cellX = 0; cellX < this.boardSize; cellX++) {
             if (this.getCellValue(cellX, move.cellY) !== 0 && this.getCellValue(cellX, move.cellY) === move.cellValue) {
-                console.log('rowIsValid invalid - xyv: ' + cellX + move.cellY + this.getCellValue(cellX, move.cellY));
                 result = false;
             }
         }
-        console.log('rowIsValid: ' + result);
         return result;
     }
 
@@ -712,7 +616,6 @@ class Board {
             }
         }
 
-        console.log('columnIsValid: ' + result);
         return result;
     }
 
@@ -732,31 +635,19 @@ class Board {
                 }
             }
         }
-        // console.log(result);
-        console.log('regionIsValid: ' + result);
+
         return result;
     }
-
-
-    // getDomCell(move) {
-    //     return document.querySelector('#cell' + move.cellX + move.cellY);
-    // }
 
     getDomCell(cellX, cellY) {
         const boardSize = this.boardSize;
         const selector = '#cell' + cellX + cellY;
-        console.log('selector', selector);
         if (isNaN(cellX) || isNaN(cellY) || cellX > boardSize - 1 || cellX < 0 || cellY > boardSize - 1 || cellY < 0) {
             // if (cellX > boardSize - 1 || cellX < 0 || cellY > boardSize - 1 || cellY < 0) {
             throw "getDomCell: unexpected cell coordinate. (cellX, cellY): " + cellX + ', ' + cellY;
         }
         return document.querySelector(selector);
     }
-
-    // removeConflictHighlighting(domCell) {
-    //     domCell.classList.remove('invalidMove');
-    // }
-
 
     removeConflictHighlighting(cellX, cellY) {
 
@@ -775,13 +666,11 @@ class Board {
     addConflictHighlighting(cellX, cellY) {
 
         if (this.getCellClueStatus(cellX, cellY) === true) {
-            console.log('not highlighting clue: ', cellX, cellY);
             return;
         }
 
         try {
             const domCell = this.getDomCell(cellX, cellY);
-            console.log('highlight: ', cellX, cellY);
             domCell.classList.add('invalidMove');
         } catch (e) {
             throw "addConflictHighlighting caught exception: " + e;
@@ -803,7 +692,6 @@ class Board {
             }
         });
         const inputTable = document.querySelector('.inputTable');
-
 
         // Helps ensure only one cell is active (selected) at a time
         let activeCellIndex = null;
@@ -864,159 +752,6 @@ class Board {
 
     }
 
-    updateConflicts2(move) {
-        console.log('update conflict: ', move.cellX, move.cellY, move.cellValue);
-
-        // Don't we need previous cell value we just cleared (or overwrote) !!!!????
-
-        if (move.cellValue === 0) {
-            this.setConflictStatus(move.cellX, move.cellY, false);
-
-            // try {
-            //     this.setConflictStatus(move.cellX, move.cellY, false);
-            // } catch (e) {
-            //     throw "updateConflicts: " + e;
-            // }
-
-            // Searches row and removes conflict for any other cell if it has move.cellValue and no other conflicts.
-            for (let cellX = 0; cellX < this.boardSize; cellX++) {
-
-                // Skips cells with a different cellValue and the cell which the move was made in.
-                if (this.getCellValue(cellX, move.cellY) !== move.cellValue || cellX === move.cellX) {
-                    continue;
-                }
-
-                // Considers a conflicting cell it finds as a 'candidate' for removing the conflict. A candidate
-                // only has its conflict removed if it has no other conflicts. So this checks for row, column and region conflicts.
-                const candidateX = cellX;
-                const candidateY = move.cellY;
-                let foundAnotherConflict = false;
-
-                // Checks candidate for other row conflicts.
-                for (let cellX = 0; cellX < this.boardSize; cellX++) {
-
-                    if (cellX === move.cellX || cellX === candidateX) {
-                        continue;
-                    }
-
-                    if (this.getCellValue(candidateX, move.cellY) === move.cellValue) {
-                        foundAnotherConflict = true;
-                        break;
-                    }
-                }
-
-                if (foundAnotherConflict) {
-                    continue; // So that outer loop checks next cell in row.
-                }
-
-                // // Checks candidate for column conflicts.
-                // for (let cellY = 0; cellY < this.boardSize; cellY++) {
-                //     if (cellY === candidateY) {
-                //         continue;
-                //     }
-
-                //     if (this.getCellValue(candidateX, cellY) === move.cellValue) {
-                //         foundAnotherConflict = true;
-                //         break;
-                //     }
-                // }
-
-                // if (foundAnotherConflict) {
-                //     continue; // So that outer loop checks next cell in row.
-                // }
-
-                // // Checks candidate for region conflicts.
-                // const corners = this.getRegionCorners(cellX, move.cellY);
-
-                // for (let cellY = corners.startRow; cellY <= corners.endRow; cellY++) {
-                //     for (let cellX = corners.startColumn; cellX <= corners.endColumn; cellX++) {
-                //         if (cellX !== move.cellX && cellY !== move.cellY) {
-                //             if (this.getCellValue(cellX, cellY) !== 0 && this.getCellValue(cellX, cellY) === move.cellValue) {
-                //                 console.log('region conflict: ', cellX, cellY);
-
-                //                 this.setConflictStatus(cellX, cellY, true);
-                //                 this.setConflictStatus(move.cellX, move.cellY, true);
-                //             }
-                //         }
-                //     }
-                // }
-
-
-                // Removes conflict for candidate cell, as we got this far:
-                this.setConflictStatus(cellX, move.cellY, false);
-
-
-
-
-
-                // Removes conflict of cells in same column if candidate cell has no other conflicts.
-                // Removes conflict of cells in same region if candidate cell has no other conflicts.
-            }
-        } else {
-
-            // Adds row conflicts
-            console.log('ROW CONFLICTS');
-            for (let cellX = 0; cellX < this.boardSize; cellX++) {
-
-                if (cellX !== move.cellX) {
-                    const cellValue = this.getCellValue(cellX, move.cellY);
-
-                    if (cellValue !== 0 && cellValue === move.cellValue) {
-
-                        console.log('row conflict: ', cellX, move.cellY);
-                        try {
-                            this.setConflictStatus(cellX, move.cellY, true);
-                            this.setConflictStatus(move.cellX, move.cellY, true);
-                        } catch (e) {
-                            throw "updateConflicts add row conflicts: " + e + '\n';
-                        }
-
-                    }
-                }
-            }
-
-            // Adds column conflicts
-            console.log('COLUMN CONFLICTS');
-
-            for (let cellY = 0; cellY < this.boardSize; cellY++) {
-
-                if (cellY !== move.cellY) {
-                    const cellValue = this.getCellValue(move.cellX, cellY);
-
-                    if (cellValue !== 0 && cellValue === move.cellValue) {
-                        console.log('column conflict: ', move.cellX, cellY);
-
-                        this.setConflictStatus(move.cellX, cellY, true);
-                        this.setConflictStatus(move.cellX, move.cellY, true);
-                    }
-                }
-            }
-
-            // Adds region conflicts
-            console.log('BOX CONFLICTS');
-
-            const corners = this.getRegionCorners(move.cellX, move.cellY);
-
-            console.log('corners: ', corners);
-
-            for (let cellY = corners.startRow; cellY <= corners.endRow; cellY++) {
-                for (let cellX = corners.startColumn; cellX <= corners.endColumn; cellX++) {
-                    if (cellX !== move.cellX && cellY !== move.cellY) {
-                        if (this.getCellValue(cellX, cellY) !== 0 && this.getCellValue(cellX, cellY) === move.cellValue) {
-                            console.log('region conflict: ', cellX, cellY);
-
-                            this.setConflictStatus(cellX, cellY, true);
-                            this.setConflictStatus(move.cellX, move.cellY, true);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-
-
     highlightIfConflicting(move) {
 
         // Searches for conflicts, breaking out of loop if it finds one, in which case highlighting is done. 
@@ -1024,8 +759,7 @@ class Board {
         let conflictFound = false;
         const boardSize = this.boardSize;
 
-        // Search row for conflict:
-
+        // Searches row for conflict:
         for (let cellX = 0; cellX < boardSize; cellX++) {
 
             if (cellX === move.cellX) {
@@ -1043,7 +777,7 @@ class Board {
             return;
         }
 
-        // Search column for conflict:
+        // Searches column for conflict:
         for (let cellY = 0; cellY < boardSize; cellY++) {
 
             if (cellY === move.cellY) {
@@ -1061,7 +795,7 @@ class Board {
             return;
         }
 
-        // Search region for conflict:
+        // Searches region for conflict:
         const corners = this.getRegionCorners(move.cellX, move.cellY);
 
         for (let cellX = corners.startColumn; cellX <= corners.endColumn; cellX++) {
@@ -1097,10 +831,7 @@ class Board {
         }
     }
 
-
-
     getConflictStatus(cellX, cellY) {
-        // return this.cellConflicts[cellY][cellX];
         return this.cellDB[cellY][cellX].conflicting;
     }
 
@@ -1112,7 +843,6 @@ class Board {
             return;
         }
 
-        // this.cellConflicts[cellY][cellX] = newStatus;
         this.cellDB[cellY][cellX].conflicting = newStatus;
 
         const domCell = this.getDomCell(cellX, cellY)
@@ -1175,14 +905,11 @@ class Board {
             const cellValue = board.getCellValue(cellX, cellY);
             let cellValueToRender = null;
 
-            // if (cellValues[cellIndex] === 0) {
-
             if (cellValue === 0) {
                 // It's an empty cell.
                 cellValueToRender = '';
             } else {
                 // It's a clue cell.
-                // cellValue = cellValues[cellIndex].toString();
                 cellValueToRender = cellValue.toString();
                 cell.classList.add('clueCell');
             }
