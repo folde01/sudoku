@@ -4,26 +4,20 @@ class Board {
     constructor() {
 
         this.boardSize = 9;
-        this.cellDB = this.initializeCellDB();
-        this.validMoveCount = 0;
-        this.moveAttempts = 0;
         this.numCells = this.boardSize * this.boardSize;
-        this.moves = [];
         this.cellValueCounts = new Array(this.boardSize + 1).fill(0);
-        this.countCompleteCellValues = 0;
-        this.completeCellValueCounts = new Array(this.boardSize).fill(this.boardSize);
 
         if (this.boardSize === 9) {
             this.regionInfo = {
                 'nw': { startCellX: 0, endCellX: 2, startCellY: 0, endCellY: 2, counterpart: 'se' },
-                'n': { startCellX: 3, endCellX: 5, startCellY: 0, endCellY: 2, counterpart: 's' },
+                'n':  { startCellX: 3, endCellX: 5, startCellY: 0, endCellY: 2, counterpart: 's'  },
                 'ne': { startCellX: 6, endCellX: 8, startCellY: 0, endCellY: 2, counterpart: 'sw' },
-                'w': { startCellX: 0, endCellX: 2, startCellY: 3, endCellY: 5, counterpart: 'e' },
-                'c': { startCellX: 3, endCellX: 5, startCellY: 3, endCellY: 5, counterpart: 'c' },
-                'e': { startCellX: 6, endCellX: 8, startCellY: 3, endCellY: 5, counterpart: 'w' },
+                'w':  { startCellX: 0, endCellX: 2, startCellY: 3, endCellY: 5, counterpart: 'e'  },
+                'c':  { startCellX: 3, endCellX: 5, startCellY: 3, endCellY: 5, counterpart: 'c'  },
+                'e':  { startCellX: 6, endCellX: 8, startCellY: 3, endCellY: 5, counterpart: 'w'  },
                 'sw': { startCellX: 0, endCellX: 2, startCellY: 6, endCellY: 8, counterpart: 'ne' },
-                's': { startCellX: 3, endCellX: 5, startCellY: 6, endCellY: 8, counterpart: 'n' },
-                'se': { startCellX: 6, endCellX: 8, startCellY: 6, endCellY: 8, counterpart: 'nw' },
+                's':  { startCellX: 3, endCellX: 5, startCellY: 6, endCellY: 8, counterpart: 'n'  },
+                'se': { startCellX: 6, endCellX: 8, startCellY: 6, endCellY: 8, counterpart: 'nw' }
             };
         }
 
@@ -35,6 +29,16 @@ class Board {
         };
     }
 
+    reset() {
+        this.cellDB = this.initializeCellDB();
+        this.validMoveCount = 0;
+        this.moveAttempts = 0;
+        this.moves = [];
+        this.cellValueCounts = new Array(this.boardSize + 1).fill(0);
+        this.countCompleteCellValues = 0;
+        this.completeCellValueCounts = new Array(this.boardSize).fill(this.boardSize);
+        this.hideGameOver();
+    }
 
     pickRandomElementFromArray(arr) {
         return arr[Math.floor(Math.random() * arr.length)];
@@ -295,7 +299,26 @@ class Board {
         return true;
     }
 
-    removeValuesFromSolvedBoard() {
+    removeCluesFromSolvedBoard(difficulty) {
+
+        let removalFunc;
+
+        if (difficulty === 'dev') {
+            removalFunc = this.removeOneClueFromSolvedBoard;
+        } else {
+            removalFunc = this.removeCluesFromSolvedBoardMediumDifficulty;
+        }
+
+        removalFunc.call(this);
+    }
+
+
+    removeOneClueFromSolvedBoard() {
+        // For development purposes
+        this.removeClue(0, 0);
+    }
+
+    removeCluesFromSolvedBoardMediumDifficulty() {
         /* 
 
         We need to remove some values from the solved board so it can be played. Removing values must leave the board with rotational symmetry.
@@ -322,8 +345,8 @@ class Board {
         const numCluesRemovedFromCenterRegion = this.removeValuesFromCenterRegion();
         const centerRegionClueCount = this.boardSize - numCluesRemovedFromCenterRegion; // eg. 2 or 3
         clueCount -= numCluesRemovedFromCenterRegion; // e.g. 79 or 78
-        // const clueCountTarget = (clueCount % 2 == 0) ? 35 : 34;
-        const clueCountTarget = (clueCount % 2 == 0) ? 75 : 74;
+        const clueCountTarget = (clueCount % 2 == 0) ? 35 : 34;
+        // const clueCountTarget = (clueCount % 2 == 0) ? 75 : 74;
         const clueCountTargetForOneSide = Math.floor((clueCountTarget - centerRegionClueCount) / 2);
         const regionsOfOneSide = ['nw', 'w', 'sw', 's'];
         let removalCountByRegion = { 'nw': 0, 'w': 0, 'sw': 0, 's': 0 };
@@ -507,7 +530,6 @@ class Board {
                     while (moveNotMadeInColumnYet && arrOfCellY.length > 0) {
                         const cellY = arrOfCellY[Math.floor(Math.random() * arrOfCellY.length)];
                         const cellYIndex = arrOfCellY.indexOf(cellY);
-                        // arrOfCellY.splice(cellYIndex, 1);
                         arrOfCellY.splice(arrOfCellY.indexOf(cellYIndex), 1);
                         const move = new Move(cellX, cellY, cellValue);
 
@@ -673,9 +695,23 @@ class Board {
     doGameOver() {
         const gameOverNode = document.querySelector('.gameOver');
         gameOverNode.innerText = 'WOOHOO YOU WON!';
+        // Todo: make game look and feel over
+    }
+
+    hideGameOver() {
+        const gameOverNode = document.querySelector('.gameOver');
+        gameOverNode.innerText = '';
     }
 
     play() {
+
+        this.reset();
+        this.solve();
+        // this.removeCluesFromSolvedBoard('dev');
+        this.removeCluesFromSolvedBoard();
+        this.renderEmptyBoard();
+        this.populateBoard();
+
         const boardSize = this.boardSize;
 
         // Cache board cells from DOM
@@ -695,6 +731,12 @@ class Board {
         let activeCellIndex = null;
 
         const board = this;
+
+        // New Game button
+        const newGameButton = document.querySelector('.newGame');
+        newGameButton.onclick = function () {
+            board.play();
+        };
 
         // Adds event listeners to all cells except clue cells.
         cells.forEach(function (cell, cellIndex) {
@@ -865,12 +907,14 @@ class Board {
     renderEmptyBoard() {
 
         const boardSize = this.boardSize;
-        const board = document.querySelector('.board');
+        const oldBoard = document.querySelector('.board');
+        const newBoard = document.createElement('table');
+        newBoard.setAttribute('class', 'board');
 
         for (let i = 0; i < boardSize; i++) {
             const rowNode = document.createElement('tr');
             rowNode.setAttribute('class', 'row');
-            board.appendChild(rowNode);
+            newBoard.appendChild(rowNode);
 
             for (let j = 0; j < boardSize; j++) {
                 const cellNode = document.createElement('td');
@@ -880,18 +924,17 @@ class Board {
             }
         }
 
-        if (boardSize === 9) {
-            const cellsInRows3and6 = document.querySelectorAll(".row:nth-child(3) .cell, .row:nth-child(6) .cell");
-            cellsInRows3and6.forEach(function (cell, index) {
-                cell.classList.add('specialBottomBorder');
-            });
+        oldBoard.parentNode.replaceChild(newBoard, oldBoard);
 
-            const cellsInColumns3and6 = document.querySelectorAll(".cell:nth-child(3), .cell:nth-child(6)");
-            cellsInColumns3and6.forEach(function (cell, index) {
-                cell.classList.add('specialRightBorder');
-            });
+        const cellsInRows3and6 = document.querySelectorAll(".row:nth-child(3) .cell, .row:nth-child(6) .cell");
+        cellsInRows3and6.forEach(function (cell, index) {
+            cell.classList.add('specialBottomBorder');
+        });
 
-        }
+        const cellsInColumns3and6 = document.querySelectorAll(".cell:nth-child(3), .cell:nth-child(6)");
+        cellsInColumns3and6.forEach(function (cell, index) {
+            cell.classList.add('specialRightBorder');
+        });
     }
 
     populateBoard() {
