@@ -683,7 +683,6 @@ class Board {
                 const cellValue = this.getCellValue(cellX, cellY);
                 const solutionValue = this.getCellSolutionValue(cellX, cellY);
                 if (cellValue !== solutionValue) {
-                    console.log('not solved: ', cellX, cellY, ':', cellValue, solutionValue);
                     return false;
                 }
             }
