@@ -6,6 +6,7 @@ class Board {
         this.boardSize = 9;
         this.numCells = this.boardSize * this.boardSize;
         this.cellValueCounts = new Array(this.boardSize + 1).fill(0);
+        this.reset();
 
         if (this.boardSize === 9) {
             this.regionInfo = {
@@ -37,7 +38,6 @@ class Board {
         this.cellValueCounts = new Array(this.boardSize + 1).fill(0);
         this.countCompleteCellValues = 0;
         this.completeCellValueCounts = new Array(this.boardSize).fill(this.boardSize);
-        this.hideGameOver();
     }
 
     pickRandomElementFromArray(arr) {
@@ -212,6 +212,7 @@ class Board {
 
 
     solve() {
+        this.reset();
         this.solveByPickingRandomPossibleNextMove();
     }
 
@@ -704,7 +705,6 @@ class Board {
 
     play() {
 
-        this.reset();
         this.solve();
         // this.removeCluesFromSolvedBoard('dev');
         this.removeCluesFromSolvedBoard();
@@ -904,6 +904,8 @@ class Board {
     }
 
     renderEmptyBoard() {
+
+        this.hideGameOver();
 
         const boardSize = this.boardSize;
         const oldBoard = document.querySelector('.board');

@@ -16,8 +16,6 @@ class Move {
         if (arguments.length === 4) {
             this.previousMove = previousMove;
         }
-
-        console.log('MOVE CREATED: ' + this.cellX + ', ' + this.cellY + ', ' + this.cellValue);
     }
 
     setPreviousMove(move) {
