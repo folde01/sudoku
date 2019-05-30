@@ -1,23 +1,27 @@
 :root {
-    --board-color: black;
     --clueCell-color: grey;
-    --board-border-color: grey;
-    --board-background-color: pink;
+    --board-border-color: #b36262;
+    --board-background-color: rgb(212, 219, 224);
+    /* --board-background-color-active: rgb(229, 233, 236); */
+    --board-background-color-active: #d3ced1;
+    --board-background-color-active: #e1e1e1;
     --board-background-color-active: white;
-    --inputTable-background-color: white;
-    --inputTable-background-color-active: yellowgreen;
+    --inputTable-background-color: var(--board-background-color);
+    /* --inputTable-background-color-active: var(--board-background-color-active); */
+    --inputTable-background-color-active: #d4cecd;
     --inputTable-color: grey;
     --inputTable-color-active: black;
     --invalidMove-color: red;
+    --checkerboardRegionCell-color: #d4cecd;
 }
 
 body {
-    /* background-color: #bbb; */
-    background-color: black;
+    background-color: var(--board-background-color);
+    /* background-color: #ccc; */
 }
 
 .board {
-    border: 5px solid var(--board-border-color);
+    border: 2px solid var(--board-border-color);
     background-color: var(--board-background-color);
     border-spacing: 0;
 }
@@ -30,6 +34,10 @@ body {
     height: 40px;
     width: 40px;
     border: 1px solid var(--board-border-color);
+}
+
+.checkerboardRegionCell {
+    background-color: var(--checkerboardRegionCell-color);
 }
 
 .clueCell {
@@ -48,7 +56,7 @@ body {
 .inputTable {
     color: var(--inputTable-color);
     background-color: var(--inputTable-background-color);
-    border: 3px solid var(--board-border-color);
+    border: 1px solid var(--board-border-color);
     border-spacing: 0;
 }
 
@@ -58,11 +66,13 @@ body {
 }
 
 .specialBottomBorder {
-    border-bottom: 3px solid var(--board-border-color);
+    border-bottom: 2px solid var(--board-border-color);
+    /* border-bottom: 2px solid black; */
 } 
 
 .specialRightBorder {
-    border-right: 3px solid var(--board-border-color);
+    border-right: 2px solid var(--board-border-color);
+    /* border-right: 2px solid black; */
 }
 
 .invalidMove {
