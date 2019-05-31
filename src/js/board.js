@@ -6,6 +6,7 @@ class Board {
         this.boardSize = 9;
         this.numCells = this.boardSize * this.boardSize;
         this.cellValueCounts = new Array(this.boardSize + 1).fill(0);
+        this.domCache = {};
         this.reset();
         
         if (this.boardSize === 9) {
@@ -31,6 +32,7 @@ class Board {
     }
     
     reset() {
+        this.filledCellCount = 0;
         this.cellDB = this.initializeCellDB();
         this.validMoveCount = 0;
         this.moveAttempts = 0;
@@ -38,6 +40,13 @@ class Board {
         this.cellValueCounts = new Array(this.boardSize + 1).fill(0);
         this.countCompleteCellValues = 0;
         this.completeCellValueCounts = new Array(this.boardSize).fill(this.boardSize);
+        this.fillDomCache();
+    }
+    
+    fillDomCache() {
+        this.domCache.inputTable = document.querySelector('.inputTable');
+        this.domCache.inputCells = document.querySelectorAll('.inputCell');
+        this.domCache.newGameButton = document.querySelector('.newGame');
     }
     
     pickRandomElementFromArray(arr) {
@@ -78,12 +87,47 @@ class Board {
     }
     
     setCellValue(cellX, cellY, cellValue) {
+        
+        const oldCellValue = this.getCellValue(cellX, cellY);
         this.cellDB[cellY][cellX].cellValue = cellValue;
         
+        if (oldCellValue === 0 && cellValue > 0) {
+            this.filledCellCount++;
+        } else if (oldCellValue > 0 && cellValue === 0) {
+            this.filledCellCount--;
+        }
     }
     
     getCellValue(cellX, cellY) {
         return this.cellDB[cellY][cellX].cellValue;
+    }
+    
+    getRowValues(cellY){
+        return this.cellDB[cellY].map((cell) => cell.cellValue);
+    }
+    
+    getColumnValues(cellX){
+        let cellValues = [];
+        
+        for (let cellY = 0; cellY < this.boardSize; cellY++) {
+            cellValues.push(this.cellDB[cellY][cellX].cellValue);
+        }
+        
+        return cellValues;  
+    }
+    
+    getRegionValues(region){
+        let cellValues = [];
+        
+        const regionInfo = this.regionInfo[region];
+        
+        for (let cellX = regionInfo.startCellX; cellX <= regionInfo.endCellX; cellX++) {
+            for (let cellY = regionInfo.startCellY; cellY <= regionInfo.endCellY; cellY++) {
+                cellValues.push(this.getCellValue(cellX, cellY));
+            }
+        }
+        
+        return cellValues;
     }
     
     setCellClueStatus(cellX, cellY, isClue) {
@@ -639,10 +683,11 @@ class Board {
     }
     
     getDomCell(cellX, cellY) {
+        
+        // Todo: cache these
         const boardSize = this.boardSize;
         const selector = '#cell' + cellX + cellY;
         if (isNaN(cellX) || isNaN(cellY) || cellX > boardSize - 1 || cellX < 0 || cellY > boardSize - 1 || cellY < 0) {
-            // if (cellX > boardSize - 1 || cellX < 0 || cellY > boardSize - 1 || cellY < 0) {
             throw "getDomCell: unexpected cell coordinate. (cellX, cellY): " + cellX + ', ' + cellY;
         }
         return document.querySelector(selector);
@@ -676,14 +721,30 @@ class Board {
         }
     }
     
-    puzzleHasBeenSolved() {
+    userHasSolvedPuzzle() {
         const boardSize = this.boardSize;
         
-        for (let cellX = 0; cellX < boardSize; cellX++) {
-            for (let cellY = 0; cellY < boardSize; cellY++) {
-                const cellValue = this.getCellValue(cellX, cellY);
-                const solutionValue = this.getCellSolutionValue(cellX, cellY);
-                if (cellValue !== solutionValue) {
+        // Returns if board isn't filled yet.
+        if (this.filledCellCount !== boardSize * boardSize) {
+            return false;
+        }
+        
+        // Checks row and columns for conflicts and correct number counts
+        for (let i = 0; i < boardSize; i++) {
+            const rowValues = new Set(this.getRowValues(i));
+            const columnValues = new Set(this.getColumnValues(i));
+            
+            if (rowValues.size !== boardSize || columnValues.size !== boardSize) {
+                return false;
+            }
+        }
+        
+        // Checks for region conflicts
+        for (let region in this.regionInfo) {
+            if (this.regionInfo.hasOwnProperty(region)){
+                const regionValues = new Set(this.getRegionValues(region));
+                
+                if (regionValues.size !== boardSize) {
                     return false;
                 }
             }
@@ -717,22 +778,25 @@ class Board {
         const cells = document.querySelectorAll('.cell');
         
         // Set up keypad
-        const inputCells = document.querySelectorAll('.inputCell');
+        // const inputCells = document.querySelectorAll('.inputCell');
+        const inputCells = this.domCache.inputCells;
         
         inputCells.forEach(function (cell, index) {
             if (index < inputCells.length - 1) {
                 cell.innerText = (index + 1).toString();
             }
         });
-        const inputTable = document.querySelector('.inputTable');
         
-        // Helps ensure only one cell is active (selected) at a time
+        // const inputTable = document.querySelector('.inputTable');
+        const inputTable = this.domCache.inputTable;
+        
+        // Helps ensure only one cell is ever active (selected) at a time
         let activeCellIndex = null;
         
         const board = this;
         
         // New Game button
-        const newGameButton = document.querySelector('.newGame');
+        const newGameButton = this.domCache.newGameButton;
         newGameButton.onclick = function () {
             board.play();
         };
@@ -778,23 +842,24 @@ class Board {
                             // Deactivates cell 
                             cell.classList.remove('activeCell');
                             
-                            // Deactivates input keypad
-                            inputTable.classList.remove('inputTableActive');
-                            inputCells.forEach(function (inputCell, inputCellIndex) {
-                                inputCell.onclick = function () { return false; };
-                            });
+                            this.deactivateKeypads();
                             
-                            if (board.puzzleHasBeenSolved()) {
+                            if (board.userHasSolvedPuzzle()) {
+                                console.log('solved!!!!!');
                                 board.doGameOver();
                             }
-                        };
+                        }.bind(board);
                     });
-                    
-                    
                 });
             }
         });
-        
+    }
+    
+    deactivateKeypads() {
+        this.domCache.inputTable.classList.remove('inputTableActive');
+        this.domCache.inputCells.forEach(function (inputCell, inputCellIndex) {
+            inputCell.onclick = function () { return false; };
+        });
     }
     
     highlightIfConflicting(move) {
@@ -906,6 +971,7 @@ class Board {
     renderEmptyBoard() {
         
         this.hideGameOver();
+        this.deactivateKeypads();
         
         const boardSize = this.boardSize;
         const oldBoard = document.querySelector('.board');
@@ -937,31 +1003,20 @@ class Board {
             cell.classList.add('specialRightBorder');
         });
         
-
+        
         const checkerboardRegions = [ 'n', 's', 'e', 'w' ]; 
-
+        
         checkerboardRegions.forEach(function(region, index){
             const regionInfo = this.regionInfo[region];
-
+            
             for (let cellX = regionInfo.startCellX; cellX <= regionInfo.endCellX; cellX++) {
                 for (let cellY = regionInfo.startCellY; cellY <= regionInfo.endCellY; cellY++) {
-                    console.log('cellX cellY: ', cellX, cellY);
                     this.getDomCell(cellX, cellY).classList.add('checkerboardRegionCell');
                 }
             }
         }.bind(this));
-
-
-
-        console.log('yoda');
         
-        // console.log('cells: ', cells);
-        
-        // cells.forEach(function(cell, index){
-        //     cell.classList.add('oddRegionCell');
-        // });
     }
-    
     
     populateBoard() {
         
