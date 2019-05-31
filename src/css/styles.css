@@ -1,7 +1,7 @@
 :root {
     --clueCell-color: grey;
     --board-border-color: #b36262;
-    --board-background-color: rgb(212, 219, 224);
+    --board-background-color: #d4dbe0;
     /* --board-background-color-active: rgb(229, 233, 236); */
     --board-background-color-active: #d3ced1;
     --board-background-color-active: #e1e1e1;
@@ -11,7 +11,7 @@
     --inputTable-background-color-active: #d4cecd;
     --inputTable-color: grey;
     --inputTable-color-active: black;
-    --invalidMove-color: red;
+    --invalidMove-color: #f35b2d;
     --checkerboardRegionCell-color: #d4cecd;
 }
 
