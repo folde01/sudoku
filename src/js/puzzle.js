@@ -3,14 +3,20 @@ const Move = require('./move');
 
 class Puzzle {
     constructor() {
+        Array.prototype.diff = function (arr) {
+            // From https://stackoverflow.com/a/4026828:
+            return this.filter(function (i) {
+                return arr.indexOf(i) < 0;
+            });
+        };
         this.boardSize = 9;
         this.cellDB = new CellDB();
         this.regionInfo = this.cellDB.getRegionInfo();
         this.validMoveCount = 0;
         this.moveAttempts = 0;
         this.moves = [];
+        // this.solve();
 
-        this.solve();
     }
 
     tryMove(move) {
@@ -64,11 +70,9 @@ class Puzzle {
     }
 
     solve() {
-        console.log('solve')
         this.solveByPickingRandomPossibleNextMove();
         // this.removeCluesFromSolvedBoard('dev');
         this.removeCluesFromSolvedBoard();
-        console.log('solved')
     }
 
     getPossibleNextMoves(move) {
@@ -107,7 +111,7 @@ class Puzzle {
     }
 
     puzzleIsComplete() {
-        return this.cellDB.getCompleteCellValueCount === this.boardSize;
+        return this.cellDB.getCompleteCellValueCount() === this.boardSize;
     }
 
     solveByPickingRandomPossibleNextMove() {

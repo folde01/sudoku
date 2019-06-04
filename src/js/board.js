@@ -6,13 +6,6 @@ class Board {
         this.boardSize = 9;
         this.numCells = this.boardSize * this.boardSize;
         this.reset();
-
-        // From https://stackoverflow.com/a/4026828:
-        Array.prototype.diff = function (arr) {
-            return this.filter(function (i) {
-                return arr.indexOf(i) < 0;
-            });
-        };
     }
 
     reset() {
@@ -138,9 +131,8 @@ class Board {
     }
 
     play() {
-
-
         const puzzle = new Puzzle();
+        puzzle.solve();
         const cellDB = puzzle.getCellDB();
         this.setCellDB(cellDB);
         this.renderEmptyBoard();
