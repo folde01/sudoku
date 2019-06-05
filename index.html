@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,29 +8,33 @@
     <link rel="stylesheet" href="src/css/styles.css">
     <title>Sudoku</title>
 </head>
+
 <body>
-    <table class='board'></table>
+    <div class="container">
+        <table id='board'></table>
+        <p></p>
+        <table class='inputTable'>
+            <tr class='inputRow'>
+                <td class='inputCell'></td>
+                <td class='inputCell'></td>
+                <td class='inputCell'></td>
+                <td class='inputCell'></td>
+                <td class='inputCell'></td>
+                <td class='inputCell'></td>
+                <td class='inputCell'></td>
+                <td class='inputCell'></td>
+                <td class='inputCell'></td>
+                <td class='inputCell'></td>
+            </tr>
+        </table>
+        <p class="gameOver"></p>
+        <div class="buttons">
+            <button class="newGame">New game</button>
+        </div>
+    </div>
 
-    <p></p>
-
-    <table class='inputTable'>
-        <tr class='inputRow'>
-            <td class='inputCell'></td>
-            <td class='inputCell'></td>
-            <td class='inputCell'></td>
-            <td class='inputCell'></td>
-            <td class='inputCell'></td>
-            <td class='inputCell'></td>
-            <td class='inputCell'></td>
-            <td class='inputCell'></td>
-            <td class='inputCell'></td>
-            <td class='inputCell'></td>
-        </tr>
-    </table>
-
-    <p class="gameOver"></p>
-    <button class="newGame">New game</button>
 
     <script src="dist/bundle.js"></script>
 </body>
+
 </html>

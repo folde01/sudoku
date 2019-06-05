@@ -1,11 +1,10 @@
 const Move = require('../src/js/move.js');
-const Board = require('../src/js/board.js');
 const Puzzle = require('../src/js/puzzle.js');
 const assert = require('assert');
 
 describe('Puzzle', function () {
 
-    describe('solve', function (){
+    describe('solve()', function (){
         it('should result in a valid board (i.e. with 9 of each number)', function () {
             const puzzle = new Puzzle();
             puzzle.solve();
@@ -13,7 +12,14 @@ describe('Puzzle', function () {
         });
     });
 
-    describe('moveIsValid', function () {
+    describe('solve() (not run)', function (){
+        it('should not result in a valid board', function () {
+            const puzzle = new Puzzle();
+            assert.equal(false, puzzle.puzzleIsComplete());
+        });
+    });
+
+    describe('moveIsValid()', function () {
         it('should return true if move does not violate row, column or region rules', function () {
             const puzzle = new Puzzle();
             const move1valid = puzzle.tryMove(new Move(0, 0, 4));

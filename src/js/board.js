@@ -3,6 +3,7 @@ const Puzzle = require('./puzzle');
 
 class Board {
     constructor() {
+        this.foo = 'foo!';
         this.boardSize = 9;
         this.numCells = this.boardSize * this.boardSize;
         this.reset();
@@ -15,10 +16,13 @@ class Board {
     }
 
     fillDomCache() {
-        this.domCache = {};
-        this.domCache.inputTable = document.querySelector('.inputTable');
-        this.domCache.inputCells = document.querySelectorAll('.inputCell');
-        this.domCache.newGameButton = document.querySelector('.newGame');
+        this.domCache = {
+            inputTable: document.querySelector('.inputTable'),
+            inputCells: document.querySelectorAll('.inputCell'),
+            newGameButton: document.querySelector('.newGame'),
+            board: document.querySelector('#board')
+            // cells: document.querySelectorAll('.cell')
+        };
     }
 
     playInCell(cellX, cellY, cellValue) {
@@ -335,14 +339,15 @@ class Board {
         this.deactivateKeypads();
 
         const boardSize = this.boardSize;
-        const oldBoard = document.querySelector('.board');
-        const newBoard = document.createElement('table');
-        newBoard.setAttribute('class', 'board');
+        const oldBoard = document.querySelector('#board');
+        // const oldBoard = this.domCache.board;
+        const board = document.createElement('table');
+        board.setAttribute('id', 'board');
 
         for (let i = 0; i < boardSize; i++) {
             const rowNode = document.createElement('tr');
             rowNode.setAttribute('class', 'row');
-            newBoard.appendChild(rowNode);
+            board.appendChild(rowNode);
 
             for (let j = 0; j < boardSize; j++) {
                 const cellNode = document.createElement('td');
@@ -352,18 +357,7 @@ class Board {
             }
         }
 
-        oldBoard.parentNode.replaceChild(newBoard, oldBoard);
-
-        const cellsInRows3and6 = document.querySelectorAll(".row:nth-child(3) .cell, .row:nth-child(6) .cell");
-        cellsInRows3and6.forEach(function (cell, index) {
-            cell.classList.add('specialBottomBorder');
-        });
-
-        const cellsInColumns3and6 = document.querySelectorAll(".cell:nth-child(3), .cell:nth-child(6)");
-        cellsInColumns3and6.forEach(function (cell, index) {
-            cell.classList.add('specialRightBorder');
-        });
-
+        oldBoard.parentNode.replaceChild(board, oldBoard);
 
         const checkerboardRegions = ['n', 's', 'e', 'w'];
 
@@ -379,9 +373,14 @@ class Board {
 
     }
 
+
+
+
+
     populateBoard() {
 
         // Cache board cells from DOM
+        // const cells = this.domCache.cells;
         const cells = document.querySelectorAll('.cell');
         const rows = document.querySelectorAll('.row');
         const board = this;
