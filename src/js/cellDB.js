@@ -31,7 +31,8 @@ class CellDB {
                     cellValue: 0,
                     conflicting: false,
                     isClue: true,
-                    solutionValue: null
+                    solutionValue: null,
+                    eventListener: { event: null, fn: null }
                 };
             }
 
@@ -92,32 +93,35 @@ class CellDB {
         return cellValues;
     }
 
-    //
+    setCellEventListener(cellX, cellY, event, fn) {
+        this.cellDB[cellY][cellX].eventListener.event = event;
+        this.cellDB[cellY][cellX].eventListener.fn = fn;
+    }
+
+    getCellEventListener(cellX, cellY) {
+        return this.cellDB[cellY][cellX].eventListener;
+    }
+
     setCellClueStatus(cellX, cellY, isClue) {
         this.cellDB[cellY][cellX].isClue = isClue;
     }
 
-    //
     getCellClueStatus(cellX, cellY) {
         return this.cellDB[cellY][cellX].isClue;
     }
 
-    //?
     getCellSolutionValue(cellX, cellY) {
         return this.cellDB[cellY][cellX].solutionValue;
     }
 
-    //?
     setCellSolutionValue(cellX, cellY, solutionValue) {
         this.cellDB[cellY][cellX].solutionValue = solutionValue;
     }
 
-    //?
     removeCellSolutionValue(cellX, cellY) {
         this.cellDB[cellY][cellX].solutionValue = null;
     }
 
-    //
     cellIsEmpty(cellX, cellY) {
         if (this.getCellValue(cellX, cellY) === 0) {
             return true;
@@ -134,12 +138,10 @@ class CellDB {
         return this.cellDB[cellY][cellX].conflicting;
     }
 
-    //
     setConflictStatus(cellX, cellY, status) {
         this.cellDB[cellY][cellX].conflicting = status;
     }
 
-    //
     columnContainsCellValue(cellX, cellValue) {
         for (let cellY = 0; cellY < this.boardSize; cellY++) {
             if (cellValue === this.getCellValue(cellX, cellY)) {
@@ -162,7 +164,7 @@ class CellDB {
     }
 
     getRegionInfo() {
-        return this.regionInfo; 
+        return this.regionInfo;
     }
 
     getCellValueCount(cellValue) {

@@ -2,11 +2,8 @@ const CellDB = require('./cellDB');
 const Puzzle = require('./puzzle');
 const log = console.log;
 
-function manageBoardSize() {
-    document.querySelector('#screenDimensions').innerHTML = 'width: ' + screen.width + ' height: ' + screen.height;
-}
 
-window.addEventListener('resize', manageBoardSize);
+
 
 class Game {
     constructor(board) {
@@ -14,6 +11,16 @@ class Game {
         this.numCells = this.boardSize * this.boardSize;
         this.reset();
         this.domCache = board.getDomCache();
+        this.activeCellIndex = null;
+        this.board = board;
+    }
+
+    getConflictingCellIndex() {
+        return this.board.getConflictingCellIndex();
+    }
+
+    setConflictingCellIndex(index) {
+        this.board.setConflictingCellIndex(index);
     }
 
     reset() {
@@ -66,6 +73,7 @@ class Game {
         try {
             const domCell = this.getDomCell(cellX, cellY);
             domCell.classList.remove('invalidMove');
+            this.setConflictingCellIndex(null);
         } catch (e) {
             throw "removeConflictHighlighting caught exception: " + e;
         }
@@ -80,6 +88,8 @@ class Game {
         try {
             const domCell = this.getDomCell(cellX, cellY);
             domCell.classList.add('invalidMove');
+            const index = this.getCellIndexFromCoords(cellX, cellY);
+            this.setConflictingCellIndex(index);
         } catch (e) {
             throw "addConflictHighlighting caught exception: " + e;
         }
@@ -133,6 +143,110 @@ class Game {
     }
 
 
+    // play_old() {
+
+    //     const puzzle = new Puzzle();
+    //     puzzle.solve();
+    //     const cellDB = puzzle.getCellDB();
+    //     this.setCellDB(cellDB);
+    //     this.populateBoard();
+
+    //     const boardSize = this.boardSize;
+
+    //     // Cache board cells from DOM
+    //     // const cells = document.querySelectorAll('.cell');
+    //     const cells = this.domCache.cells;
+
+    //     // Set up keypad
+    //     // const inputCells = document.querySelectorAll('.inputCell');
+    //     const inputCells = this.domCache.inputCells;
+
+    //     inputCells.forEach(function (cell, index) {
+    //         if (index < inputCells.length - 1) {
+    //             cell.innerText = (index + 1).toString();
+    //         }
+    //     });
+
+    //     // const inputTable = document.querySelector('.inputTable');
+    //     const inputTable = this.domCache.inputTable;
+
+    //     // Helps ensure only one cell is ever active (selected) at a time
+    //     let activeCellIndex = null;
+
+    //     const board = this;
+
+    //     // Adds event listeners to all cells except clue cells.
+    //     cells.forEach(function (cell, cellIndex) {
+    //         // Non-clue cells
+    //         const cellX = cellIndex % boardSize;
+    //         const cellY = Math.floor(cellIndex / boardSize);
+
+    //         if (board.cellDB.getCellValue(cellX, cellY) === 0) {
+
+    //             cell.addEventListener('click', function () {
+
+    //                 // Removes any conflict highlighting from last move
+    //                 board.removeAllConflicts();
+
+    //                 // Deactivates active cell if there is one, then activates selected cell. 
+    //                 if (activeCellIndex !== null) {
+    //                     cells[activeCellIndex].classList.remove('activeCell');
+    //                 }
+
+    //                 activeCellIndex = cellIndex;
+    //                 cells[activeCellIndex].classList.add('activeCell');
+
+    //                 // Activates keyboard
+
+    //                 // Activates keypad.
+    //                 inputTable.classList.add('inputTableActive');
+    //                 inputCells.forEach(function (inputCell, inputCellIndex) {
+
+    //                     const renderedCellValue = inputCell.innerText;
+    //                     const numericCellValue = Number(renderedCellValue);
+
+    //                     // Uses onClick instead of addEventListener (as we need to replace a handler, not add one)
+    //                     inputCell.onclick = function () {
+
+    //                         board.playInCell(cellX, cellY, numericCellValue);
+
+    //                         board.highlightIfConflicting(cellX, cellY, numericCellValue);
+
+    //                         // Sets cell value in DOM.
+    //                         cell.innerText = renderedCellValue;
+
+    //                         // Deactivates cell 
+    //                         cell.classList.remove('activeCell');
+
+    //                         this.deactivateKeypads();
+
+    //                         if (board.userHasSolvedPuzzle()) {
+    //                             board.doGameOver();
+    //                         }
+    //                     }.bind(board);
+    //                 });
+    //             });
+    //         }
+    //     });
+
+    // }
+
+
+
+    getCellX(cellIndex) {
+        return cellIndex % this.boardSize;
+    }
+
+    getCellY(cellIndex) {
+        return Math.floor(cellIndex / this.boardSize);
+    }
+
+    getDomCellByIndex(cellIndex) {
+        const cellX = this.getCellX(cellIndex);
+        const cellY = this.getCellY(cellIndex);
+        return this.getDomCell(cellX, cellY);
+    }
+
     play() {
 
         const puzzle = new Puzzle();
@@ -161,19 +275,22 @@ class Game {
         const inputTable = this.domCache.inputTable;
 
         // Helps ensure only one cell is ever active (selected) at a time
-        let activeCellIndex = null;
+        // let activeCellIndex = null;
+        let activeCellIndex = this.activeCellIndex;
 
         const board = this;
 
         // Adds event listeners to all cells except clue cells.
         cells.forEach(function (cell, cellIndex) {
             // Non-clue cells
-            const cellX = cellIndex % boardSize;
-            const cellY = Math.floor(cellIndex / boardSize);
+            const cellX = board.getCellX(cellIndex);
+            const cellY = board.getCellY(cellIndex);
+            // const cellX = cellIndex % boardSize;
+            // const cellY = Math.floor(cellIndex / boardSize);
 
             if (board.cellDB.getCellValue(cellX, cellY) === 0) {
 
-                cell.addEventListener('click', function () {
+                cell.onclick = function () {
 
                     // Removes any conflict highlighting from last move
                     board.removeAllConflicts();
@@ -183,10 +300,11 @@ class Game {
                         cells[activeCellIndex].classList.remove('activeCell');
                     }
 
+                    // Activates cell
                     activeCellIndex = cellIndex;
                     cells[activeCellIndex].classList.add('activeCell');
 
-                    // Activates keyboard
+                    // todo: Activates keyboard
 
                     // Activates keypad.
                     inputTable.classList.add('inputTableActive');
@@ -211,21 +329,124 @@ class Game {
                             this.deactivateKeypads();
 
                             if (board.userHasSolvedPuzzle()) {
-                                console.log('solved!!!!!');
                                 board.doGameOver();
                             }
                         }.bind(board);
                     });
-                });
+                };
             }
         });
 
     }
 
+    // play2() {
+
+    //     const puzzle = new Puzzle();
+    //     puzzle.solve();
+    //     const cellDB = puzzle.getCellDB();
+    //     this.setCellDB(cellDB);
+    //     this.populateBoard();
+
+    //     const boardSize = this.boardSize;
+
+    //     // Cache board cells from DOM
+    //     // const cells = document.querySelectorAll('.cell');
+    //     const cells = this.domCache.cells;
+
+    //     // Set up keypad
+    //     // const inputCells = document.querySelectorAll('.inputCell');
+    //     const inputCells = this.domCache.inputCells;
+
+    //     inputCells.forEach(function (cell, index) {
+    //         if (index < inputCells.length - 1) {
+    //             cell.innerText = (index + 1).toString();
+    //         }
+    //     });
+
+    //     // const inputTable = document.querySelector('.inputTable');
+    //     const inputTable = this.domCache.inputTable;
+
+    //     // Helps ensure only one cell is ever active (selected) at a time
+    //     let activeCellIndex = null;
+
+    //     const board = this;
+
+    //     // Adds event listeners to all cells except clue cells.
+    //     cells.forEach(function (cell, cellIndex) {
+    //         // Non-clue cells
+    //         const cellX = cellIndex % boardSize;
+    //         const cellY = Math.floor(cellIndex / boardSize);
+
+    //         if (board.cellDB.getCellValue(cellX, cellY) === 0) {
+
+    //             const clickHander = function () {
+
+    //                 // Removes any conflict highlighting from last move
+    //                 board.removeAllConflicts();
+
+    //                 // Deactivates active cell if there is one, then activates selected cell. 
+    //                 if (activeCellIndex !== null) {
+    //                     cells[activeCellIndex].classList.remove('activeCell');
+    //                 }
+
+    //                 activeCellIndex = cellIndex;
+    //                 cells[activeCellIndex].classList.add('activeCell');
+
+    //                 // Activates keyboard
+
+    //                 // Activates keypad.
+    //                 inputTable.classList.add('inputTableActive');
+    //                 inputCells.forEach(function (inputCell, inputCellIndex) {
+
+    //                     const renderedCellValue = inputCell.innerText;
+    //                     const numericCellValue = Number(renderedCellValue);
+
+    //                     // Uses onclick instead of addEventListener (as we need to replace a handler, not add one)
+    //                     inputCell.onclick = function () {
+
+    //                         board.playInCell(cellX, cellY, numericCellValue);
+
+    //                         board.highlightIfConflicting(cellX, cellY, numericCellValue);
+
+    //                         // Sets cell value in DOM.
+    //                         cell.innerText = renderedCellValue;
+
+    //                         // Deactivates cell 
+    //                         cell.classList.remove('activeCell');
+
+    //                         this.deactivateKeypads();
+
+    //                         if (board.userHasSolvedPuzzle()) {
+    //                             board.doGameOver();
+    //                         }
+    //                     }.bind(board);
+    //                 });
+    //             }
+
+    //             // cell.addEventListener('click', clickHander);
+    //             board.addAndStoreReferenceToEventListener(cell, cellX, cellY, 'click', clickHander);
+    //         }
+    //     });
+
+    // }
+
+
+    addAndStoreReferenceToEventListener(element, cellX, cellY, event, fn) {
+        this.cellDB.setCellEventListener(cellX, cellY, event, fn);
+        element.addEventListener(event, fn);
+    }
+
+    removeEventListenerAndStoredReference(cellX, cellY) {
+        ({ event, fn } = this.cellDB.getCellEventListener(cellX, cellY));
+        element.removeEventListener(event, fn);
+        this.cellDB.setCellEventListener(cellX, cellY, null);
+    }
+
     deactivateKeypads() {
         this.domCache.inputTable.classList.remove('inputTableActive');
         this.domCache.inputCells.forEach(function (inputCell, inputCellIndex) {
-            inputCell.onclick = function () { return false; };
+            inputCell.onclick = null;
+            // inputCell.onclick = function () { return false; };
         });
     }
 
@@ -323,12 +544,19 @@ class Game {
         if (newStatus === true) {
             try {
                 this.addConflictHighlighting(cellX, cellY);
+                // this.conflictingCellIndex = this.getCellIndexFromCoords(cellX, cellY);
             } catch (e) {
                 throw "setConflictStatus caught exception: " + e;
             }
         } else {
             this.removeConflictHighlighting(cellX, cellY);
+            // this.conflictingCellIndex = null;
         }
+    }
+
+    getCellIndexFromCoords(cellX, cellY) {
+        const index = (this.boardSize * cellY) + cellX;
+        return index;
     }
 
     addCheckerBoard() {
@@ -343,18 +571,22 @@ class Game {
                 }
             }
         }.bind(this));
-    } 
+    }
 
     clearBoard() {
         this.hideGameOver();
         this.deactivateKeypads();
-        this.removeClues();
+        this.clearCells();
         this.addCheckerBoard();
     }
 
-    removeClues() {
-        this.domCache.cells.forEach(function(cell){
+
+    clearCells() {
+        this.domCache.cells.forEach(function (cell) {
             cell.classList.remove('clueCell');
+            cell.classList.remove('activeCell');
+            cell.classList.remove('invalidMove');
+            cell.onclick = null;
         });
     }
 
@@ -371,8 +603,11 @@ class Game {
 
         // Populate cells and cell DB (for checking move validity) arrays with values from cellValues. 
         cells.forEach(function (cell, cellIndex) {
-            const cellX = cellIndex % boardSize;
-            const cellY = Math.floor(cellIndex / boardSize);
+            const cellX = this.getCellX(cellIndex);
+            const cellY = this.getCellY(cellIndex);
+            // const cellX = cellIndex % boardSize;
+            // const cellY = Math.floor(cellIndex / boardSize);
+
             const cellValue = board.cellDB.getCellValue(cellX, cellY);
             let cellValueToRender = null;
 
@@ -385,7 +620,7 @@ class Game {
                 cell.classList.add('clueCell');
             }
             cell.innerText = cellValueToRender;
-        });
+        }.bind(this));
     }
 
 }

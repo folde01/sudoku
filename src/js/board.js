@@ -1,11 +1,24 @@
+const log = console.log;
+
+
+
 // how to make this a singleton?
 class Board {
-    constructor(){
+    constructor() {
         this.boardSize = 9;
         this.cellsXY = this.draw();
         this.fillDomCache();
+        this.conflictingCellIndex = { 'index': null };
     }
 
+    getConflictingCellIndex() {
+        const index = this.conflictingCellIndex['index'];
+        return index;
+    }
+
+    setConflictingCellIndex(index) {
+        this.conflictingCellIndex['index'] = index;
+    }
 
     draw() {
         const boardSize = this.boardSize;
@@ -30,8 +43,11 @@ class Board {
         }
 
         oldBoard.parentNode.replaceChild(board, oldBoard);
+
+
         return cellsXY;
     }
+
 
     fillDomCache() {
         this.domCache = {
@@ -49,6 +65,7 @@ class Board {
     getDomCache() {
         return this.domCache;
     }
+
 }
 
 module.exports = Board;
