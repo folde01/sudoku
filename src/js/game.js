@@ -261,6 +261,7 @@ class Game {
         // const cells = document.querySelectorAll('.cell');
         const cells = this.domCache.cells;
 
+        // todo: move this to Board
         // Set up keypad
         // const inputCells = document.querySelectorAll('.inputCell');
         const inputCells = this.domCache.inputCells;

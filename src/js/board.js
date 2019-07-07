@@ -21,6 +21,8 @@ class Board {
     }
 
     draw() {
+
+        
         const boardSize = this.boardSize;
         const cellsXY = {};
         const oldBoard = document.querySelector('#board');
