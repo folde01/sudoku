@@ -23,7 +23,8 @@
 
 body {
     background-color: var(--board-background-color);
-    /* background-color: #ccc; */
+    /* height: 100%; */
+    /* overflow: hidden; */
 }
 
 #container {
@@ -37,6 +38,7 @@ body {
     /* font-size: 6.0vw; */
     display: flex;
     flex-direction: column;
+    justify-content: center;
 }
 
 
@@ -48,7 +50,8 @@ body {
     width: 100%;
 }
 
-.inputTable {
+.inputTable, 
+#logo {
     width: 100%;
     margin: 1.2rem auto;
     color: var(--inputTable-color);
@@ -64,18 +67,19 @@ body {
 }
 
 .inputCell,
-.cell {
+.cell,
+#logo li {
     text-align: center;
     padding: 0;
     height: 11.0vmin;
-    /* height: 11.0vw; */
-    /* width: 2rem; */
+    width: 11.0vmin;
     border-right: 1px solid var(--board-border-color);
     border-bottom: 1px solid var(--board-border-color);
     
 }
 
-.inputCell {
+.inputCell,
+#logo li {
     flex-basis: 10%;
     /* vertical-align: middle; */
     /* display: table-cell; */
@@ -86,6 +90,12 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
+}
+
+.inputCell:active,
+#logo li:last-child:active {
+    text-decoration: underline;
+    background-color: var(--inputTable-color);
 }
 
 .cell:nth-last-child(1) {
@@ -132,26 +142,16 @@ body {
     color: yellow;
 }
 
-.newGame {
+.newGame,
+#eraseBtn {
+    color: var(--board-border-color);
+    font-size: 0.6rem;
+}
+
+/* .newGame {
     display: block;
     margin: 1rem auto;
-}
-
-@media (min-width: 450px) and (orientation: portrait) {
-    #container {
-        font-size: 25px;
-    }
-
-    #board, .inputTable {
-        max-width: 450px;
-    }
-    
-    .inputCell, 
-    .cell {
-        width: 44px;
-        height: 50px;
-    }
-}
+} */
 
 
 @media (orientation: landscape) {
@@ -186,7 +186,8 @@ body {
         /* position: relative; */
     }
 
-    .inputTable {
+    .inputTable, 
+    #logo {
         /* flex: 10%; */
         margin: 0;
         position: absolute;
@@ -199,19 +200,24 @@ body {
         /* width: 3rem; */
     }
 
-    .newGame {
+    #logo {
+        left: -20%;
+    }
+
+    /* .newGame {
         margin: 0;
         position: absolute;
-        left: -30%;
+        left: -50%;
         bottom: 0;
-    }
+    } */
 
     hr {
         display: none;
     }
 
     .inputCell,
-    .cell {
+    .cell,
+    #logo li {
         text-align: center;
         padding: 0;
         height: 10.0vh;    
@@ -221,6 +227,25 @@ body {
 
 
 }
+
+@media (min-width: 450px) and (orientation: portrait) {
+    #container {
+        font-size: 25px;
+    }
+
+    #board, .inputTable, #logo {
+        max-width: 450px;
+    }
+    
+    .inputCell, 
+    .cell,
+    #logo li {
+        width: 44px;
+        height: 50px;
+    }
+}
+
+
 
 @media (min-width: 700px) and (orientation: landscape) {
     #container {
@@ -239,7 +264,8 @@ body {
 
 
     .inputCell,
-    .cell {
+    .cell,
+    #logo li {
         text-align: center;
         padding: 0;
         height: 10.0vh;    

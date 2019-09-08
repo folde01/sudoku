@@ -2,9 +2,6 @@ const CellDB = require('./cellDB');
 const Puzzle = require('./puzzle');
 const log = console.log;
 
-
-
-
 class Game {
     constructor(board) {
         this.boardSize = 9;
@@ -142,97 +139,6 @@ class Game {
         this.cellDB = cellDB;
     }
 
-
-    // play_old() {
-
-    //     const puzzle = new Puzzle();
-    //     puzzle.solve();
-    //     const cellDB = puzzle.getCellDB();
-    //     this.setCellDB(cellDB);
-    //     this.populateBoard();
-
-    //     const boardSize = this.boardSize;
-
-    //     // Cache board cells from DOM
-    //     // const cells = document.querySelectorAll('.cell');
-    //     const cells = this.domCache.cells;
-
-    //     // Set up keypad
-    //     // const inputCells = document.querySelectorAll('.inputCell');
-    //     const inputCells = this.domCache.inputCells;
-
-    //     inputCells.forEach(function (cell, index) {
-    //         if (index < inputCells.length - 1) {
-    //             cell.innerText = (index + 1).toString();
-    //         }
-    //     });
-
-    //     // const inputTable = document.querySelector('.inputTable');
-    //     const inputTable = this.domCache.inputTable;
-
-    //     // Helps ensure only one cell is ever active (selected) at a time
-    //     let activeCellIndex = null;
-
-    //     const board = this;
-
-    //     // Adds event listeners to all cells except clue cells.
-    //     cells.forEach(function (cell, cellIndex) {
-    //         // Non-clue cells
-    //         const cellX = cellIndex % boardSize;
-    //         const cellY = Math.floor(cellIndex / boardSize);
-
-    //         if (board.cellDB.getCellValue(cellX, cellY) === 0) {
-
-    //             cell.addEventListener('click', function () {
-
-    //                 // Removes any conflict highlighting from last move
-    //                 board.removeAllConflicts();
-
-    //                 // Deactivates active cell if there is one, then activates selected cell. 
-    //                 if (activeCellIndex !== null) {
-    //                     cells[activeCellIndex].classList.remove('activeCell');
-    //                 }
-
-    //                 activeCellIndex = cellIndex;
-    //                 cells[activeCellIndex].classList.add('activeCell');
-
-    //                 // Activates keyboard
-
-    //                 // Activates keypad.
-    //                 inputTable.classList.add('inputTableActive');
-    //                 inputCells.forEach(function (inputCell, inputCellIndex) {
-
-    //                     const renderedCellValue = inputCell.innerText;
-    //                     const numericCellValue = Number(renderedCellValue);
-
-    //                     // Uses onClick instead of addEventListener (as we need to replace a handler, not add one)
-    //                     inputCell.onclick = function () {
-
-    //                         board.playInCell(cellX, cellY, numericCellValue);
-
-    //                         board.highlightIfConflicting(cellX, cellY, numericCellValue);
-
-    //                         // Sets cell value in DOM.
-    //                         cell.innerText = renderedCellValue;
-
-    //                         // Deactivates cell 
-    //                         cell.classList.remove('activeCell');
-
-    //                         this.deactivateKeypads();
-
-    //                         if (board.userHasSolvedPuzzle()) {
-    //                             board.doGameOver();
-    //                         }
-    //                     }.bind(board);
-    //                 });
-    //             });
-    //         }
-    //     });
-
-    // }
-
-
-
     getCellX(cellIndex) {
         return cellIndex % this.boardSize;
     }
@@ -252,27 +158,14 @@ class Game {
         const puzzle = new Puzzle();
         puzzle.solve();
         const cellDB = puzzle.getCellDB();
+        console.log('cellDB:', cellDB);
         this.setCellDB(cellDB);
         this.populateBoard();
 
         const boardSize = this.boardSize;
 
-        // Cache board cells from DOM
-        // const cells = document.querySelectorAll('.cell');
         const cells = this.domCache.cells;
-
-        // todo: move this to Board
-        // Set up keypad
-        // const inputCells = document.querySelectorAll('.inputCell');
         const inputCells = this.domCache.inputCells;
-
-        inputCells.forEach(function (cell, index) {
-            if (index < inputCells.length - 1) {
-                cell.innerText = (index + 1).toString();
-            }
-        });
-
-        // const inputTable = document.querySelector('.inputTable');
         const inputTable = this.domCache.inputTable;
 
         // Helps ensure only one cell is ever active (selected) at a time
@@ -311,9 +204,17 @@ class Game {
                     inputTable.classList.add('inputTableActive');
                     inputCells.forEach(function (inputCell, inputCellIndex) {
 
-                        const renderedCellValue = inputCell.innerText;
-                        const numericCellValue = Number(renderedCellValue);
+                        let renderedCellValue = inputCell.innerText;
+                        let numericCellValue;
 
+                        if (isNaN(renderedCellValue)) {
+                            // 0 is the code for an erased number
+                            numericCellValue = 0;
+                            renderedCellValue = '';
+                        } else {
+                            numericCellValue = Number(renderedCellValue);
+                        }
+                        
                         // Uses onClick instead of addEventListener (as we need to replace a handler, not add one)
                         inputCell.onclick = function () {
 
@@ -339,97 +240,6 @@ class Game {
         });
 
     }
-
-    // play2() {
-
-    //     const puzzle = new Puzzle();
-    //     puzzle.solve();
-    //     const cellDB = puzzle.getCellDB();
-    //     this.setCellDB(cellDB);
-    //     this.populateBoard();
-
-    //     const boardSize = this.boardSize;
-
-    //     // Cache board cells from DOM
-    //     // const cells = document.querySelectorAll('.cell');
-    //     const cells = this.domCache.cells;
-
-    //     // Set up keypad
-    //     // const inputCells = document.querySelectorAll('.inputCell');
-    //     const inputCells = this.domCache.inputCells;
-
-    //     inputCells.forEach(function (cell, index) {
-    //         if (index < inputCells.length - 1) {
-    //             cell.innerText = (index + 1).toString();
-    //         }
-    //     });
-
-    //     // const inputTable = document.querySelector('.inputTable');
-    //     const inputTable = this.domCache.inputTable;
-
-    //     // Helps ensure only one cell is ever active (selected) at a time
-    //     let activeCellIndex = null;
-
-    //     const board = this;
-
-    //     // Adds event listeners to all cells except clue cells.
-    //     cells.forEach(function (cell, cellIndex) {
-    //         // Non-clue cells
-    //         const cellX = cellIndex % boardSize;
-    //         const cellY = Math.floor(cellIndex / boardSize);
-
-    //         if (board.cellDB.getCellValue(cellX, cellY) === 0) {
-
-    //             const clickHander = function () {
-
-    //                 // Removes any conflict highlighting from last move
-    //                 board.removeAllConflicts();
-
-    //                 // Deactivates active cell if there is one, then activates selected cell. 
-    //                 if (activeCellIndex !== null) {
-    //                     cells[activeCellIndex].classList.remove('activeCell');
-    //                 }
-
-    //                 activeCellIndex = cellIndex;
-    //                 cells[activeCellIndex].classList.add('activeCell');
-
-    //                 // Activates keyboard
-
-    //                 // Activates keypad.
-    //                 inputTable.classList.add('inputTableActive');
-    //                 inputCells.forEach(function (inputCell, inputCellIndex) {
-
-    //                     const renderedCellValue = inputCell.innerText;
-    //                     const numericCellValue = Number(renderedCellValue);
-
-    //                     // Uses onclick instead of addEventListener (as we need to replace a handler, not add one)
-    //                     inputCell.onclick = function () {
-
-    //                         board.playInCell(cellX, cellY, numericCellValue);
-
-    //                         board.highlightIfConflicting(cellX, cellY, numericCellValue);
-
-    //                         // Sets cell value in DOM.
-    //                         cell.innerText = renderedCellValue;
-
-    //                         // Deactivates cell 
-    //                         cell.classList.remove('activeCell');
-
-    //                         this.deactivateKeypads();
-
-    //                         if (board.userHasSolvedPuzzle()) {
-    //                             board.doGameOver();
-    //                         }
-    //                     }.bind(board);
-    //                 });
-    //             }
-
-    //             // cell.addEventListener('click', clickHander);
-    //             board.addAndStoreReferenceToEventListener(cell, cellX, cellY, 'click', clickHander);
-    //         }
-    //     });
-
-    // }
 
 
     addAndStoreReferenceToEventListener(element, cellX, cellY, event, fn) {
@@ -597,7 +407,6 @@ class Game {
 
         // Cache board cells from DOM
         const cells = this.domCache.cells;
-        // const cells = document.querySelectorAll('.cell');
         const rows = this.domCache.rows;
         const board = this;
         const boardSize = this.boardSize;
@@ -606,8 +415,6 @@ class Game {
         cells.forEach(function (cell, cellIndex) {
             const cellX = this.getCellX(cellIndex);
             const cellY = this.getCellY(cellIndex);
-            // const cellX = cellIndex % boardSize;
-            // const cellY = Math.floor(cellIndex / boardSize);
 
             const cellValue = board.cellDB.getCellValue(cellX, cellY);
             let cellValueToRender = null;

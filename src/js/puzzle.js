@@ -15,7 +15,6 @@ class Puzzle {
         this.validMoveCount = 0;
         this.moveAttempts = 0;
         this.moves = [];
-        // this.solve();
 
     }
 
@@ -188,6 +187,12 @@ class Puzzle {
         removalFunc.call(this);
     }
 
+    removeAllCluesInColumn(column) {
+        // for testing only
+        for (let row = 0; row < this.boardSize; row++) {
+            this.removeClue(column, row);
+        }
+    }
 
     removeOneClueFromSolvedBoard() {
         // For development purposes
@@ -215,6 +220,8 @@ class Puzzle {
         If nCenter is even: nClues = 34 or 36, X = nClues - nCenter. A set of four adjacent regions is chosen and shares X/2 clues. Remove a value at random from each. Then, until the total number of clues in these regions is X/2, randomly choose one of the regions and randomly remove a value. Do the same to the rotationally symmetric cells in the other four regions. 
         
         If nCenter is odd: nClues = 33 or 35, X = nClues - (nCenter + 1). Repeat as above.
+
+        Skip the removal if it would leave a row, column or region empty.
         */
 
         let clueCount = this.boardSize * this.boardSize; // 81
