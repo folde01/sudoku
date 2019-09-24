@@ -28,7 +28,7 @@ class Board {
     setConflictingCellIndex(index) {
         this.conflictingCellIndex['index'] = index;
     }
-    
+
     draw() {
         const domCache = this.domCache;
         const boardSize = this.boardSize;
@@ -37,7 +37,8 @@ class Board {
         // logo
         const logo = document.createElement('ul');
         logo.setAttribute('id', 'logo');
-        const logoChars = ('WHOODOKU!').split('');
+        const logoChars = ('  SUDOKU ').split('');
+        // const logoChars = ('WHOODOKU!').split('');
 
         for (let i = 0; i < 9; i++) {
             const li = document.createElement('li');
@@ -45,7 +46,6 @@ class Board {
             logo.appendChild(li);
         }
 
-        
         // new game button
         const li = document.createElement('li');
         li.innerText = 'New game';

@@ -58,7 +58,7 @@ body {
     background-color: var(--inputTable-background-color);
     border: 2px solid var(--board-border-color);
     border-bottom: 1px solid var(--board-border-color);
-    border-right: 1px solid var(--board-border-color);
+    /* border-right: 1px solid var(--board-border-color); */
     border-spacing: 0;
     display: flex;
     flex-direction: row;
@@ -72,11 +72,12 @@ body {
     text-align: center;
     padding: 0;
     height: 11.0vmin;
-    width: 11.0vmin;
+    /* width: 11.0vmin; */
+    width: 8.0vmin;
     border-right: 1px solid var(--board-border-color);
     border-bottom: 1px solid var(--board-border-color);
-    
 }
+
 
 .inputCell,
 #logo li {
@@ -84,7 +85,7 @@ body {
     /* vertical-align: middle; */
     /* display: table-cell; */
     list-style-type: none;
-    border-right: 1px solid var(--board-border-color);
+    /* border-right: 1px solid var(--board-border-color); */
     /* border-top: 2px solid var(--board-border-color); */
     /* border-bottom: 2px solid var(--board-border-color); */
     display: flex;
@@ -98,7 +99,9 @@ body {
     background-color: var(--inputTable-color);
 }
 
-.cell:nth-last-child(1) {
+.cell:nth-last-child(1),
+#logo li:nth-last-child(1),
+.inputCell:nth-last-child(1) {
     border-right: 0;
 }
 
@@ -148,16 +151,30 @@ body {
     font-size: 0.6rem;
 }
 
-/* .newGame {
-    display: block;
-    margin: 1rem auto;
-} */
 
+/* @media (min-width: 450px) and (orientation: portrait) { */
+    @media (min-width: 450px) {
+        #container {
+            font-size: 25px;
+        }
+    
+        #board, .inputTable, #logo {
+            max-width: 450px;
+        }
+        
+        .inputCell, 
+        .cell,
+        #logo li {
+            /* max-width: 35px; */
+            height: 50px;
+        }
+    }
 
 @media (orientation: landscape) {
     #container {
         padding: 0;
         /* width: 90vh; */
+        /* height: 100vh; */
         height: 100vh;
         width: 80%;
         /* padding: 2vw; */
@@ -173,43 +190,26 @@ body {
         margin: 0 auto;
         position: relative;
     }
-    /* #controls {
-        flex: 10%;
-        height: 100%;
-        order: 1;
-        border: 1px solid red;
-    }
-     */
 
 
-    #board {
-        /* position: relative; */
-    }
+
+
 
     .inputTable, 
     #logo {
-        /* flex: 10%; */
         margin: 0;
         position: absolute;
         right: -20%;
         bottom: 0;
-        width: 10.0vh;
+        width: 10.5vh;
         height: 100%;
         flex-direction: column;
-        /* order: 3; */
-        /* width: 3rem; */
+
     }
 
     #logo {
         left: -20%;
     }
-
-    /* .newGame {
-        margin: 0;
-        position: absolute;
-        left: -50%;
-        bottom: 0;
-    } */
 
     hr {
         display: none;
@@ -220,41 +220,49 @@ body {
     #logo li {
         text-align: center;
         padding: 0;
-        height: 10.0vh;    
+        height: 10.0vmin;   
+        /* height: 10.0vh;    */
+    }
+
+    .inputCell,
+    #logo li {
+        width: 100%; 
+    }
+
+    .inputCell,
+    .cell {
         border-right: 1px solid var(--board-border-color);
+    }
+
+    .cell {
         border-bottom: 1px solid var(--board-border-color);
     }
 
-
-}
-
-@media (min-width: 450px) and (orientation: portrait) {
-    #container {
-        font-size: 25px;
-    }
-
-    #board, .inputTable, #logo {
-        max-width: 450px;
-    }
-    
-    .inputCell, 
-    .cell,
+    .inputCell,
     #logo li {
-        width: 44px;
-        height: 50px;
+        border-right: 0;
+    }
+
+    .inputCell:nth-last-child(1),
+    #logo li:nth-last-child(1) {
+        border-bottom: 0;
+    }
+
+    .inputTable,
+    #logo {
+        border-bottom: 2px solid var(--board-border-color);
     }
 }
 
 
 
-@media (min-width: 700px) and (orientation: landscape) {
+
+
+/* @media (min-width: 700px) and (orientation: landscape) {
     #container {
         padding: 0;
         width: 85vh;
-        /* max-width: 450px; */
-        /* max-height: 450px; */
         padding-top: 1.8vw;
-        /* font-size: 6.0vh; */
     }
     
     #board {
@@ -262,18 +270,15 @@ body {
         width: 96%;
     }
 
-
     .inputCell,
     .cell,
     #logo li {
         text-align: center;
         padding: 0;
         height: 10.0vh;    
-        border-right: 1px solid var(--board-border-color);
         border-bottom: 1px solid var(--board-border-color);
-    }
-    
-}
+    } 
+} */
 
 /*
 

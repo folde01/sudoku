@@ -158,7 +158,6 @@ class Game {
         const puzzle = new Puzzle();
         puzzle.solve();
         const cellDB = puzzle.getCellDB();
-        console.log('cellDB:', cellDB);
         this.setCellDB(cellDB);
         this.populateBoard();
 
