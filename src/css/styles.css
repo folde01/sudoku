@@ -14,6 +14,7 @@
     --cell-hover-color: #b3626209;
     --inputTable-hover-color: #b362621a;
     --checkboard-hover-color: #b3626225;
+    --game-over-color: var(--board-background-color-active);
 }
 
 * {
@@ -185,7 +186,13 @@ body {
 }
 
 .gameOver {
-    color: yellow;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    color: var(--game-over-color);
+    font-size: 4em;
+    justify-content: center;
+    padding-top: 75px;
 }
 
 .newGame,
@@ -194,7 +201,19 @@ body {
     font-size: 0.6rem;
 }
 
-
+.overlay {
+    position: fixed;
+    display: none;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #00000080;
+    z-index: 2;
+    cursor: pointer;
+  }
 
 /* @media (min-width: 450px) and (orientation: portrait) { */
     @media (min-width: 450px) {
@@ -232,14 +251,11 @@ body {
 
     }
     
-    #container2 {
+    #innerContainer {
         width: 90vh;
         margin: 0 auto;
         position: relative;
     }
-
-
-
 
 
     .inputTable, 

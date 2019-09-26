@@ -13,7 +13,8 @@ class Board {
             inputCells: document.querySelectorAll('.inputCell'),
             newGameButton: document.querySelector('.newGame'),
             rows: document.querySelectorAll('.row'),
-            gameOver: document.querySelector('.gameOver')
+            gameOver: document.querySelector('.gameOver'),
+            overlay: document.querySelector('.overlay')
         };
         this.domCache.cellsXY = this.draw();
         this.domCache.cells = document.querySelectorAll('.cell');
@@ -38,7 +39,6 @@ class Board {
         const logo = document.createElement('ul');
         logo.setAttribute('id', 'logo');
         const logoChars = ('  SUDOKU ').split('');
-        // const logoChars = ('WHOODOKU!').split('');
 
         for (let i = 0; i < 9; i++) {
             const li = document.createElement('li');

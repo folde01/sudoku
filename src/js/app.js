@@ -6,7 +6,8 @@ const board = new Board();
 let game;
 
 window.addEventListener('click', function(event) {
-    if (!event.target.classList.contains('newGame')) {
+    if (!event.target.classList.contains('newGame') && !event.target.classList.contains('gameOver')) {
+        log('fff');
         return;
     }
     

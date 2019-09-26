@@ -125,14 +125,19 @@ class Game {
     }
 
     doGameOver() {
-        const gameOver = this.domCache.gameOver;
-        gameOver.innerText = 'WOOHOO YOU WON!';
-        // Todo: make game look and feel over
+
+        // const gameOver = this.domCache.gameOver;
+        // gameOver.innerText = 'Well done!';
+        const overlay = this.domCache.overlay;
+        overlay.style.display = 'block';
     }
 
     hideGameOver() {
-        const gameOver = this.domCache.gameOver;
-        gameOver.innerText = '';
+        // const gameOver = this.domCache.gameOver;
+        const overlay = this.domCache.overlay;
+        // gameOver.innerText = '';
+        overlay.style.display = 'none';
+
     }
 
     setCellDB(cellDB) {
