@@ -1,18 +1,19 @@
 :root {
-    --clueCell-color: grey;
+    --clueCell-color: rgb(149, 149, 149);
     --board-border-color: #b36262;
     --board-background-color: #d4dbe0;
     /* --board-background-color-active: rgb(229, 233, 236); */
-    --board-background-color-active: #d3ced1;
-    --board-background-color-active: #e1e1e1;
     --board-background-color-active: white;
     --inputTable-background-color: var(--board-background-color);
     /* --inputTable-background-color-active: var(--board-background-color-active); */
     --inputTable-background-color-active: #d4cecd;
-    --inputTable-color: grey;
-    --inputTable-color-active: black;
-    --invalidMove-color: #f35b2d;
+    --inputTable-color: var(--clueCell-color);
+    /* --inputTable-color-active: rgb(102, 102, 102); */
+    --inputTable-color-active: var(--logo-color);
+    /* --invalidMove-color: #f35b2d; */
+    --invalidMove-color: var(--board-border-color);
     --checkerboardRegionCell-color: #d4cecd;
+    --logo-color: #333;
 }
 
 * {
@@ -23,6 +24,8 @@
 
 body {
     background-color: var(--board-background-color);
+    font-family: 'Source Sans Pro', sans-serif;
+    color: var(--logo-color);
     /* height: 100%; */
     /* overflow: hidden; */
 }
@@ -50,11 +53,10 @@ body {
     width: 100%;
 }
 
-.inputTable, 
+.inputTable,
 #logo {
     width: 100%;
     margin: 1.2rem auto;
-    color: var(--inputTable-color);
     background-color: var(--inputTable-background-color);
     border: 2px solid var(--board-border-color);
     border-bottom: 1px solid var(--board-border-color);
@@ -64,6 +66,19 @@ body {
     flex-direction: row;
     justify-content: center;
     /* display: table; */
+}
+
+.inputTable {
+    color: var(--clueCell-color);
+}
+
+#logo {
+    color: var(--logo-color);
+}
+
+.inputTableActive {
+    cursor: pointer;
+    color: var(--inputTable-color-active);
 }
 
 .inputCell,
@@ -115,7 +130,10 @@ body {
 
 .clueCell {
     color: var(--clueCell-color);
+}
 
+#board .cell:not(.clueCell) {
+    cursor: pointer;
 }
 
 .activeCell {
@@ -152,6 +170,7 @@ body {
 }
 
 
+
 /* @media (min-width: 450px) and (orientation: portrait) { */
     @media (min-width: 450px) {
         #container {
@@ -170,6 +189,7 @@ body {
         }
     }
 
+
 @media (orientation: landscape) {
     #container {
         padding: 0;
@@ -177,12 +197,14 @@ body {
         /* height: 100vh; */
         height: 100vh;
         width: 80%;
-        /* padding: 2vw; */
-        /* padding-top: 1.8vw; */
+        padding: 1vw;
+        /* padding-top: 2vw; */
         /* flex-direction: row; */
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        /* justify-content: center; */
+        justify-content: flex-start;
+
     }
     
     #container2 {
@@ -220,8 +242,14 @@ body {
     #logo li {
         text-align: center;
         padding: 0;
-        height: 10.0vmin;   
+        /* height: 10.0vmin;    */
+        height: 10.5vmin;   
         /* height: 10.0vh;    */
+    }
+
+    .inputCell,
+    #logo li {
+        height: unset;
     }
 
     .inputCell,
@@ -255,141 +283,21 @@ body {
 }
 
 
+@media (orientation: landscape) and (min-height: 450px) {
 
-
-
-/* @media (min-width: 700px) and (orientation: landscape) {
-    #container {
-        padding: 0;
-        width: 85vh;
-        padding-top: 1.8vw;
-    }
-    
-    #board {
-        height: 96%;
-        width: 96%;
+    #container2 {
+        width: 420px;
     }
 
     .inputCell,
     .cell,
     #logo li {
-        text-align: center;
-        padding: 0;
-        height: 10.0vh;    
-        border-bottom: 1px solid var(--board-border-color);
-    } 
-} */
-
-/*
-
-@media only screen and (min-width: 316px) {
-    #container {
-        font-size: 19px;
+        height: 47px;
+        /* width: 45px; */
     }
-    .cell {
-        height: 2.1rem;
+    
+    #logo,
+    .inputTable {
+        width: 45px;
     }
 }
-
-@media only screen and (min-width: 334px) {
-    #container {
-        font-size: 21px;
-        width: 95%;
-        padding-top: 0.5rem;
-
-
-    }
-    .cell {
-        height: 2.25rem;
-
-    }
-}
-
-@media only screen and (min-width: 354px) {
-    #container {
-        font-size: 22px;
-    }
-    .cell {
-        height: 2.35rem;
-    }
-}
-
-@media only screen and (min-width: 374px) {
-    #container {
-        padding-top: 0.55rem;
-        font-size: 23px;
-    }
-    .cell {
-        height: 2.45rem;
-    }
-}
-
-@media only screen and (min-width: 412px) {
-    #container {
-        padding-top: 0.65rem;
-
-        font-size: 24px;
-    }
-    .cell {
-        width: 44px;
-        height: 44px;
-    }
-}
-*/
-
-
-
-/*
-@media only screen and (min-width: 316px) {
-    #container {
-        font-size: 19px;
-    }
-    .cell {
-        height: 2.1rem;
-    }
-}
-
-@media only screen and (min-width: 334px) {
-    #container {
-        font-size: 21px;
-        width: 95%;
-        padding-top: 0.5rem;
-
-
-    }
-    .cell {
-        height: 2.25rem;
-
-    }
-}
-
-@media only screen and (min-width: 354px) {
-    #container {
-        font-size: 22px;
-    }
-    .cell {
-        height: 2.35rem;
-    }
-}
-
-@media only screen and (min-width: 374px) {
-    #container {
-        padding-top: 0.55rem;
-        font-size: 23px;
-    }
-    .cell {
-        height: 2.45rem;
-    }
-}
-
-@media only screen and (min-width: 412px) {
-    #container {
-        padding-top: 0.65rem;
-
-        font-size: 24px;
-    }
-    .cell {
-        width: 44px;
-        height: 44px;
-    }
-} */

@@ -92,7 +92,7 @@ class Board {
         const eraseBtn = document.createElement('li');
         eraseBtn.setAttribute('id', 'eraseBtn');
         eraseBtn.setAttribute('class', 'inputCell');
-        eraseBtn.innerText = 'Erase';
+        eraseBtn.innerText = 'Clear';
         inputTable.appendChild(eraseBtn);
 
         const oldInputTable = domCache.inputTable;
