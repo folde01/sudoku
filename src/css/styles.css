@@ -1,19 +1,19 @@
 :root {
-    --clueCell-color: rgb(149, 149, 149);
+    --clueCell-color: #959595;
     --board-border-color: #b36262;
-    --board-background-color: #d4dbe0;
-    /* --board-background-color-active: rgb(229, 233, 236); */
-    --board-background-color-active: white;
+    --board-background-color: #d4dbe0d8;
+    --board-background-color-active: #fafafa;
     --inputTable-background-color: var(--board-background-color);
-    /* --inputTable-background-color-active: var(--board-background-color-active); */
     --inputTable-background-color-active: #d4cecd;
     --inputTable-color: var(--clueCell-color);
-    /* --inputTable-color-active: rgb(102, 102, 102); */
     --inputTable-color-active: var(--logo-color);
-    /* --invalidMove-color: #f35b2d; */
     --invalidMove-color: var(--board-border-color);
     --checkerboardRegionCell-color: #d4cecd;
+    --newGame-hover-color: var(--checkerboardRegionCell-color);
     --logo-color: #333;
+    --cell-hover-color: #b3626209;
+    --inputTable-hover-color: #b362621a;
+    --checkboard-hover-color: #b3626225;
 }
 
 * {
@@ -23,6 +23,7 @@
 }
 
 body {
+    cursor: text;
     background-color: var(--board-background-color);
     font-family: 'Source Sans Pro', sans-serif;
     color: var(--logo-color);
@@ -76,10 +77,10 @@ body {
     color: var(--logo-color);
 }
 
-.inputTableActive {
+/* .inputTableActive {
     cursor: pointer;
     color: var(--inputTable-color-active);
-}
+} */
 
 .inputCell,
 .cell,
@@ -109,9 +110,15 @@ body {
 }
 
 .inputCell:active,
-#logo li:last-child:active {
-    text-decoration: underline;
+.newGame:active {
+    text-decoration: none;
     background-color: var(--inputTable-color);
+    cursor: pointer;
+}
+
+.newGame:hover {
+    cursor: pointer;
+    background: var(--newGame-hover-color);
 }
 
 .cell:nth-last-child(1),
@@ -136,15 +143,33 @@ body {
     cursor: pointer;
 }
 
-.activeCell {
+#board .cell:not(.clueCell):hover {
+    background: var(--cell-hover-color);
+}
+
+.activeCell,
+#board .cell:not(.clueCell):active,
+#board .cell:not(.clueCell):active:hover {
     background-color: var(--board-background-color-active);
 }
 
-.inputTable.inputTableActive {
+#board .checkerboardRegionCell:not(.clueCell):hover {
+    background: var(--checkboard-hover-color);
+}
+
+#board .cell.activeCell:hover {
+    background: var(--board-background-color-active);
+}
+
+.inputTableActive {
     color: var(--inputTable-color-active);
+    cursor: pointer;
     background-color: var(--inputTable-background-color-active);
 }
 
+.inputTableActive .inputCell:hover {
+    background: var(--inputTable-hover-color);
+}
 
 .row:nth-child(3) .cell, .row:nth-child(6) .cell {
     border-bottom: 2px solid var(--board-border-color);
