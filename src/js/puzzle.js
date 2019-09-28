@@ -70,8 +70,8 @@ class Puzzle {
 
     solve() {
         this.solveByPickingRandomPossibleNextMove();
-        this.removeCluesFromSolvedBoard('dev');
-        // this.removeCluesFromSolvedBoard();
+        // this.removeCluesFromSolvedBoard('dev');
+        this.removeCluesFromSolvedBoard();
     }
 
     getPossibleNextMoves(move) {
