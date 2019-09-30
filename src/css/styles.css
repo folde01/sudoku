@@ -7,6 +7,7 @@
     --inputTable-background-color-active: #d4cecd;
     --inputTable-color: var(--clueCell-color);
     --inputTable-color-active: var(--logo-color);
+    --newGame-active-color: var(--checkerboardRegionCell-color);
     --invalidMove-color: var(--board-border-color);
     --checkerboardRegionCell-color: #d4cecd;
     --newGame-hover-color: var(--checkerboardRegionCell-color);
@@ -108,16 +109,16 @@ body {
     justify-content: center;
 }
 
-.inputCell:active,
+.inputTableActive .inputCell:active,
 .newGame:active {
     text-decoration: none;
-    background-color: var(--inputTable-color);
+    background-color: var(--newGame-active-color);
     cursor: pointer;
 }
 
 .newGame:hover {
     cursor: pointer;
-    background: var(--newGame-hover-color);
+    /* background: var(--newGame-hover-color); */
 }
 
 .cell:nth-last-child(1),
