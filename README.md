@@ -1,13 +1,23 @@
 # Sudoku 
 
-After spending a few months working through a full-stack web development [bootcamp course](https://www.udemy.com/course/the-web-developer-bootcamp), I needed a personal project to make some of it stick. I had recently started playing Sudoku so decided to make a Sudoku web app. You can play it [here](https://folde01.github.io/sudoku/) and see the code for it [here](https://github.com/folde01/sudoku).
+My Sudoku game can be played [here](https://folde01.github.io/sudoku/) and the code for it is [here](https://github.com/folde01/sudoku).
 
-My MSc project was mainly back-end work so my goal with Sudoku was to learn front-end. To that end, I decided against giving it a back-end at all. To start with, I also wanted to avoid frameworks and libraries (no jQuery or Bootstrap, although I did use Node.js, npm and Webpack for development and bundling). Other than that, I wanted to try designing it mobile-first, and for it to look ok in both portrait and landscape mode, and to make my own Sudoku puzzle generation algorithm so I could immerse myself in Javascript.
+## Design goals:
 
-There are lots of problems with it, but the result more or less accomplishes all those goals. One problem is that it can produce invalid Sudoku puzzles - in particular, puzzles with more than one solution. This means you can find yourself working out your penultimate move and realising there are two valid ways to finish the puzzle. This is likely to annoy anyone who plays a lot of Sudoku, and is the result of taking a naive approach to writing the puzzle generation algorithm. That said, I'm glad I did as my priority was learning front-end development.
+* Host it completely on GitHub, so no back-end. This means the puzzle generation algorithm has to be fast enough to run in browser.
 
-In any case, the algorithm works by making its way from left to right across the board, trying valid random moves as it goes, all the while keeping track of how many of each number (1-9) there is on the board, and backtracking when it reaches a dead end (i.e. when no valid move can be made). When it gets to the right side, it starts back over again on the left, and finally breaks out of this left-to-right loop when the board is full of numbers. Once it's filled the board, it randomly removes numbers in a way that the remaining numbers exhibit a form of rotational symmetry which I'd noticed while playing websudoku.com. I read that some players like this symmetrical look, so I thought it would be fun to work out how to do... and it was!
+* No JavaScript or CSS frameworks, in order to focus first on learning JavaScript and CSS.
 
-I used some Mocha tests to check that puzzles don't break the basic Sudoku rule of avoiding duplicate numbers in rows, columns or boxes. 
+* Mobile first, with special attention to mobile screen rotation.
 
-I hope to rewrite the generation algorithm one day, but guaranteeing exactly one solution might require so much more computation that the browser can't do it quickly. For such a task, I imagine I'd start out the way I started out working on the current algorithm: experiment and get it working on a simpler (say, 2x2) board, and gradually build up to 9x9, learning about the problem along the way.
+## Implementation choices:
+
+* Use of ES6 classes and Webpack bundling to keep code organised.
+
+* Use of Mocha tests to ensure that puzzles generated adhere to the basic Sudoku rule of avoiding duplicate numbers in rows, columns or boxes. 
+
+* The puzzle generation algorithm works by repeatedly traversing from left to right across the board, trying valid random moves as it goes, all the while keeping track of how many of each number (1-9) is on the board, and backtracking when it reaches a dead end (i.e. when no valid move can be made). When it gets to the right side, it starts back over again on the left, and finally breaks out of this left-to-right loop when the board is full of numbers. Once it's filled the board, it randomly removes numbers in such a way that the remaining numbers exhibit a form of rotational symmetry I'd seen when playing websudoku.com and which many players reportedly prefer. 
+
+## Issues: 
+
+The main issue so far is that the puzzle generation algorithm can produce puzzles which have more than one solution, whereas a valid Sudoku puzzle must have exactly one solution.
