@@ -8,8 +8,6 @@ class Game {
         this.boardSize = CONSTANTS.boardSize;
         this.numCells = this.boardSize * this.boardSize;
         this.reset();
-        // this.domCache = board.getDomCache();
-        // this.activeCellIndex = null;
         this.board = board;
     }
 

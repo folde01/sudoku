@@ -1,5 +1,6 @@
 const CellDB = require('./cellDB');
 const Move = require('./move');
+const CONSTANTS = require('./constants');
 
 class Puzzle {
     constructor() {
@@ -9,7 +10,7 @@ class Puzzle {
                 return arr.indexOf(i) < 0;
             });
         };
-        this.boardSize = 9;
+        this.boardSize = CONSTANTS.boardSize;
         this.cellDB = new CellDB();
         this.regionInfo = this.cellDB.getRegionInfo();
         this.validMoveCount = 0;

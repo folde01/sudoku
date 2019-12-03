@@ -1,18 +1,10 @@
+const CONSTANTS = require('./constants');
+
 class CellDB {
     constructor() {
         this.boardSize = 9;
         this.cellDB = this.initialize();
-        this.regionInfo = {
-            'nw': { startCellX: 0, endCellX: 2, startCellY: 0, endCellY: 2, counterpart: 'se' },
-            'n': { startCellX: 3, endCellX: 5, startCellY: 0, endCellY: 2, counterpart: 's' },
-            'ne': { startCellX: 6, endCellX: 8, startCellY: 0, endCellY: 2, counterpart: 'sw' },
-            'w': { startCellX: 0, endCellX: 2, startCellY: 3, endCellY: 5, counterpart: 'e' },
-            'c': { startCellX: 3, endCellX: 5, startCellY: 3, endCellY: 5, counterpart: 'c' },
-            'e': { startCellX: 6, endCellX: 8, startCellY: 3, endCellY: 5, counterpart: 'w' },
-            'sw': { startCellX: 0, endCellX: 2, startCellY: 6, endCellY: 8, counterpart: 'ne' },
-            's': { startCellX: 3, endCellX: 5, startCellY: 6, endCellY: 8, counterpart: 'n' },
-            'se': { startCellX: 6, endCellX: 8, startCellY: 6, endCellY: 8, counterpart: 'nw' }
-        };
+        this.regionInfo = CONSTANTS.regionInfo;
         this.cellValueCounts = new Array(this.boardSize + 1).fill(0);
         this.countCompleteCellValues = 0;
         this.filledCellCount = 0;
@@ -44,7 +36,6 @@ class CellDB {
         return this.filledCellCount;
     }
 
-    //
     setCellValue(cellX, cellY, cellValue) {
 
         const oldCellValue = this.getCellValue(cellX, cellY);
@@ -57,17 +48,14 @@ class CellDB {
         }
     }
 
-    //
     getCellValue(cellX, cellY) {
         return this.cellDB[cellY][cellX].cellValue;
     }
 
-    //
     getRowValues(cellY) {
         return this.cellDB[cellY].map((cell) => cell.cellValue);
     }
 
-    //
     getColumnValues(cellX) {
         let cellValues = [];
 
@@ -78,7 +66,6 @@ class CellDB {
         return cellValues;
     }
 
-    //
     getRegionValues(region) {
         let cellValues = [];
 
