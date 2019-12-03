@@ -1,5 +1,5 @@
 const log = console.log;
-
+const CONSTANTS = require('./constants');
 
 
 // how to make this a singleton?
@@ -19,6 +19,7 @@ class Board {
         this.domCache.cellsXY = this.draw();
         this.domCache.cells = document.querySelectorAll('.cell');
         this.conflictingCellIndex = { 'index': null };
+        this.regionInfo = CONSTANTS.regionInfo;
     }
     
     getConflictingCellIndex() {
@@ -106,6 +107,100 @@ class Board {
     
     getDomCache() {
         return this.domCache;
+    }
+
+    clearBoard() {
+        this.hideGameOver();
+        this.deactivateKeypads();
+        this.clearCells();
+        this.addCheckerBoard();
+    }
+
+    hideGameOver() {
+        // const gameOver = this.domCache.gameOver;
+        const overlay = this.domCache.overlay;
+        // gameOver.innerText = '';
+        overlay.style.display = 'none';
+
+    }
+
+    deactivateKeypads() {
+        this.domCache.inputTable.classList.remove('inputTableActive');
+        this.domCache.inputCells.forEach(function (inputCell, inputCellIndex) {
+            inputCell.onclick = null;
+            // inputCell.onclick = function () { return false; };
+        });
+    }
+
+    clearCells() {
+        this.domCache.cells.forEach(function (cell) {
+            cell.classList.remove('clueCell');
+            cell.classList.remove('activeCell');
+            cell.classList.remove('invalidMove');
+            cell.onclick = null;
+        });
+    }
+
+    addCheckerBoard() {
+        const checkerboardRegions = ['n', 's', 'e', 'w'];
+
+        checkerboardRegions.forEach(function (region, index) {
+            const regionInfo = this.regionInfo[region];
+
+            for (let cellX = regionInfo.startCellX; cellX <= regionInfo.endCellX; cellX++) {
+                for (let cellY = regionInfo.startCellY; cellY <= regionInfo.endCellY; cellY++) {
+                    this.getDomCell(cellX, cellY).classList.add('checkerboardRegionCell');
+                }
+            }
+        }.bind(this));
+    }
+
+    getDomCell(cellX, cellY) {
+
+        // Todo: cache these
+        const boardSize = this.boardSize;
+        const selector = '#cell' + cellX + cellY;
+        if (isNaN(cellX) || isNaN(cellY) || cellX > boardSize - 1 || cellX < 0 || cellY > boardSize - 1 || cellY < 0) {
+            throw "getDomCell: unexpected cell coordinate. (cellX, cellY): " + cellX + ', ' + cellY;
+        }
+
+        return this.domCache.cellsXY[selector];
+    }
+
+    addConflictHighlighting(cellX, cellY) {
+
+        // if (this.cellDB.getCellClueStatus(cellX, cellY) === true) {
+        //     return;
+        // }
+
+        try {
+            const domCell = this.getDomCell(cellX, cellY);
+            domCell.classList.add('invalidMove');
+            const index = this.getCellIndexFromCoords(cellX, cellY);
+            this.setConflictingCellIndex(index);
+        } catch (e) {
+            throw "addConflictHighlighting caught exception: " + e;
+        }
+    }
+
+    removeConflictHighlighting(cellX, cellY) {
+
+        // if (this.cellDB.getCellClueStatus(cellX, cellY) === true) {
+        //     return;
+        // }
+
+        try {
+            const domCell = this.getDomCell(cellX, cellY);
+            domCell.classList.remove('invalidMove');
+            this.setConflictingCellIndex(null);
+        } catch (e) {
+            throw "removeConflictHighlighting caught exception: " + e;
+        }
+    }
+
+    getCellIndexFromCoords(cellX, cellY) {
+        const index = (this.boardSize * cellY) + cellX;
+        return index;
     }
     
 }

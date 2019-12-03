@@ -1,5 +1,6 @@
 const CellDB = require('./cellDB');
 const Puzzle = require('./puzzle');
+const CONSTANTS = require('./constants');
 const log = console.log;
 
 class Game {
@@ -22,7 +23,8 @@ class Game {
 
     reset() {
         this.cellDB = new CellDB();
-        this.regionInfo = this.cellDB.getRegionInfo();
+        // this.regionInfo = this.cellDB.getRegionInfo();
+        this.regionInfo = CONSTANTS.regionInfo;
     }
 
 
@@ -49,31 +51,14 @@ class Game {
         return corners;
     }
 
-    getDomCell(cellX, cellY) {
-
-        // Todo: cache these
-        const boardSize = this.boardSize;
-        const selector = '#cell' + cellX + cellY;
-        if (isNaN(cellX) || isNaN(cellY) || cellX > boardSize - 1 || cellX < 0 || cellY > boardSize - 1 || cellY < 0) {
-            throw "getDomCell: unexpected cell coordinate. (cellX, cellY): " + cellX + ', ' + cellY;
-        }
-
-        return this.domCache.cellsXY[selector];
-    }
-
     removeConflictHighlighting(cellX, cellY) {
 
         if (this.cellDB.getCellClueStatus(cellX, cellY) === true) {
             return;
         }
 
-        try {
-            const domCell = this.getDomCell(cellX, cellY);
-            domCell.classList.remove('invalidMove');
-            this.setConflictingCellIndex(null);
-        } catch (e) {
-            throw "removeConflictHighlighting caught exception: " + e;
-        }
+        this.board.removeConflictHighlighting(cellX, cellY);
+
     }
 
     addConflictHighlighting(cellX, cellY) {
@@ -82,14 +67,8 @@ class Game {
             return;
         }
 
-        try {
-            const domCell = this.getDomCell(cellX, cellY);
-            domCell.classList.add('invalidMove');
-            const index = this.getCellIndexFromCoords(cellX, cellY);
-            this.setConflictingCellIndex(index);
-        } catch (e) {
-            throw "addConflictHighlighting caught exception: " + e;
-        }
+        this.board.addConflictHighlighting(cellX, cellY);
+
     }
 
     userHasSolvedPuzzle() {
@@ -132,14 +111,6 @@ class Game {
         overlay.style.display = 'block';
     }
 
-    hideGameOver() {
-        // const gameOver = this.domCache.gameOver;
-        const overlay = this.domCache.overlay;
-        // gameOver.innerText = '';
-        overlay.style.display = 'none';
-
-    }
-
     setCellDB(cellDB) {
         this.cellDB = cellDB;
     }
@@ -150,12 +121,6 @@ class Game {
 
     getCellY(cellIndex) {
         return Math.floor(cellIndex / this.boardSize);
-    }
-
-    getDomCellByIndex(cellIndex) {
-        const cellX = this.getCellX(cellIndex);
-        const cellY = this.getCellY(cellIndex);
-        return this.getDomCell(cellX, cellY);
     }
 
     play() {
@@ -354,7 +319,7 @@ class Game {
 
         this.cellDB.setConflictStatus(cellX, cellY, newStatus);
 
-        const domCell = this.getDomCell(cellX, cellY)
+        // const domCell = this.getDomCell(cellX, cellY)
 
         if (newStatus === true) {
             try {
@@ -373,29 +338,7 @@ class Game {
         const index = (this.boardSize * cellY) + cellX;
         return index;
     }
-
-    addCheckerBoard() {
-        const checkerboardRegions = ['n', 's', 'e', 'w'];
-
-        checkerboardRegions.forEach(function (region, index) {
-            const regionInfo = this.regionInfo[region];
-
-            for (let cellX = regionInfo.startCellX; cellX <= regionInfo.endCellX; cellX++) {
-                for (let cellY = regionInfo.startCellY; cellY <= regionInfo.endCellY; cellY++) {
-                    this.getDomCell(cellX, cellY).classList.add('checkerboardRegionCell');
-                }
-            }
-        }.bind(this));
-    }
-
-    clearBoard() {
-        this.hideGameOver();
-        this.deactivateKeypads();
-        this.clearCells();
-        this.addCheckerBoard();
-    }
-
-
+  
     clearCells() {
         this.domCache.cells.forEach(function (cell) {
             cell.classList.remove('clueCell');
@@ -407,7 +350,7 @@ class Game {
 
     populateBoard() {
 
-        this.clearBoard();
+        this.board.clearBoard();
 
         // Cache board cells from DOM
         const cells = this.domCache.cells;
