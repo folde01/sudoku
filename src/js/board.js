@@ -5,7 +5,7 @@ const CONSTANTS = require('./constants');
 // how to make this a singleton?
 class Board {
     constructor() {
-        this.boardSize = 9;
+        this.boardSize = CONSTANTS.boardSize;
         this.domCache = {
             logo: document.querySelector('#logo'),
             board: document.querySelector('#board'),
@@ -20,13 +20,14 @@ class Board {
         this.domCache.cells = document.querySelectorAll('.cell');
         this.conflictingCellIndex = { 'index': null };
         this.regionInfo = CONSTANTS.regionInfo;
+        this.activeCellIndex = null;
     }
-    
+
     getConflictingCellIndex() {
         const index = this.conflictingCellIndex['index'];
         return index;
     }
-    
+
     setConflictingCellIndex(index) {
         this.conflictingCellIndex['index'] = index;
     }
@@ -54,18 +55,18 @@ class Board {
         logo.appendChild(li);
         const oldLogo = domCache.logo;
         oldLogo.parentNode.replaceChild(logo, oldLogo);
-                
+
 
         // board
         const oldBoard = domCache.board;
         const board = document.createElement('table');
         board.setAttribute('id', 'board');
-        
+
         for (let i = 0; i < boardSize; i++) {
             const rowNode = document.createElement('tr');
             rowNode.setAttribute('class', 'row');
             board.appendChild(rowNode);
-            
+
             for (let j = 0; j < boardSize; j++) {
                 const cellNode = document.createElement('td');
                 cellNode.setAttribute('class', 'cell');
@@ -77,8 +78,8 @@ class Board {
         }
 
         oldBoard.parentNode.replaceChild(board, oldBoard);
-        
-    
+
+
         // keypad
         const inputTable = document.createElement('ul');
         inputTable.setAttribute('class', 'inputTable');
@@ -101,10 +102,10 @@ class Board {
         oldInputTable.parentNode.replaceChild(inputTable, oldInputTable);
         domCache.inputCells = document.querySelectorAll('.inputCell');
         domCache.inputTable = inputTable;
-        
+
         return cellsXY;
     }
-    
+
     getDomCache() {
         return this.domCache;
     }
@@ -202,7 +203,125 @@ class Board {
         const index = (this.boardSize * cellY) + cellX;
         return index;
     }
-    
+
+    populate(cellDB) {
+
+        this.clearBoard();
+
+        // Cache board cells from DOM
+        const cells = this.domCache.cells;
+        const rows = this.domCache.rows;
+        const board = this;
+        const boardSize = this.boardSize;
+
+        // Populate cells and cell DB (for checking move validity) arrays with values from cellValues. 
+        cells.forEach(function (cell, cellIndex) {
+            const cellX = this.getCellX(cellIndex);
+            const cellY = this.getCellY(cellIndex);
+
+            const cellValue = cellDB.getCellValue(cellX, cellY);
+            let cellValueToRender = null;
+
+            if (cellValue === 0) {
+                // It's an empty cell.
+                cellValueToRender = '';
+            } else {
+                // It's a clue cell.
+                cellValueToRender = cellValue.toString();
+                cell.classList.add('clueCell');
+            }
+            cell.innerText = cellValueToRender;
+        }.bind(this));
+    }
+
+    getCellX(cellIndex) {
+        return cellIndex % this.boardSize;
+    }
+
+    getCellY(cellIndex) {
+        return Math.floor(cellIndex / this.boardSize);
+    }
+
+    doGameOver() {
+        const overlay = this.domCache.overlay;
+        overlay.style.display = 'block';
+    }
+
+    play(game) {
+
+        const cells = this.domCache.cells;
+        const inputCells = this.domCache.inputCells;
+        const inputTable = this.domCache.inputTable;
+
+        // Helps ensure only one cell is ever active (selected) at a time
+        // let activeCellIndex = null;
+        let activeCellIndex = this.activeCellIndex;
+
+        const board = this;
+
+        // Adds event listeners to all cells except clue cells.
+        cells.forEach(function (cell, cellIndex) {
+            // Non-clue cells
+            const cellX = board.getCellX(cellIndex);
+            const cellY = board.getCellY(cellIndex);
+
+            if (game.cellDB.getCellValue(cellX, cellY) === 0) {
+
+                cell.onclick = function () {
+
+                    // Removes any conflict highlighting from last move
+                    game.removeAllConflicts();
+
+                    // Deactivates active cell if there is one, then activates selected cell. 
+                    if (activeCellIndex !== null) {
+                        cells[activeCellIndex].classList.remove('activeCell');
+                    }
+
+                    // Activates cell
+                    activeCellIndex = cellIndex;
+                    cells[activeCellIndex].classList.add('activeCell');
+
+                    // todo: Activates keyboard
+
+                    // Activates keypad.
+                    inputTable.classList.add('inputTableActive');
+                    inputCells.forEach(function (inputCell, inputCellIndex) {
+
+                        let renderedCellValue = inputCell.innerText;
+                        let numericCellValue;
+
+                        if (isNaN(renderedCellValue)) {
+                            // 0 is the code for an erased number
+                            numericCellValue = 0;
+                            renderedCellValue = '';
+                        } else {
+                            numericCellValue = Number(renderedCellValue);
+                        }
+
+                        // Uses onClick instead of addEventListener (as we need to replace a handler, not add one)
+                        inputCell.onclick = function () {
+
+                            game.playInCell(cellX, cellY, numericCellValue);
+
+                            game.highlightIfConflicting(cellX, cellY, numericCellValue);
+
+                            // Sets cell value in DOM.
+                            cell.innerText = renderedCellValue;
+
+                            // Deactivates cell 
+                            cell.classList.remove('activeCell');
+
+                            this.deactivateKeypads();
+
+                            if (game.userHasSolvedPuzzle()) {
+                                this.doGameOver();
+                            }
+                        }.bind(board);
+                    });
+                };
+            }
+        });
+    }
 }
 
 module.exports = Board;
