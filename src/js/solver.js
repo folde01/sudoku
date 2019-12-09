@@ -4,10 +4,11 @@ const log = console.log;
 
 
 class Solver {
-    constructor(cellDB) {
-        this.cellDB = cellDB;
+    constructor() {
         this.moves = [];
         this.boardSize = CONSTANTS.boardSize;
+        this.moveAttempts = 0;
+        this.validMoveCount = 0;
 
         Array.prototype.diff = function (arr) {
             // From https://stackoverflow.com/a/4026828
@@ -15,6 +16,10 @@ class Solver {
                 return arr.indexOf(i) < 0;
             });
         };
+    }
+
+    setCellDB(cellDB) {
+        this.cellDB = cellDB;
     }
 
     solve() {
@@ -98,6 +103,7 @@ class Solver {
         let cellValue = move.cellValue;
         let cellValueCount = this.cellDB.getCellValueCount(cellValue);
 
+        // start working on the next value when we have 9 of the current one
         if (cellValueCount === this.boardSize) {
             ++cellValue;
 
@@ -117,12 +123,13 @@ class Solver {
         this.moveAttempts++;
         if (this.cellDB.cellIsEmpty(move.cellX, move.cellY) && this.moveIsValid(move)) {
             this.cellDB.setCellValue(move.cellX, move.cellY, move.cellValue);
-            // this.cellDB.setCellSolutionValue(move.cellX, move.cellY, move.cellValue);
             this.validMoveCount++;
             this.moves.push(move);
             this.cellDB.incrementCellValueCount(move.cellValue);
+            // log(this.cellDB);
             return true;
         } else {
+            // log(this.cellDB);
             return false;
         }
     }
@@ -150,50 +157,16 @@ class Solver {
     }
 
     rowIsValid(move) {
-        // todo: return if false
-        let result = true;
-
-        for (let cellX = 0; cellX < this.boardSize; cellX++) {
-            if (this.cellDB.getCellValue(cellX, move.cellY) !== 0 && this.cellDB.getCellValue(cellX, move.cellY) === move.cellValue) {
-                result = false;
-            }
-        }
-        return result;
+        return this.cellDB.rowIsValid(move);
     }
 
     regionIsValid(move) {
-        // todo: return if false
-        let result = true;
-
-        const startRow = Math.floor(move.cellY / 3) * 3;
-        const endRow = startRow + 2;
-        const startColumn = Math.floor(move.cellX / 3) * 3;
-        const endColumn = startColumn + 2;
-
-        for (let j = startRow; j <= endRow; j++) {
-            for (let i = startColumn; i <= endColumn; i++) {
-                if (this.cellDB.getCellValue(i, j) !== 0 && this.cellDB.getCellValue(i, j) === move.cellValue) {
-                    result = false;
-                }
-            }
-        }
-
-        return result;
+        return this.cellDB.regionIsValid(move);
     }
 
     columnIsValid(move) {
-        // todo: return if false
-        let result = true;
-
-        for (let j = 0; j < this.boardSize; j++) {
-            if (this.cellDB.getCellValue(move.cellX, j) !== 0 && this.cellDB.getCellValue(move.cellX, j) === move.cellValue) {
-                result = false;
-            }
-        }
-
-        return result;
+        return this.cellDB.columnIsValid(move);
     }
-
 }
 
 module.exports = Solver;

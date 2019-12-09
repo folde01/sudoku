@@ -6,9 +6,11 @@ const CONSTANTS = require('./constants');
 const log = console.log;
 
 class Puzzle {
-    constructor() {
+    constructor(solver = new Solver()) {
+        this.solver = solver;
         this.boardSize = CONSTANTS.boardSize;
         this.cellDB = new CellDB();
+        this.solver.setCellDB(this.cellDB);
         this.regionInfo = CONSTANTS.regionInfo;
         this.validMoveCount = 0;
         this.moveAttempts = 0;
@@ -29,6 +31,14 @@ class Puzzle {
         return this.cellDB;
     }
 
+    puzzleIsComplete() {
+        return this.solver.puzzleIsComplete();
+    }
+
+    tryMove(move) {
+        return this.solver.tryMove(move);
+    }
+
     randomInt(min, max) {
         const ceilMin = Math.ceil(min);
         const floorMax = Math.floor(max);
@@ -36,8 +46,7 @@ class Puzzle {
     }
 
     solve() {
-        let solver = new Solver(this.cellDB);
-        solver.solve();
+        this.solver.solve();
         this.removeCluesFromSolvedBoard();
     }
 

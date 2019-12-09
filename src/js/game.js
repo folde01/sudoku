@@ -121,6 +121,7 @@ class Game {
         this.board.play(this);
     }
 
+ 
     highlightIfConflicting(cellX, cellY, cellValue) {
 
         // Searches for conflicts, breaking out of loop if it finds one, in which case highlighting is done. 
@@ -131,6 +132,7 @@ class Game {
         // Searches row for conflict:
         for (let x = 0; x < boardSize; x++) {
 
+            // don't compare with self
             if (x === cellX) {
                 continue;
             }

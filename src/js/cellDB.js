@@ -178,6 +178,59 @@ class CellDB {
         return this.countCompleteCellValues;
     }
 
+    rowIsValid(move) {
+        // todo: return if false
+        let result = true;
+
+        for (let cellX = 0; cellX < this.boardSize; cellX++) {
+            if (this.getCellValue(cellX, move.cellY) !== 0 && this.getCellValue(cellX, move.cellY) === move.cellValue) {
+                result = false;
+            }
+        }
+        return result;
+    }
+
+    // rowIsValid(move) {
+    //     for (let cellX = 0; cellX < this.boardSize; cellX++) {
+    //         if (cellX !== move.cellX && this.getCellValue(cellX, move.cellY) !== 0 && this.getCellValue(cellX, move.cellY) === move.cellValue) {
+    //             return false;
+    //         }
+    //     }
+    //     return true;
+    // }
+
+    regionIsValid(move) {
+        // todo: return if false
+        let result = true;
+
+        const startRow = Math.floor(move.cellY / 3) * 3;
+        const endRow = startRow + 2;
+        const startColumn = Math.floor(move.cellX / 3) * 3;
+        const endColumn = startColumn + 2;
+
+        for (let j = startRow; j <= endRow; j++) {
+            for (let i = startColumn; i <= endColumn; i++) {
+                if (this.getCellValue(i, j) !== 0 && this.getCellValue(i, j) === move.cellValue) {
+                    result = false;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    columnIsValid(move) {
+        // todo: return if false
+        let result = true;
+
+        for (let j = 0; j < this.boardSize; j++) {
+            if (this.getCellValue(move.cellX, j) !== 0 && this.getCellValue(move.cellX, j) === move.cellValue) {
+                result = false;
+            }
+        }
+
+        return result;
+    }
 
 }
 

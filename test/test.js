@@ -1,5 +1,5 @@
-const Move = require('../src/js/move.js');
-const Puzzle = require('../src/js/puzzle.js');
+const Move = require('../src/js/move');
+const Puzzle = require('../src/js/puzzle');
 const assert = require('assert');
 
 describe('Puzzle', function () {
@@ -43,6 +43,7 @@ describe('Puzzle', function () {
             assert.equal(true, move1valid);
             assert.equal(false, lastMoveValid);
         });
+
         it('should return false if move duplicates a row value (different region)', function () {
             const puzzle = new Puzzle();
             const move1valid = puzzle.tryMove(new Move(0, 0, 4));
@@ -50,6 +51,7 @@ describe('Puzzle', function () {
             assert.equal(true, move1valid);
             assert.equal(false, lastMoveValid);
         });
+
         it('should return false if move duplicates a column value', function () {
             const puzzle = new Puzzle();
             const move1valid = puzzle.tryMove(new Move(0, 0, 4));
@@ -57,6 +59,7 @@ describe('Puzzle', function () {
             assert.equal(true, move1valid);
             assert.equal(false, lastMoveValid);
         });
+
         it('should return false if move duplicates a column value (different region)', function () {
             const puzzle = new Puzzle();
             const move1valid = puzzle.tryMove(new Move(0, 0, 4));
@@ -64,6 +67,7 @@ describe('Puzzle', function () {
             assert.equal(true, move1valid);
             assert.equal(false, lastMoveValid);
         });
+
         it('should return false if move duplicates a region value', function () {
             const puzzle = new Puzzle();
             const move1valid = puzzle.tryMove(new Move(0, 0, 4));
