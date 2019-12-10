@@ -18,17 +18,58 @@ class Solver {
         };
     }
 
+    
+    // Public methods
+
+
     setCellDB(cellDB) {
         this.cellDB = cellDB;
     }
 
     solve() {
-        this.solveByPickingRandomPossibleNextMove();
+        this._solveByPickingRandomPossibleNextMove();
     }
 
-    solveByPickingRandomPossibleNextMove() {
+    moveIsValid(move) {
+        return this.rowIsValid(move) && this.columnIsValid(move) && this.boxIsValid(move);
+    }
 
-        let lastMove = this.getLastMove();
+    rowIsValid(move) {
+        return this.cellDB.rowIsValid(move);
+    }
+
+    boxIsValid(move) {
+        return this.cellDB.boxIsValid(move);
+    }
+
+    columnIsValid(move) {
+        return this.cellDB.columnIsValid(move);
+    }
+
+    puzzleIsComplete() {
+        return this.cellDB.getCompleteCellValueCount() === this.boardSize;
+    }
+
+    tryMove(move) {
+        this.moveAttempts++;
+        if (this.cellDB.cellIsEmpty(move.cellX, move.cellY) && this.moveIsValid(move)) {
+            this.cellDB.setCellValue(move.cellX, move.cellY, move.cellValue);
+            this.validMoveCount++;
+            this.moves.push(move);
+            this.cellDB.incrementCellValueCount(move.cellValue);
+            // log(this.cellDB);
+            return true;
+        } else {
+            // log(this.cellDB);
+            return false;
+        }
+    }
+
+    // Private methods
+
+    _solveByPickingRandomPossibleNextMove() {
+
+        let lastMove = this._getLastMove();
         let cellValue = null;
 
         // check whether this is the first move we're trying to make
@@ -41,14 +82,14 @@ class Solver {
         }
 
         while (this.cellDB.getCellValueCount(cellValue) < this.boardSize && (!this.puzzleIsComplete())) {
-            lastMove = this.getLastMove();
+            lastMove = this._getLastMove();
 
             if (!lastMove) {
                 // no moves yet
                 lastMove = new Move(-1, -1, cellValue);
             }
 
-            let possibleNextMoves = this.getPossibleNextMoves(lastMove);
+            let possibleNextMoves = this._getPossibleNextMoves(lastMove);
             let moveMade = false;
 
             // loop until we've successfully moved
@@ -56,13 +97,13 @@ class Solver {
 
                 // backtrack if there's nowhere to move, then look again for candidate moves
                 if (possibleNextMoves.length === 0) {
-                    this.undoLastMove();
-                    lastMove = this.getLastMove();
-                    possibleNextMoves = this.getPossibleNextMoves(lastMove);
+                    this._undoLastMove();
+                    lastMove = this._getLastMove();
+                    possibleNextMoves = this._getPossibleNextMoves(lastMove);
                 }
 
                 // if backtracking helped us find candidate moves, pick one at random
-                const moveCandidate = this.pickRandomElementFromArray(possibleNextMoves);
+                const moveCandidate = this._pickRandomElementFromArray(possibleNextMoves);
                 moveMade = this.tryMove(moveCandidate);
 
                 // we use a linked list to keep track of move order (so as to facilitate backtracking),
@@ -80,18 +121,14 @@ class Solver {
         }
     }
 
-    getLastMove() {
+    _getLastMove() {
         if (this.moves.length === 0) {
             return null;
         }
         return this.moves[this.moves.length - 1];
     }
 
-    puzzleIsComplete() {
-        return this.cellDB.getCompleteCellValueCount() === this.boardSize;
-    }
-
-    getPossibleNextMoves(move) {
+    _getPossibleNextMoves(move) {
         let possibleCellYs = [];
 
         for (let i = 0; i < this.boardSize; i++) {
@@ -119,27 +156,12 @@ class Solver {
         return possibleNextMoves;
     }
 
-    tryMove(move) {
-        this.moveAttempts++;
-        if (this.cellDB.cellIsEmpty(move.cellX, move.cellY) && this.moveIsValid(move)) {
-            this.cellDB.setCellValue(move.cellX, move.cellY, move.cellValue);
-            this.validMoveCount++;
-            this.moves.push(move);
-            this.cellDB.incrementCellValueCount(move.cellValue);
-            // log(this.cellDB);
-            return true;
-        } else {
-            // log(this.cellDB);
-            return false;
-        }
-    }
-
-    undoLastMove() {
+    _undoLastMove() {
         if (this.moves.length > 0) {
             const lastMove = this.moves.pop();
             lastMove.deadEnd = true;
             this.cellDB.setCellValue(lastMove.cellX, lastMove.cellY, 0);
-            this.cellDB.removeCellSolutionValue(lastMove.cellX, lastMove.cellY);
+            // this.cellDB.removeCellSolutionValue(lastMove.cellX, lastMove.cellY);
             this.cellDB.decrementCellValueCount(lastMove.cellValue);
             lastMove.getPreviousMove().deadEndNextMoves.push(lastMove);
             return lastMove;
@@ -148,25 +170,10 @@ class Solver {
         }
     }
 
-    pickRandomElementFromArray(arr) {
+    _pickRandomElementFromArray(arr) {
         return arr[Math.floor(Math.random() * arr.length)];
     }
 
-    moveIsValid(move) {
-        return this.rowIsValid(move) && this.columnIsValid(move) && this.regionIsValid(move);
-    }
-
-    rowIsValid(move) {
-        return this.cellDB.rowIsValid(move);
-    }
-
-    regionIsValid(move) {
-        return this.cellDB.regionIsValid(move);
-    }
-
-    columnIsValid(move) {
-        return this.cellDB.columnIsValid(move);
-    }
 }
 
 module.exports = Solver;

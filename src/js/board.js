@@ -1,8 +1,6 @@
 const log = console.log;
 const CONSTANTS = require('./constants');
 
-
-// how to make this a singleton?
 class Board {
     constructor() {
         this.boardSize = CONSTANTS.boardSize;
@@ -16,12 +14,16 @@ class Board {
             gameOver: document.querySelector('.gameOver'),
             overlay: document.querySelector('.overlay')
         };
-        this.domCache.cellsXY = this.draw();
+        this.domCache.cellsXY = this._draw();
         this.domCache.cells = document.querySelectorAll('.cell');
         this.conflictingCellIndex = { 'index': null };
-        this.regionInfo = CONSTANTS.regionInfo;
+        this.boxInfo = CONSTANTS.boxInfo;
         this.activeCellIndex = null;
     }
+
+
+    // Public methods
+
 
     getConflictingCellIndex() {
         const index = this.conflictingCellIndex['index'];
@@ -32,150 +34,10 @@ class Board {
         this.conflictingCellIndex['index'] = index;
     }
 
-    draw() {
-        const domCache = this.domCache;
-        const boardSize = this.boardSize;
-        const cellsXY = {};
-
-        // logo
-        const logo = document.createElement('ul');
-        logo.setAttribute('id', 'logo');
-        const logoChars = ('  SUDOKU ').split('');
-
-        for (let i = 0; i < 9; i++) {
-            const li = document.createElement('li');
-            li.innerText = logoChars[i];
-            logo.appendChild(li);
-        }
-
-        // new game button
-        const li = document.createElement('li');
-        li.innerText = 'New game';
-        li.setAttribute('class', 'newGame');
-        logo.appendChild(li);
-        const oldLogo = domCache.logo;
-        oldLogo.parentNode.replaceChild(logo, oldLogo);
-
-
-        // board
-        const oldBoard = domCache.board;
-        const board = document.createElement('table');
-        board.setAttribute('id', 'board');
-
-        for (let i = 0; i < boardSize; i++) {
-            const rowNode = document.createElement('tr');
-            rowNode.setAttribute('class', 'row');
-            board.appendChild(rowNode);
-
-            for (let j = 0; j < boardSize; j++) {
-                const cellNode = document.createElement('td');
-                cellNode.setAttribute('class', 'cell');
-                const cellID = 'cell' + j + i;
-                cellNode.setAttribute('id', cellID);
-                cellsXY['#' + cellID] = cellNode;
-                rowNode.appendChild(cellNode);
-            }
-        }
-
-        oldBoard.parentNode.replaceChild(board, oldBoard);
-
-
-        // keypad
-        const inputTable = document.createElement('ul');
-        inputTable.setAttribute('class', 'inputTable');
-
-        for (let i = 0; i < boardSize; i++) {
-            const li = document.createElement('li');
-            li.innerText = (i + 1).toString();
-            li.setAttribute('class', 'inputCell');
-            inputTable.appendChild(li);
-        }
-
-        const eraseBtn = document.createElement('li');
-        eraseBtn.setAttribute('id', 'eraseBtn');
-        eraseBtn.setAttribute('class', 'inputCell');
-        // eraseBtn.innerText = 'Clear';
-        eraseBtn.innerText = 'Erase';
-        inputTable.appendChild(eraseBtn);
-
-        const oldInputTable = domCache.inputTable;
-        oldInputTable.parentNode.replaceChild(inputTable, oldInputTable);
-        domCache.inputCells = document.querySelectorAll('.inputCell');
-        domCache.inputTable = inputTable;
-
-        return cellsXY;
-    }
-
-    getDomCache() {
-        return this.domCache;
-    }
-
-    clearBoard() {
-        this.hideGameOver();
-        this.deactivateKeypads();
-        this.clearCells();
-        this.addCheckerBoard();
-    }
-
-    hideGameOver() {
-        // const gameOver = this.domCache.gameOver;
-        const overlay = this.domCache.overlay;
-        // gameOver.innerText = '';
-        overlay.style.display = 'none';
-
-    }
-
-    deactivateKeypads() {
-        this.domCache.inputTable.classList.remove('inputTableActive');
-        this.domCache.inputCells.forEach(function (inputCell, inputCellIndex) {
-            inputCell.onclick = null;
-            // inputCell.onclick = function () { return false; };
-        });
-    }
-
-    clearCells() {
-        this.domCache.cells.forEach(function (cell) {
-            cell.classList.remove('clueCell');
-            cell.classList.remove('activeCell');
-            cell.classList.remove('invalidMove');
-            cell.onclick = null;
-        });
-    }
-
-    addCheckerBoard() {
-        const checkerboardRegions = ['n', 's', 'e', 'w'];
-
-        checkerboardRegions.forEach(function (region, index) {
-            const regionInfo = this.regionInfo[region];
-
-            for (let cellX = regionInfo.startCellX; cellX <= regionInfo.endCellX; cellX++) {
-                for (let cellY = regionInfo.startCellY; cellY <= regionInfo.endCellY; cellY++) {
-                    this.getDomCell(cellX, cellY).classList.add('checkerboardRegionCell');
-                }
-            }
-        }.bind(this));
-    }
-
-    getDomCell(cellX, cellY) {
-
-        // Todo: cache these
-        const boardSize = this.boardSize;
-        const selector = '#cell' + cellX + cellY;
-        if (isNaN(cellX) || isNaN(cellY) || cellX > boardSize - 1 || cellX < 0 || cellY > boardSize - 1 || cellY < 0) {
-            throw "getDomCell: unexpected cell coordinate. (cellX, cellY): " + cellX + ', ' + cellY;
-        }
-
-        return this.domCache.cellsXY[selector];
-    }
 
     addConflictHighlighting(cellX, cellY) {
-
-        // if (this.cellDB.getCellClueStatus(cellX, cellY) === true) {
-        //     return;
-        // }
-
         try {
-            const domCell = this.getDomCell(cellX, cellY);
+            const domCell = this._getDomCell(cellX, cellY);
             domCell.classList.add('invalidMove');
             const index = this.getCellIndexFromCoords(cellX, cellY);
             this.setConflictingCellIndex(index);
@@ -185,13 +47,8 @@ class Board {
     }
 
     removeConflictHighlighting(cellX, cellY) {
-
-        // if (this.cellDB.getCellClueStatus(cellX, cellY) === true) {
-        //     return;
-        // }
-
         try {
-            const domCell = this.getDomCell(cellX, cellY);
+            const domCell = this._getDomCell(cellX, cellY);
             domCell.classList.remove('invalidMove');
             this.setConflictingCellIndex(null);
         } catch (e) {
@@ -205,8 +62,7 @@ class Board {
     }
 
     populate(cellDB) {
-
-        this.clearBoard();
+        this._clearBoard();
 
         // Cache board cells from DOM
         const cells = this.domCache.cells;
@@ -242,13 +98,7 @@ class Board {
         return Math.floor(cellIndex / this.boardSize);
     }
 
-    doGameOver() {
-        const overlay = this.domCache.overlay;
-        overlay.style.display = 'block';
-    }
-
     play(game) {
-
         const cells = this.domCache.cells;
         const inputCells = this.domCache.inputCells;
         const inputTable = this.domCache.inputTable;
@@ -311,16 +161,156 @@ class Board {
                             // Deactivates cell 
                             cell.classList.remove('activeCell');
 
-                            this.deactivateKeypads();
+                            this._deactivateKeypads();
 
                             if (game.userHasSolvedPuzzle()) {
-                                this.doGameOver();
+                                this._doGameOver();
                             }
                         }.bind(board);
                     });
                 };
             }
         });
+    }
+
+
+    // Private methods
+
+    _clearBoard() {
+        this._hideGameOver();
+        this._deactivateKeypads();
+        this._clearCells();
+        this._addCheckerBoard();
+    }
+
+    _hideGameOver() {
+        // const gameOver = this.domCache.gameOver;
+        const overlay = this.domCache.overlay;
+        // gameOver.innerText = '';
+        overlay.style.display = 'none';
+
+    }
+
+    _deactivateKeypads() {
+        this.domCache.inputTable.classList.remove('inputTableActive');
+        this.domCache.inputCells.forEach(function (inputCell, inputCellIndex) {
+            inputCell.onclick = null;
+            // inputCell.onclick = function () { return false; };
+        });
+    }
+
+    _clearCells() {
+        this.domCache.cells.forEach(function (cell) {
+            cell.classList.remove('clueCell');
+            cell.classList.remove('activeCell');
+            cell.classList.remove('invalidMove');
+            cell.onclick = null;
+        });
+    }
+
+
+
+    _getDomCell(cellX, cellY) {
+        // Todo: cache these
+        const boardSize = this.boardSize;
+        const selector = '#cell' + cellX + cellY;
+        if (isNaN(cellX) || isNaN(cellY) || cellX > boardSize - 1 || cellX < 0 || cellY > boardSize - 1 || cellY < 0) {
+            throw "getDomCell: unexpected cell coordinate. (cellX, cellY): " + cellX + ', ' + cellY;
+        }
+
+        return this.domCache.cellsXY[selector];
+    }
+
+    _addCheckerBoard() {
+        const checkerboardBoxes = ['n', 's', 'e', 'w'];
+
+        checkerboardBoxes.forEach(function (box, index) {
+            const boxInfo = this.boxInfo[box];
+
+            for (let cellX = boxInfo.startCellX; cellX <= boxInfo.endCellX; cellX++) {
+                for (let cellY = boxInfo.startCellY; cellY <= boxInfo.endCellY; cellY++) {
+                    this._getDomCell(cellX, cellY).classList.add('checkerboardBoxCell');
+                }
+            }
+        }.bind(this));
+    }
+
+    _doGameOver() {
+        const overlay = this.domCache.overlay;
+        overlay.style.display = 'block';
+    }
+
+    _draw() {
+        const domCache = this.domCache;
+        const boardSize = this.boardSize;
+        const cellsXY = {};
+
+        // logo
+        const logo = document.createElement('ul');
+        logo.setAttribute('id', 'logo');
+        const logoChars = ('  SUDOKU ').split('');
+
+        for (let i = 0; i < 9; i++) {
+            const li = document.createElement('li');
+            li.innerText = logoChars[i];
+            logo.appendChild(li);
+        }
+
+        // new game button
+        const li = document.createElement('li');
+        li.innerText = 'New game';
+        li.setAttribute('class', 'newGame');
+        logo.appendChild(li);
+        const oldLogo = domCache.logo;
+        oldLogo.parentNode.replaceChild(logo, oldLogo);
+
+
+        // board
+        const oldBoard = domCache.board;
+        const board = document.createElement('table');
+        board.setAttribute('id', 'board');
+
+        for (let i = 0; i < boardSize; i++) {
+            const rowNode = document.createElement('tr');
+            rowNode.setAttribute('class', 'row');
+            board.appendChild(rowNode);
+
+            for (let j = 0; j < boardSize; j++) {
+                const cellNode = document.createElement('td');
+                cellNode.setAttribute('class', 'cell');
+                const cellID = 'cell' + j + i;
+                cellNode.setAttribute('id', cellID);
+                cellsXY['#' + cellID] = cellNode;
+                rowNode.appendChild(cellNode);
+            }
+        }
+
+        oldBoard.parentNode.replaceChild(board, oldBoard);
+
+        // keypad
+        const inputTable = document.createElement('ul');
+        inputTable.setAttribute('class', 'inputTable');
+
+        for (let i = 0; i < boardSize; i++) {
+            const li = document.createElement('li');
+            li.innerText = (i + 1).toString();
+            li.setAttribute('class', 'inputCell');
+            inputTable.appendChild(li);
+        }
+
+        const eraseBtn = document.createElement('li');
+        eraseBtn.setAttribute('id', 'eraseBtn');
+        eraseBtn.setAttribute('class', 'inputCell');
+        // eraseBtn.innerText = 'Clear';
+        eraseBtn.innerText = 'Erase';
+        inputTable.appendChild(eraseBtn);
+
+        const oldInputTable = domCache.inputTable;
+        oldInputTable.parentNode.replaceChild(inputTable, oldInputTable);
+        domCache.inputCells = document.querySelectorAll('.inputCell');
+        domCache.inputTable = inputTable;
+
+        return cellsXY;
     }
 }
 

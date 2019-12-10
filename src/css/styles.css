@@ -7,10 +7,10 @@
     --inputTable-background-color-active: #d4cecd;
     --inputTable-color: var(--clueCell-color);
     --inputTable-color-active: var(--logo-color);
-    --newGame-active-color: var(--checkerboardRegionCell-color);
+    --newGame-active-color: var(--checkerboardBoxCell-color);
     --invalidMove-color: var(--board-border-color);
-    --checkerboardRegionCell-color: #d4cecd;
-    --newGame-hover-color: var(--checkerboardRegionCell-color);
+    --checkerboardBoxCell-color: #d4cecd;
+    --newGame-hover-color: var(--checkerboardBoxCell-color);
     --logo-color: #333;
     --cell-hover-color: #b3626209;
     --inputTable-hover-color: #b362621a;
@@ -131,8 +131,8 @@ body {
     border-bottom: 0;
 }
 
-.checkerboardRegionCell {
-    background-color: var(--checkerboardRegionCell-color);
+.checkerboardBoxCell {
+    background-color: var(--checkerboardBoxCell-color);
 }
 
 .clueCell {
@@ -153,7 +153,7 @@ body {
     background-color: var(--board-background-color-active);
 }
 
-#board .checkerboardRegionCell:not(.clueCell):hover {
+#board .checkerboardBoxCell:not(.clueCell):hover {
     background: var(--checkboard-hover-color);
 }
 

@@ -3,41 +3,22 @@ const CONSTANTS = require('./constants');
 class CellDB {
     constructor() {
         this.boardSize = 9;
-        this.cellDB = this.initialize();
-        this.regionInfo = CONSTANTS.regionInfo;
+        this.cellDB = this._initialize();
+        this.boxInfo = CONSTANTS.boxInfo;
         this.cellValueCounts = new Array(this.boardSize + 1).fill(0);
         this.countCompleteCellValues = 0;
         this.filledCellCount = 0;
     }
 
-    initialize() {
+    
+    // Public methods
 
-        const boardSize = this.boardSize;
-        let cellDB = new Array(boardSize);
-
-        for (let i = 0; i < boardSize; i++) {
-            cellDB[i] = new Array(boardSize);
-
-            for (let j = 0; j < boardSize; j++) {
-                cellDB[i][j] = {
-                    cellValue: 0,
-                    conflicting: false,
-                    isClue: true,
-                    solutionValue: null,
-                    eventListener: { event: null, fn: null }
-                };
-            }
-
-        }
-        return cellDB;
-    }
 
     getFilledCellCount() {
         return this.filledCellCount;
     }
 
     setCellValue(cellX, cellY, cellValue) {
-
         const oldCellValue = this.getCellValue(cellX, cellY);
         this.cellDB[cellY][cellX].cellValue = cellValue;
 
@@ -66,27 +47,18 @@ class CellDB {
         return cellValues;
     }
 
-    getRegionValues(region) {
+    getBoxValues(box) {
         let cellValues = [];
 
-        const regionInfo = this.regionInfo[region];
+        const boxInfo = this.boxInfo[box];
 
-        for (let cellX = regionInfo.startCellX; cellX <= regionInfo.endCellX; cellX++) {
-            for (let cellY = regionInfo.startCellY; cellY <= regionInfo.endCellY; cellY++) {
+        for (let cellX = boxInfo.startCellX; cellX <= boxInfo.endCellX; cellX++) {
+            for (let cellY = boxInfo.startCellY; cellY <= boxInfo.endCellY; cellY++) {
                 cellValues.push(this.getCellValue(cellX, cellY));
             }
         }
 
         return cellValues;
-    }
-
-    setCellEventListener(cellX, cellY, event, fn) {
-        this.cellDB[cellY][cellX].eventListener.event = event;
-        this.cellDB[cellY][cellX].eventListener.fn = fn;
-    }
-
-    getCellEventListener(cellX, cellY) {
-        return this.cellDB[cellY][cellX].eventListener;
     }
 
     setCellClueStatus(cellX, cellY, isClue) {
@@ -97,28 +69,11 @@ class CellDB {
         return this.cellDB[cellY][cellX].isClue;
     }
 
-    getCellSolutionValue(cellX, cellY) {
-        return this.cellDB[cellY][cellX].solutionValue;
-    }
-
-    setCellSolutionValue(cellX, cellY, solutionValue) {
-        this.cellDB[cellY][cellX].solutionValue = solutionValue;
-    }
-
-    removeCellSolutionValue(cellX, cellY) {
-        this.cellDB[cellY][cellX].solutionValue = null;
-    }
-
     cellIsEmpty(cellX, cellY) {
         if (this.getCellValue(cellX, cellY) === 0) {
             return true;
         }
         return false;
-    }
-
-    getCurrentBoardValues() {
-        const merged = [].concat.apply([], this.cellDB.map((elem) => elem.cellValue));
-        return merged;
     }
 
     getConflictStatus(cellX, cellY) {
@@ -129,29 +84,8 @@ class CellDB {
         this.cellDB[cellY][cellX].conflicting = status;
     }
 
-    columnContainsCellValue(cellX, cellValue) {
-        for (let cellY = 0; cellY < this.boardSize; cellY++) {
-            if (cellValue === this.getCellValue(cellX, cellY)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    getEmptyCellsInColumn(cellX) {
-        let emptyCells = [];
-
-        for (let cellY = 0; cellY < this.boardSize; cellY++) {
-            if (this.cellIsEmpty(cellX, cellY)) {
-                emptyCells.push(cellY);
-            }
-        }
-
-        return emptyCells;
-    }
-
-    getRegionInfo() {
-        return this.regionInfo;
+    getBoxInfo() {
+        return this.boxInfo;
     }
 
     getCellValueCount(cellValue) {
@@ -178,31 +112,20 @@ class CellDB {
         return this.countCompleteCellValues;
     }
 
-    rowIsValid(move) {
-        // todo: return if false
-        let result = true;
 
+    rowIsValid(move) {
         for (let cellX = 0; cellX < this.boardSize; cellX++) {
-            if (this.getCellValue(cellX, move.cellY) !== 0 && this.getCellValue(cellX, move.cellY) === move.cellValue) {
-                result = false;
+            if (cellX !== move.cellX && (!this.cellIsEmpty(cellX, move.cellY)) && this.getCellValue(cellX, move.cellY) === move.cellValue) {
+                return false;
             }
         }
-        return result;
+        return true;
     }
 
-    // rowIsValid(move) {
-    //     for (let cellX = 0; cellX < this.boardSize; cellX++) {
-    //         if (cellX !== move.cellX && this.getCellValue(cellX, move.cellY) !== 0 && this.getCellValue(cellX, move.cellY) === move.cellValue) {
-    //             return false;
-    //         }
-    //     }
-    //     return true;
-    // }
-
-    regionIsValid(move) {
-        // todo: return if false
+    boxIsValid(move) {
         let result = true;
 
+        // todo: these start/end values should be calculated once at the beginning at then just accessed.
         const startRow = Math.floor(move.cellY / 3) * 3;
         const endRow = startRow + 2;
         const startColumn = Math.floor(move.cellX / 3) * 3;
@@ -232,6 +155,28 @@ class CellDB {
         return result;
     }
 
+    // Private methods
+
+    _initialize() {
+        const boardSize = this.boardSize;
+        let cellDB = new Array(boardSize);
+
+        for (let i = 0; i < boardSize; i++) {
+            cellDB[i] = new Array(boardSize);
+
+            for (let j = 0; j < boardSize; j++) {
+                cellDB[i][j] = {
+                    cellValue: 0,
+                    conflicting: false,
+                    isClue: true,
+                    solutionValue: null,
+                    eventListener: { event: null, fn: null }
+                };
+            }
+
+        }
+        return cellDB;
+    }
 }
 
 module.exports = CellDB;

@@ -1,3 +1,5 @@
+const Utilities = require('./utilities');
+
 class Move {
     constructor(cellX, cellY, cellValue, previousMove) {
         this.previousMove = null;
@@ -18,6 +20,10 @@ class Move {
         }
     }
 
+
+    // Public methods
+
+
     setPreviousMove(move) {
         this.previousMove = move;
     }
@@ -26,11 +32,12 @@ class Move {
         return this.previousMove;
     }
 
+
+    // Private methods
+
+    
     _getRandomInt(min, max) {
-        // https://stackoverflow.com/a/1527820
-        min = Math.ceil(min);
-        max = Math.floor(max);
-        return Math.floor(Math.random() * (max - min + 1)) + min;
+        return Utilities.getRandomInt(min, max);
     }
 }
 

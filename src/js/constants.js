@@ -1,6 +1,6 @@
 const CONSTANTS = {
   boardSize: 9,
-  regionInfo: {
+  boxInfo: {
     'nw': { startCellX: 0, endCellX: 2, startCellY: 0, endCellY: 2, counterpart: 'se' },
     'n': { startCellX: 3, endCellX: 5, startCellY: 0, endCellY: 2, counterpart: 's' },
     'ne': { startCellX: 6, endCellX: 8, startCellY: 0, endCellY: 2, counterpart: 'sw' },

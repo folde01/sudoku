@@ -7,9 +7,14 @@ class Game {
     constructor(board) {
         this.boardSize = CONSTANTS.boardSize;
         this.numCells = this.boardSize * this.boardSize;
-        this.reset();
+        this._reset();
         this.board = board;
+        this.boxInfo = CONSTANTS.boxInfo;
     }
+
+
+    // Public methods
+
 
     getConflictingCellIndex() {
         return this.board.getConflictingCellIndex();
@@ -19,52 +24,10 @@ class Game {
         this.board.setConflictingCellIndex(index);
     }
 
-    reset() {
-        this.cellDB = new CellDB();
-        this.regionInfo = CONSTANTS.regionInfo;
-    }
-
-
     playInCell(cellX, cellY, cellValue) {
         this.cellDB.setCellValue(cellX, cellY, 0);
         this.cellDB.setCellValue(cellX, cellY, cellValue);
         this.cellDB.incrementCellValueCount(cellValue);
-    }
-
-    getRegionCorners(cellX, cellY) {
-        const startRow = Math.floor(cellY / 3) * 3;
-        const endRow = startRow + 2;
-        const startColumn = Math.floor(cellX / 3) * 3;
-        const endColumn = startColumn + 2;
-
-        const corners = {
-            startRow: startRow,
-            endRow: endRow,
-            startColumn: startColumn,
-            endColumn: endColumn
-        }
-
-        return corners;
-    }
-
-    removeConflictHighlighting(cellX, cellY) {
-
-        if (this.cellDB.getCellClueStatus(cellX, cellY) === true) {
-            return;
-        }
-
-        this.board.removeConflictHighlighting(cellX, cellY);
-
-    }
-
-    addConflictHighlighting(cellX, cellY) {
-
-        if (this.cellDB.getCellClueStatus(cellX, cellY) === true) {
-            return;
-        }
-
-        this.board.addConflictHighlighting(cellX, cellY);
-
     }
 
     userHasSolvedPuzzle() {
@@ -85,12 +48,12 @@ class Game {
             }
         }
 
-        // Checks for region conflicts
-        for (let region in this.regionInfo) {
-            if (this.regionInfo.hasOwnProperty(region)) {
-                const regionValues = new Set(this.cellDB.getRegionValues(region));
+        // Checks for box conflicts
+        for (let box in this.boxInfo) {
+            if (this.boxInfo.hasOwnProperty(box)) {
+                const boxValues = new Set(this.cellDB.getBoxValues(box));
 
-                if (regionValues.size !== boardSize) {
+                if (boxValues.size !== boardSize) {
                     return false;
                 }
             }
@@ -99,29 +62,16 @@ class Game {
         return true;
     }
 
-    setCellDB(cellDB) {
-        this.cellDB = cellDB;
-    }
-
-    getCellX(cellIndex) {
-        return cellIndex % this.boardSize;
-    }
-
-    getCellY(cellIndex) {
-        return Math.floor(cellIndex / this.boardSize);
-    }
-
     play() {
         const puzzle = new Puzzle();
         puzzle.solve();
         const cellDB = puzzle.getCellDB();
-        this.setCellDB(cellDB);
+        this._setCellDB(cellDB);
         this.populateBoard();
         const boardSize = this.boardSize;
         this.board.play(this);
     }
 
- 
     highlightIfConflicting(cellX, cellY, cellValue) {
 
         // Searches for conflicts, breaking out of loop if it finds one, in which case highlighting is done. 
@@ -144,7 +94,7 @@ class Game {
         }
 
         if (conflictFound) {
-            this.setBoardConflict(cellX, cellY, true);
+            this._setBoardConflict(cellX, cellY, true);
             return;
         }
 
@@ -162,12 +112,12 @@ class Game {
         }
 
         if (conflictFound) {
-            this.setBoardConflict(cellX, cellY, true);
+            this._setBoardConflict(cellX, cellY, true);
             return;
         }
 
-        // Searches region for conflict:
-        const corners = this.getRegionCorners(cellX, cellY);
+        // Searches box for conflict:
+        const corners = this._getBoxCorners(cellX, cellY);
 
         for (let x = corners.startColumn; x <= corners.endColumn; x++) {
 
@@ -187,7 +137,7 @@ class Game {
         }
 
         if (conflictFound) {
-            this.setBoardConflict(cellX, cellY, true);
+            this._setBoardConflict(cellX, cellY, true);
             return;
         }
 
@@ -197,12 +147,20 @@ class Game {
     removeAllConflicts() {
         for (let cellY = 0; cellY < this.boardSize; cellY++) {
             for (let cellX = 0; cellX < this.boardSize; cellX++) {
-                this.setBoardConflict(cellX, cellY, false);
+                this._setBoardConflict(cellX, cellY, false);
             }
         }
     }
 
-    setBoardConflict(cellX, cellY, newStatus) {
+
+    populateBoard() {
+        this.board.populate(this.cellDB);
+    }
+
+
+    // Private methods
+
+    _setBoardConflict(cellX, cellY, newStatus) {
 
         const status = this.cellDB.getConflictStatus(cellX, cellY);
 
@@ -214,26 +172,58 @@ class Game {
 
         if (newStatus === true) {
             try {
-                this.addConflictHighlighting(cellX, cellY);
-                // this.conflictingCellIndex = this.getCellIndexFromCoords(cellX, cellY);
+                this._addConflictHighlighting(cellX, cellY);
             } catch (e) {
                 throw "setConflictStatus caught exception: " + e;
             }
         } else {
-            this.removeConflictHighlighting(cellX, cellY);
-            // this.conflictingCellIndex = null;
+            this._removeConflictHighlighting(cellX, cellY);
         }
     }
 
-    getCellIndexFromCoords(cellX, cellY) {
-        const index = (this.boardSize * cellY) + cellX;
-        return index;
+    _setCellDB(cellDB) {
+        this.cellDB = cellDB;
     }
 
-    populateBoard() {
-        this.board.populate(this.cellDB);
+    _getBoxCorners(cellX, cellY) {
+        const startRow = Math.floor(cellY / 3) * 3;
+        const endRow = startRow + 2;
+        const startColumn = Math.floor(cellX / 3) * 3;
+        const endColumn = startColumn + 2;
+
+        const corners = {
+            startRow: startRow,
+            endRow: endRow,
+            startColumn: startColumn,
+            endColumn: endColumn
+        }
+
+        return corners;
     }
 
+    _removeConflictHighlighting(cellX, cellY) {
+
+        if (this.cellDB.getCellClueStatus(cellX, cellY) === true) {
+            return;
+        }
+
+        this.board.removeConflictHighlighting(cellX, cellY);
+
+    }
+
+    _reset() {
+        this.cellDB = new CellDB();
+    }
+
+    _addConflictHighlighting(cellX, cellY) {
+
+        if (this.cellDB.getCellClueStatus(cellX, cellY) === true) {
+            return;
+        }
+
+        this.board.addConflictHighlighting(cellX, cellY);
+
+    }
 }
 
 module.exports = Game;

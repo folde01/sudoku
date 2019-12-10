@@ -20,7 +20,7 @@ describe('Puzzle', function () {
     });
 
     describe('moveIsValid()', function () {
-        it('should return true if move does not violate row, column or region rules', function () {
+        it('should return true if move does not violate row, column or box rules', function () {
             const puzzle = new Puzzle();
             const move1valid = puzzle.tryMove(new Move(0, 0, 4));
             const lastMoveValid = puzzle.tryMove(new Move(0, 1, 5));
@@ -28,7 +28,7 @@ describe('Puzzle', function () {
             assert.equal(true, lastMoveValid);
         });
 
-        it('should return true if move does not violate row, column or region rules (different region)', function () {
+        it('should return true if move does not violate row, column or box rules (different box)', function () {
             const puzzle = new Puzzle();
             const move1valid = puzzle.tryMove(new Move(0, 0, 4));
             const lastMoveValid = puzzle.tryMove(new Move(1, 8, 4));
@@ -44,7 +44,7 @@ describe('Puzzle', function () {
             assert.equal(false, lastMoveValid);
         });
 
-        it('should return false if move duplicates a row value (different region)', function () {
+        it('should return false if move duplicates a row value (different box)', function () {
             const puzzle = new Puzzle();
             const move1valid = puzzle.tryMove(new Move(0, 0, 4));
             const lastMoveValid = puzzle.tryMove(new Move(8, 0, 4));
@@ -60,7 +60,7 @@ describe('Puzzle', function () {
             assert.equal(false, lastMoveValid);
         });
 
-        it('should return false if move duplicates a column value (different region)', function () {
+        it('should return false if move duplicates a column value (different box)', function () {
             const puzzle = new Puzzle();
             const move1valid = puzzle.tryMove(new Move(0, 0, 4));
             const lastMoveValid = puzzle.tryMove(new Move(0, 8, 4));
@@ -68,7 +68,7 @@ describe('Puzzle', function () {
             assert.equal(false, lastMoveValid);
         });
 
-        it('should return false if move duplicates a region value', function () {
+        it('should return false if move duplicates a box value', function () {
             const puzzle = new Puzzle();
             const move1valid = puzzle.tryMove(new Move(0, 0, 4));
             const lastMoveValid = puzzle.tryMove(new Move(1, 1, 4));

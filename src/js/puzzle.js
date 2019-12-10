@@ -1,6 +1,7 @@
 const CellDB = require('./cellDB');
 const Move = require('./move');
 const Solver = require('./solver');
+const Utilities = require('./utilities');
 const CONSTANTS = require('./constants');
 
 const log = console.log;
@@ -11,21 +12,12 @@ class Puzzle {
         this.boardSize = CONSTANTS.boardSize;
         this.cellDB = new CellDB();
         this.solver.setCellDB(this.cellDB);
-        this.regionInfo = CONSTANTS.regionInfo;
-        this.validMoveCount = 0;
-        this.moveAttempts = 0;
+        this.boxInfo = CONSTANTS.boxInfo;
     }
 
-    makeMoves(moves) {
-        const self = this;
-        moves.forEach(function (move, index) {
-            self.tryMove(move);
-        });
-    }
 
-    getMoves() {
-        return this.moves;
-    }
+    // Public methods
+
 
     getCellDB() {
         return this.cellDB;
@@ -39,18 +31,16 @@ class Puzzle {
         return this.solver.tryMove(move);
     }
 
-    randomInt(min, max) {
-        const ceilMin = Math.ceil(min);
-        const floorMax = Math.floor(max);
-        return Math.floor(Math.random() * (floorMax - ceilMin + 1)) + ceilMin;
-    }
-
     solve() {
         this.solver.solve();
-        this.removeCluesFromSolvedBoard();
+        this._removeCluesFromSolvedBoard();
     }
 
-    removeClue(cellX, cellY) {
+
+    // Private methods
+
+
+    _removeClue(cellX, cellY) {
         if (this.cellDB.getCellValue(cellX, cellY) === 0) {
             return false;
         }
@@ -61,84 +51,80 @@ class Puzzle {
         return true;
     }
 
-    removeCluesFromSolvedBoard(difficulty) {
+    _randomInt(min, max) {
+        return Utilities.getRandomInt(min, max);
+    }
+
+    _removeCluesFromSolvedBoard(difficulty) {
         let removalFunc;
 
         if (difficulty === 'dev') {
-            removalFunc = this.removeOneClueFromSolvedBoard;
+            removalFunc = this._removeOneClueFromSolvedBoard;
         } else {
-            removalFunc = this.removeCluesFromSolvedBoardMediumDifficulty;
+            removalFunc = this._removeCluesFromSolvedBoardMediumDifficulty;
         }
 
         removalFunc.call(this);
     }
 
-    removeAllCluesInColumn(column) {
-        // for testing only
-        for (let row = 0; row < this.boardSize; row++) {
-            this.removeClue(column, row);
-        }
-    }
-
-    removeOneClueFromSolvedBoard() {
+    _removeOneClueFromSolvedBoard() {
         // For development purposes
-        this.removeClue(0, 0);
+        this._removeClue(0, 0);
     }
 
-    removeCluesFromSolvedBoardMediumDifficulty() {
+    _removeCluesFromSolvedBoardMediumDifficulty() {
         /* 
         
         We need to remove some values from the solved board so it can be played. Removing values must leave the board with rotational symmetry.
         
-        The set of valid removals for center region, to achieve this symmetry: 
-        1) remove the value of the centre cell
-        2) remove values from any pair of cells where the cells aren't on same side and there is a cell in between them
-        3) any combination of 1 and 2
+        To achieve this symmetry, do valid removals until we get to our target number of clues. 
         
-        The valid removals are then: centre, ne-sw, nw-se, e-w, and n-s, plus all combination of these.
+        A valid removal means: 
+        1) remove the value of the centre cell, and/or
+        2) remove values from any pair of cells where the cells aren't on same side and there is a cell in between them
+        
+        The valid removals are then: centre, ne-sw, nw-se, e-w, and n-s, plus all combinations of these.
         
         To be able to select any combination of these, randomly select DO or SKIP for each one.
         
-        In case all are skipped, in order to avoid having a fully populated region, pick one of the valid removals at random and do it.
+        In case all are skipped, and in order to avoid having a fully populated box, pick one of the valid removals at random and do it.
         
-        An easy board at websudoku.com seems to have 33-36 filled cells ('clues'), depending on the number of filled cells in the center region (nCenter). 
+        An easy board at websudoku.com seems to have 33-36 filled cells ('clues'), depending on the number of filled cells in the center box (nCenter). 
         
-        If nCenter is even: nClues = 34 or 36, X = nClues - nCenter. A set of four adjacent regions is chosen and shares X/2 clues. Remove a value at random from each. Then, until the total number of clues in these regions is X/2, randomly choose one of the regions and randomly remove a value. Do the same to the rotationally symmetric cells in the other four regions. 
+        If nCenter is even: nClues = 34 or 36, X = nClues - nCenter. A set of four adjacent boxes is chosen and shares X/2 clues. Remove a value at random from each. Then, until the total number of clues in these boxes is X/2, randomly choose one of the boxes and randomly remove a value. Do the same to the rotationally symmetric cells in the other four boxes. 
         
         If nCenter is odd: nClues = 33 or 35, X = nClues - (nCenter + 1). Repeat as above.
 
-        Skip the removal if it would leave a row, column or region empty.
+        Skip the removal if it would leave a row, column or box empty.
         */
 
         let clueCount = this.boardSize * this.boardSize; // 81
-        const numCluesRemovedFromCenterRegion = this.removeValuesFromCenterRegion();
-        const centerRegionClueCount = this.boardSize - numCluesRemovedFromCenterRegion; // eg. 2 or 3
-        clueCount -= numCluesRemovedFromCenterRegion; // e.g. 79 or 78
+        const numCluesRemovedFromCenterBox = this._removeValuesFromCenterBox();
+        const centerBoxClueCount = this.boardSize - numCluesRemovedFromCenterBox; // eg. 2 or 3
+        clueCount -= numCluesRemovedFromCenterBox; // e.g. 79 or 78
         const clueCountTarget = (clueCount % 2 == 0) ? 35 : 34;
-        // const clueCountTarget = (clueCount % 2 == 0) ? 65 : 64;
-        // const clueCountTarget = (clueCount % 2 == 0) ? 75 : 74;
-        const clueCountTargetForOneSide = Math.floor((clueCountTarget - centerRegionClueCount) / 2);
-        const regionsOfOneSide = ['nw', 'w', 'sw', 's'];
-        let removalCountByRegion = { 'nw': 0, 'w': 0, 'sw': 0, 's': 0 };
+        const clueCountTargetForOneSide = Math.floor((clueCountTarget - centerBoxClueCount) / 2);
+        const boxesOfOneSide = ['nw', 'w', 'sw', 's'];
+        let removalCountByBox = { 'nw': 0, 'w': 0, 'sw': 0, 's': 0 };
 
         const board = this;
 
-        // Removes a value from each region and its counterpart
-        regionsOfOneSide.forEach(function (region) {
-            board.removeRandomClueFromRegionAndItsCounterpart(region);
-            removalCountByRegion[region]++;
+        // Removes a value from each box and its counterpart
+        boxesOfOneSide.forEach(function (box) {
+            board._removeRandomClueFromBoxAndItsCounterpart(box);
+            removalCountByBox[box]++;
         });
 
-        clueCount -= 2 * regionsOfOneSide.length;
+        clueCount -= 2 * boxesOfOneSide.length;
 
         while (clueCount > clueCountTarget) {
-            const region = regionsOfOneSide[Math.floor(Math.random() * regionsOfOneSide.length)];
+            const box = boxesOfOneSide[Math.floor(Math.random() * boxesOfOneSide.length)];
 
-            // Removes unless 8 have already been removed from region
-            if (removalCountByRegion[region] < this.boardSize - 1) {
+            // Removes unless 8 have already been removed from box
+            if (removalCountByBox[box] < this.boardSize - 1) {
 
-                this.removeRandomClueFromRegionAndItsCounterpart(region);
-                removalCountByRegion[region]++;
+                this._removeRandomClueFromBoxAndItsCounterpart(box);
+                removalCountByBox[box]++;
                 clueCount -= 2;
             }
         }
@@ -146,7 +132,7 @@ class Puzzle {
 
     }
 
-    rotate(coordinate) {
+    _rotate(coordinate) {
         let result = -1;
 
         switch (coordinate) {
@@ -164,7 +150,7 @@ class Puzzle {
         return result;
     }
 
-    removeRandomClueFromRegionAndItsCounterpart(region) {
+    _removeRandomClueFromBoxAndItsCounterpart(box) {
         const board = this;
 
         let triedCells = new Set();
@@ -173,42 +159,42 @@ class Puzzle {
         // Loops until we actually remove values
         while (!firstValueWasRemoved && triedCells.size < this.boardSize) {
 
-            // Tries to remove the value of a cell in region:
+            // Tries to remove the value of a cell in box:
 
-            const regionInfo = this.regionInfo[region];
-            const startCellX = regionInfo.startCellX;
-            const endCellX = regionInfo.endCellX;
-            const startCellY = regionInfo.startCellY;
-            const endCellY = regionInfo.endCellY;
-            const counterpartRegion = regionInfo.counterpart;
+            const boxInfo = this.boxInfo[box];
+            const startCellX = boxInfo.startCellX;
+            const endCellX = boxInfo.endCellX;
+            const startCellY = boxInfo.startCellY;
+            const endCellY = boxInfo.endCellY;
+            const counterpartBox = boxInfo.counterpart;
 
-            const cellX = this.randomInt(startCellX, endCellX);
-            const cellY = this.randomInt(startCellY, endCellY);
+            const cellX = this._randomInt(startCellX, endCellX);
+            const cellY = this._randomInt(startCellY, endCellY);
 
             // Keeps track of cells seen so far, so we don't loop forever.
 
             triedCells.add(cellX.toString() + cellY.toString());
 
-            firstValueWasRemoved = board.removeClue(cellX, cellY);
+            firstValueWasRemoved = board._removeClue(cellX, cellY);
 
-            // Tries to remove the value of the corresponding cell in the counterpart region:
+            // Tries to remove the value of the corresponding cell in the counterpart box:
 
-            const regionInfo2 = this.regionInfo[counterpartRegion];
-            const startCellX2 = regionInfo2.startCellX;
-            const endCellX2 = regionInfo2.endCellX;
-            const startCellY2 = regionInfo2.startCellY;
-            const endCellY2 = regionInfo2.endCellY;
+            const boxInfo2 = this.boxInfo[counterpartBox];
+            const startCellX2 = boxInfo2.startCellX;
+            const endCellX2 = boxInfo2.endCellX;
+            const startCellY2 = boxInfo2.startCellY;
+            const endCellY2 = boxInfo2.endCellY;
 
-            const cellX2 = this.rotate(cellX % 3) + startCellX2;
-            const cellY2 = this.rotate(cellY % 3) + startCellY2;
+            const cellX2 = this._rotate(cellX % 3) + startCellX2;
+            const cellY2 = this._rotate(cellY % 3) + startCellY2;
 
-            board.removeClue(cellX2, cellY2);
+            board._removeClue(cellX2, cellY2);
         }
 
         return firstValueWasRemoved;
     }
 
-    removeValuesFromCenterRegion() {
+    _removeValuesFromCenterBox() {
         // 33 43 53   nw n ne 
         // 34 44 54 = w  c  e
         // 35 45 55   sw s se
@@ -239,7 +225,7 @@ class Puzzle {
         }
 
         if (noneRemoved || allRemoved) {
-            const randIndex = this.randomInt(0, removalKeys.length - 1);
+            const randIndex = this._randomInt(0, removalKeys.length - 1);
             booleans[randIndex] = !booleans[randIndex];
         }
 
@@ -253,7 +239,7 @@ class Puzzle {
 
             if (bool) {
                 removals[key].forEach(function (cell, index) {
-                    board.removeClue(cell.cellX, cell.cellY);
+                    board._removeClue(cell.cellX, cell.cellY);
                     ++removedValueCount;
                 });
             }
@@ -261,6 +247,7 @@ class Puzzle {
 
         return removedValueCount;
     }
+
 }
 
 module.exports = Puzzle;
