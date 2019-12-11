@@ -1,7 +1,7 @@
 const Utilities = require('./utilities');
 
 /**
- * @classdesc A Move holds 
+ * @classdesc A Move holds the information related to a single filling in of a cell, including the cell value and the previous move (which is used for backtracking).
  */
 class Move {
     constructor(cellX, cellY, cellValue, previousMove) {

@@ -34,8 +34,8 @@ const CONSTANTS = require('./constants');
  */
 class Board {
     constructor() {
-        this.boardSize = CONSTANTS.boardSize;
-        this.domCache = {
+        this._boardSize = CONSTANTS.boardSize;
+        this._domCache = {
             logo: document.querySelector('#logo'),
             board: document.querySelector('#board'),
             inputTable: document.querySelector('.inputTable'),
@@ -45,11 +45,11 @@ class Board {
             gameOver: document.querySelector('.gameOver'),
             overlay: document.querySelector('.overlay')
         };
-        this.domCache.cellsXY = this._draw();
-        this.domCache.cells = document.querySelectorAll('.cell');
-        this.conflictingCellIndex = { 'index': null };
-        this.boxInfo = CONSTANTS.boxInfo;
-        this.activeCellIndex = null;
+        this._domCache.cellsXY = this._draw();
+        this._domCache.cells = document.querySelectorAll('.cell');
+        this._conflictingCellIndex = { 'index': null };
+        this._boxInfo = CONSTANTS.boxInfo;
+        this._activeCellIndex = null;
     }
 
 
@@ -57,12 +57,12 @@ class Board {
 
 
     getConflictingCellIndex() {
-        const index = this.conflictingCellIndex['index'];
+        const index = this._conflictingCellIndex['index'];
         return index;
     }
 
     setConflictingCellIndex(index) {
-        this.conflictingCellIndex['index'] = index;
+        this._conflictingCellIndex['index'] = index;
     }
 
 
@@ -88,7 +88,7 @@ class Board {
     }
 
     getCellIndexFromCoords(cellX, cellY) {
-        const index = (this.boardSize * cellY) + cellX;
+        const index = (this._boardSize * cellY) + cellX;
         return index;
     }
 
@@ -96,10 +96,10 @@ class Board {
         this._clearBoard();
 
         // Cache board cells from DOM
-        const cells = this.domCache.cells;
-        const rows = this.domCache.rows;
+        const cells = this._domCache.cells;
+        const rows = this._domCache.rows;
         const board = this;
-        const boardSize = this.boardSize;
+        const boardSize = this._boardSize;
 
         // Populate cells and cell DB (for checking move validity) arrays with values from cellValues. 
         cells.forEach(function (cell, cellIndex) {
@@ -122,21 +122,21 @@ class Board {
     }
 
     getCellX(cellIndex) {
-        return cellIndex % this.boardSize;
+        return cellIndex % this._boardSize;
     }
 
     getCellY(cellIndex) {
-        return Math.floor(cellIndex / this.boardSize);
+        return Math.floor(cellIndex / this._boardSize);
     }
 
     play(game) {
-        const cells = this.domCache.cells;
-        const inputCells = this.domCache.inputCells;
-        const inputTable = this.domCache.inputTable;
+        const cells = this._domCache.cells;
+        const inputCells = this._domCache.inputCells;
+        const inputTable = this._domCache.inputTable;
 
         // Helps ensure only one cell is ever active (selected) at a time
         // let activeCellIndex = null;
-        let activeCellIndex = this.activeCellIndex;
+        let activeCellIndex = this._activeCellIndex;
 
         const board = this;
 
@@ -216,22 +216,22 @@ class Board {
 
     _hideGameOver() {
         // const gameOver = this.domCache.gameOver;
-        const overlay = this.domCache.overlay;
+        const overlay = this._domCache.overlay;
         // gameOver.innerText = '';
         overlay.style.display = 'none';
 
     }
 
     _deactivateKeypads() {
-        this.domCache.inputTable.classList.remove('inputTableActive');
-        this.domCache.inputCells.forEach(function (inputCell, inputCellIndex) {
+        this._domCache.inputTable.classList.remove('inputTableActive');
+        this._domCache.inputCells.forEach(function (inputCell, inputCellIndex) {
             inputCell.onclick = null;
             // inputCell.onclick = function () { return false; };
         });
     }
 
     _clearCells() {
-        this.domCache.cells.forEach(function (cell) {
+        this._domCache.cells.forEach(function (cell) {
             cell.classList.remove('clueCell');
             cell.classList.remove('activeCell');
             cell.classList.remove('invalidMove');
@@ -243,13 +243,13 @@ class Board {
 
     _getDomCell(cellX, cellY) {
         // Todo: cache these
-        const boardSize = this.boardSize;
+        const boardSize = this._boardSize;
         const selector = '#cell' + cellX + cellY;
         if (isNaN(cellX) || isNaN(cellY) || cellX > boardSize - 1 || cellX &lt; 0 || cellY > boardSize - 1 || cellY &lt; 0) {
             throw "getDomCell: unexpected cell coordinate. (cellX, cellY): " + cellX + ', ' + cellY;
         }
 
-        return this.domCache.cellsXY[selector];
+        return this._domCache.cellsXY[selector];
     }
 
     _addCheckerBoard() {
@@ -267,13 +267,13 @@ class Board {
     }
 
     _doGameOver() {
-        const overlay = this.domCache.overlay;
+        const overlay = this._domCache.overlay;
         overlay.style.display = 'block';
     }
 
     _draw() {
-        const domCache = this.domCache;
-        const boardSize = this.boardSize;
+        const domCache = this._domCache;
+        const boardSize = this._boardSize;
         const cellsXY = {};
 
         // logo
@@ -355,13 +355,13 @@ module.exports = Board;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Board.html">Board</a></li><li><a href="CellDB.html">CellDB</a></li><li><a href="Game.html">Game</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Board.html">Board</a></li><li><a href="CellDB.html">CellDB</a></li><li><a href="Game.html">Game</a></li><li><a href="Move.html">Move</a></li><li><a href="Puzzle.html">Puzzle</a></li><li><a href="Solver.html">Solver</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Dec 11 2019 14:09:43 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Dec 11 2019 23:25:17 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>

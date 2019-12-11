@@ -33,12 +33,12 @@
  */
 class CellDB {
     constructor() {
-        this.boardSize = 9;
-        this.cellDB = this._initialize();
-        this.boxInfo = CONSTANTS.boxInfo;
-        this.cellValueCounts = new Array(this.boardSize + 1).fill(0);
-        this.countCompleteCellValues = 0;
-        this.filledCellCount = 0;
+        this._boardSize = 9;
+        this._cellDB = this._initialize();
+        this._boxInfo = CONSTANTS.boxInfo;
+        this._cellValueCounts = new Array(this._boardSize + 1).fill(0);
+        this._countCompleteCellValues = 0;
+        this._filledCellCount = 0;
     }
 
 
@@ -46,33 +46,33 @@ class CellDB {
 
 
     getFilledCellCount() {
-        return this.filledCellCount;
+        return this._filledCellCount;
     }
 
     setCellValue(cellX, cellY, cellValue) {
         const oldCellValue = this.getCellValue(cellX, cellY);
-        this.cellDB[cellY][cellX].cellValue = cellValue;
+        this._cellDB[cellY][cellX].cellValue = cellValue;
 
         if (oldCellValue === 0 &amp;&amp; cellValue > 0) {
-            this.filledCellCount++;
+            this._filledCellCount++;
         } else if (oldCellValue > 0 &amp;&amp; cellValue === 0) {
-            this.filledCellCount--;
+            this._filledCellCount--;
         }
     }
 
     getCellValue(cellX, cellY) {
-        return this.cellDB[cellY][cellX].cellValue;
+        return this._cellDB[cellY][cellX].cellValue;
     }
 
     getRowValues(cellY) {
-        return this.cellDB[cellY].map((cell) => cell.cellValue);
+        return this._cellDB[cellY].map((cell) => cell.cellValue);
     }
 
     getColumnValues(cellX) {
         let cellValues = [];
 
-        for (let cellY = 0; cellY &lt; this.boardSize; cellY++) {
-            cellValues.push(this.cellDB[cellY][cellX].cellValue);
+        for (let cellY = 0; cellY &lt; this._boardSize; cellY++) {
+            cellValues.push(this._cellDB[cellY][cellX].cellValue);
         }
 
         return cellValues;
@@ -81,7 +81,7 @@ class CellDB {
     getBoxValues(box) {
         let cellValues = [];
 
-        const boxInfo = this.boxInfo[box];
+        const boxInfo = this._boxInfo[box];
 
         for (let cellX = boxInfo.startCellX; cellX &lt;= boxInfo.endCellX; cellX++) {
             for (let cellY = boxInfo.startCellY; cellY &lt;= boxInfo.endCellY; cellY++) {
@@ -93,11 +93,11 @@ class CellDB {
     }
 
     setCellClueStatus(cellX, cellY, isClue) {
-        this.cellDB[cellY][cellX].isClue = isClue;
+        this._cellDB[cellY][cellX].isClue = isClue;
     }
 
     getCellClueStatus(cellX, cellY) {
-        return this.cellDB[cellY][cellX].isClue;
+        return this._cellDB[cellY][cellX].isClue;
     }
 
     cellIsEmpty(cellX, cellY) {
@@ -108,45 +108,45 @@ class CellDB {
     }
 
     getConflictStatus(cellX, cellY) {
-        return this.cellDB[cellY][cellX].conflicting;
+        return this._cellDB[cellY][cellX].conflicting;
     }
 
     setConflictStatus(cellX, cellY, status) {
-        this.cellDB[cellY][cellX].conflicting = status;
+        this._cellDB[cellY][cellX].conflicting = status;
     }
 
     getBoxInfo() {
-        return this.boxInfo;
+        return this._boxInfo;
     }
 
     getCellValueCount(cellValue) {
-        return this.cellValueCounts[cellValue];
+        return this._cellValueCounts[cellValue];
     }
 
     incrementCellValueCount(cellValue) {
-        this.cellValueCounts[cellValue]++;
+        this._cellValueCounts[cellValue]++;
 
-        if (this.cellValueCounts[cellValue] === this.boardSize) {
-            this.countCompleteCellValues++;
+        if (this._cellValueCounts[cellValue] === this._boardSize) {
+            this._countCompleteCellValues++;
         }
     }
 
     decrementCellValueCount(cellValue) {
-        if (this.cellValueCounts[cellValue] === this.boardSize) {
-            this.countCompleteCellValues--;
+        if (this._cellValueCounts[cellValue] === this._boardSize) {
+            this._countCompleteCellValues--;
         }
 
-        this.cellValueCounts[cellValue]--;
+        this._cellValueCounts[cellValue]--;
     }
 
     getCompleteCellValueCount() {
-        return this.countCompleteCellValues;
+        return this._countCompleteCellValues;
     }
 
 
     rowIsValid(move) {
-        for (let cellX = 0; cellX &lt; this.boardSize; cellX++) {
-            if (cellX !== move.getCellX() &amp;&amp; (!this.cellIsEmpty(cellX, move.getCellY())) &amp;&amp; this.getCellValue(cellX, move.getCellY()) === move.cellValue) {
+        for (let cellX = 0; cellX &lt; this._boardSize; cellX++) {
+            if (cellX !== move.getCellX() &amp;&amp; (!this.cellIsEmpty(cellX, move.getCellY())) &amp;&amp; this.getCellValue(cellX, move.getCellY()) === move.getCellValue()) {
                 return false;
             }
         }
@@ -177,8 +177,8 @@ class CellDB {
         // todo: return if false
         let result = true;
 
-        for (let j = 0; j &lt; this.boardSize; j++) {
-            if (this.getCellValue(move.getCellX(), j) !== 0 &amp;&amp; this.getCellValue(move.getCellX(), j) === move.cellValue) {
+        for (let j = 0; j &lt; this._boardSize; j++) {
+            if (this.getCellValue(move.getCellX(), j) !== 0 &amp;&amp; this.getCellValue(move.getCellX(), j) === move.getCellValue()) {
                 result = false;
             }
         }
@@ -191,7 +191,7 @@ class CellDB {
 
     
     _initialize() {
-        const boardSize = this.boardSize;
+        const boardSize = this._boardSize;
         let cellDB = new Array(boardSize);
 
         for (let i = 0; i &lt; boardSize; i++) {
@@ -222,13 +222,13 @@ module.exports = CellDB;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Board.html">Board</a></li><li><a href="CellDB.html">CellDB</a></li><li><a href="Game.html">Game</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Board.html">Board</a></li><li><a href="CellDB.html">CellDB</a></li><li><a href="Game.html">Game</a></li><li><a href="Move.html">Move</a></li><li><a href="Puzzle.html">Puzzle</a></li><li><a href="Solver.html">Solver</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Dec 11 2019 14:09:43 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Dec 11 2019 23:25:17 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>
