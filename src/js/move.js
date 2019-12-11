@@ -1,10 +1,13 @@
 const Utilities = require('./utilities');
 
+/**
+ * @classdesc A Move holds 
+ */
 class Move {
     constructor(cellX, cellY, cellValue, previousMove) {
-        this.previousMove = null;
-        this.isDeadEnd = false;
-        this.deadEndNextMoves = [];
+        this._previousMove = null;
+        this._isDeadEnd = false;
+        this._deadEndNextMoves = [];
 
         if (arguments.length < 3) {
             this.cellX = this._getRandomInt(0, boardSize - 1);
@@ -16,7 +19,7 @@ class Move {
             this.cellValue = cellValue;
         }
         if (arguments.length === 4) {
-            this.previousMove = previousMove;
+            this._previousMove = previousMove;
         }
     }
 
@@ -25,13 +28,32 @@ class Move {
 
 
     setPreviousMove(move) {
-        this.previousMove = move;
+        this._previousMove = move;
     }
 
     getPreviousMove() {
-        return this.previousMove;
+        return this._previousMove;
     }
 
+    getDeadEndNextMoves() {
+        return this._deadEndNextMoves;
+    }
+
+    addDeadEndNextMove(move) {
+        this._deadEndNextMoves.push(move);
+    }
+
+    getCellValue() {
+        return this.cellValue;
+    }
+
+    getCellX() {
+        return this.cellX;
+    }
+
+    getCellY() {
+        return this.cellY;
+    }
 
     // Private methods
 

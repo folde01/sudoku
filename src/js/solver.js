@@ -5,10 +5,10 @@ const log = console.log;
 
 class Solver {
     constructor() {
-        this.moves = [];
-        this.boardSize = CONSTANTS.boardSize;
-        this.moveAttempts = 0;
-        this.validMoveCount = 0;
+        this._moves = [];
+        this._boardSize = CONSTANTS.boardSize;
+        this._moveAttempts = 0;
+        this._validMoveCount = 0;
 
         Array.prototype.diff = function (arr) {
             // From https://stackoverflow.com/a/4026828
@@ -23,7 +23,7 @@ class Solver {
 
 
     setCellDB(cellDB) {
-        this.cellDB = cellDB;
+        this._cellDB = cellDB;
     }
 
     solve() {
@@ -35,28 +35,28 @@ class Solver {
     }
 
     rowIsValid(move) {
-        return this.cellDB.rowIsValid(move);
+        return this._cellDB.rowIsValid(move);
     }
 
     boxIsValid(move) {
-        return this.cellDB.boxIsValid(move);
+        return this._cellDB.boxIsValid(move);
     }
 
     columnIsValid(move) {
-        return this.cellDB.columnIsValid(move);
+        return this._cellDB.columnIsValid(move);
     }
 
     puzzleIsComplete() {
-        return this.cellDB.getCompleteCellValueCount() === this.boardSize;
+        return this._cellDB.getCompleteCellValueCount() === this._boardSize;
     }
 
     tryMove(move) {
-        this.moveAttempts++;
-        if (this.cellDB.cellIsEmpty(move.cellX, move.cellY) && this.moveIsValid(move)) {
-            this.cellDB.setCellValue(move.cellX, move.cellY, move.cellValue);
-            this.validMoveCount++;
-            this.moves.push(move);
-            this.cellDB.incrementCellValueCount(move.cellValue);
+        this._moveAttempts++;
+        if (this._cellDB.cellIsEmpty(move.getCellX(), move.getCellY()) && this.moveIsValid(move)) {
+            this._cellDB.setCellValue(move.getCellX(), move.getCellY(), move.getCellValue());
+            this._validMoveCount++;
+            this._moves.push(move);
+            this._cellDB.incrementCellValueCount(move.getCellValue());
             // log(this.cellDB);
             return true;
         } else {
@@ -74,14 +74,14 @@ class Solver {
 
         // check whether this is the first move we're trying to make
         if (lastMove) {
-            cellValue = lastMove.cellValue;
+            cellValue = lastMove.getCellValue();
         } else {
             // as we look for somewhere to move, we start with cell value '1', i.e.
             // placing as many 1s on the board as we can, and working our way up to 9
             cellValue = 1;
         }
 
-        while (this.cellDB.getCellValueCount(cellValue) < this.boardSize && (!this.puzzleIsComplete())) {
+        while (this._cellDB.getCellValueCount(cellValue) < this._boardSize && (!this.puzzleIsComplete())) {
             lastMove = this._getLastMove();
 
             if (!lastMove) {
@@ -110,7 +110,7 @@ class Solver {
                 // so if we ever make a move, link it to its predecessor
                 if (moveMade) {
                     moveCandidate.setPreviousMove(lastMove);
-                    if (cellValue < this.boardSize) {
+                    if (cellValue < this._boardSize) {
                         cellValue++;
                     }
                 } else {
@@ -122,48 +122,47 @@ class Solver {
     }
 
     _getLastMove() {
-        if (this.moves.length === 0) {
+        if (this._moves.length === 0) {
             return null;
         }
-        return this.moves[this.moves.length - 1];
+        return this._moves[this._moves.length - 1];
     }
 
     _getPossibleNextMoves(move) {
         let possibleCellYs = [];
 
-        for (let i = 0; i < this.boardSize; i++) {
-            if (i != move.cellY) {
+        for (let i = 0; i < this._boardSize; i++) {
+            if (i != move.getCellY()) {
                 possibleCellYs.push(i);
             }
         }
 
-        let cellValue = move.cellValue;
-        let cellValueCount = this.cellDB.getCellValueCount(cellValue);
+        let cellValue = move.getCellValue();
+        let cellValueCount = this._cellDB.getCellValueCount(cellValue);
 
         // start working on the next value when we have 9 of the current one
-        if (cellValueCount === this.boardSize) {
+        if (cellValueCount === this._boardSize) {
             ++cellValue;
 
-            if (this.cellDB.getCellValueCount(cellValue) === this.boardSize) {
+            if (this._cellDB.getCellValueCount(cellValue) === this._boardSize) {
                 throw "Unexpected cell value count. Terminating.";
             }
         }
 
-        const deadEndCellYs = move.deadEndNextMoves.map(mv => mv.cellY);
-        let cellX = (move.cellX + 1) % this.boardSize;
+        const deadEndCellYs = move.getDeadEndNextMoves().map(mv => mv.cellY);
+        let cellX = (move.getCellX() + 1) % this._boardSize;
         const possibleNextMoves = possibleCellYs.diff(deadEndCellYs).map(cellY => new Move(cellX, cellY, cellValue));
 
         return possibleNextMoves;
     }
 
     _undoLastMove() {
-        if (this.moves.length > 0) {
-            const lastMove = this.moves.pop();
+        if (this._moves.length > 0) {
+            const lastMove = this._moves.pop();
             lastMove.deadEnd = true;
-            this.cellDB.setCellValue(lastMove.cellX, lastMove.cellY, 0);
-            // this.cellDB.removeCellSolutionValue(lastMove.cellX, lastMove.cellY);
-            this.cellDB.decrementCellValueCount(lastMove.cellValue);
-            lastMove.getPreviousMove().deadEndNextMoves.push(lastMove);
+            this._cellDB.setCellValue(lastMove.getCellX(), lastMove.getCellY(), 0);
+            this._cellDB.decrementCellValueCount(lastMove.getCellValue());
+            lastMove.getPreviousMove().addDeadEndNextMove(lastMove);
             return lastMove;
         } else {
             return;

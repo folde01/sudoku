@@ -1,47 +1,50 @@
 const CONSTANTS = require('./constants');
 
+/**
+ * @classdesc The CellDB stores the game state, including the value placed in each cell (either as a clue or by the user) and whether cell's value puts it in conflict with another cell.
+ */
 class CellDB {
     constructor() {
-        this.boardSize = 9;
-        this.cellDB = this._initialize();
-        this.boxInfo = CONSTANTS.boxInfo;
-        this.cellValueCounts = new Array(this.boardSize + 1).fill(0);
-        this.countCompleteCellValues = 0;
-        this.filledCellCount = 0;
+        this._boardSize = 9;
+        this._cellDB = this._initialize();
+        this._boxInfo = CONSTANTS.boxInfo;
+        this._cellValueCounts = new Array(this._boardSize + 1).fill(0);
+        this._countCompleteCellValues = 0;
+        this._filledCellCount = 0;
     }
 
-    
+
     // Public methods
 
 
     getFilledCellCount() {
-        return this.filledCellCount;
+        return this._filledCellCount;
     }
 
     setCellValue(cellX, cellY, cellValue) {
         const oldCellValue = this.getCellValue(cellX, cellY);
-        this.cellDB[cellY][cellX].cellValue = cellValue;
+        this._cellDB[cellY][cellX].cellValue = cellValue;
 
         if (oldCellValue === 0 && cellValue > 0) {
-            this.filledCellCount++;
+            this._filledCellCount++;
         } else if (oldCellValue > 0 && cellValue === 0) {
-            this.filledCellCount--;
+            this._filledCellCount--;
         }
     }
 
     getCellValue(cellX, cellY) {
-        return this.cellDB[cellY][cellX].cellValue;
+        return this._cellDB[cellY][cellX].cellValue;
     }
 
     getRowValues(cellY) {
-        return this.cellDB[cellY].map((cell) => cell.cellValue);
+        return this._cellDB[cellY].map((cell) => cell.cellValue);
     }
 
     getColumnValues(cellX) {
         let cellValues = [];
 
-        for (let cellY = 0; cellY < this.boardSize; cellY++) {
-            cellValues.push(this.cellDB[cellY][cellX].cellValue);
+        for (let cellY = 0; cellY < this._boardSize; cellY++) {
+            cellValues.push(this._cellDB[cellY][cellX].cellValue);
         }
 
         return cellValues;
@@ -50,7 +53,7 @@ class CellDB {
     getBoxValues(box) {
         let cellValues = [];
 
-        const boxInfo = this.boxInfo[box];
+        const boxInfo = this._boxInfo[box];
 
         for (let cellX = boxInfo.startCellX; cellX <= boxInfo.endCellX; cellX++) {
             for (let cellY = boxInfo.startCellY; cellY <= boxInfo.endCellY; cellY++) {
@@ -62,11 +65,11 @@ class CellDB {
     }
 
     setCellClueStatus(cellX, cellY, isClue) {
-        this.cellDB[cellY][cellX].isClue = isClue;
+        this._cellDB[cellY][cellX].isClue = isClue;
     }
 
     getCellClueStatus(cellX, cellY) {
-        return this.cellDB[cellY][cellX].isClue;
+        return this._cellDB[cellY][cellX].isClue;
     }
 
     cellIsEmpty(cellX, cellY) {
@@ -77,45 +80,45 @@ class CellDB {
     }
 
     getConflictStatus(cellX, cellY) {
-        return this.cellDB[cellY][cellX].conflicting;
+        return this._cellDB[cellY][cellX].conflicting;
     }
 
     setConflictStatus(cellX, cellY, status) {
-        this.cellDB[cellY][cellX].conflicting = status;
+        this._cellDB[cellY][cellX].conflicting = status;
     }
 
     getBoxInfo() {
-        return this.boxInfo;
+        return this._boxInfo;
     }
 
     getCellValueCount(cellValue) {
-        return this.cellValueCounts[cellValue];
+        return this._cellValueCounts[cellValue];
     }
 
     incrementCellValueCount(cellValue) {
-        this.cellValueCounts[cellValue]++;
+        this._cellValueCounts[cellValue]++;
 
-        if (this.cellValueCounts[cellValue] === this.boardSize) {
-            this.countCompleteCellValues++;
+        if (this._cellValueCounts[cellValue] === this._boardSize) {
+            this._countCompleteCellValues++;
         }
     }
 
     decrementCellValueCount(cellValue) {
-        if (this.cellValueCounts[cellValue] === this.boardSize) {
-            this.countCompleteCellValues--;
+        if (this._cellValueCounts[cellValue] === this._boardSize) {
+            this._countCompleteCellValues--;
         }
 
-        this.cellValueCounts[cellValue]--;
+        this._cellValueCounts[cellValue]--;
     }
 
     getCompleteCellValueCount() {
-        return this.countCompleteCellValues;
+        return this._countCompleteCellValues;
     }
 
 
     rowIsValid(move) {
-        for (let cellX = 0; cellX < this.boardSize; cellX++) {
-            if (cellX !== move.cellX && (!this.cellIsEmpty(cellX, move.cellY)) && this.getCellValue(cellX, move.cellY) === move.cellValue) {
+        for (let cellX = 0; cellX < this._boardSize; cellX++) {
+            if (cellX !== move.getCellX() && (!this.cellIsEmpty(cellX, move.getCellY())) && this.getCellValue(cellX, move.getCellY()) === move.getCellValue()) {
                 return false;
             }
         }
@@ -126,9 +129,9 @@ class CellDB {
         let result = true;
 
         // todo: these start/end values should be calculated once at the beginning at then just accessed.
-        const startRow = Math.floor(move.cellY / 3) * 3;
+        const startRow = Math.floor(move.getCellY() / 3) * 3;
         const endRow = startRow + 2;
-        const startColumn = Math.floor(move.cellX / 3) * 3;
+        const startColumn = Math.floor(move.getCellX() / 3) * 3;
         const endColumn = startColumn + 2;
 
         for (let j = startRow; j <= endRow; j++) {
@@ -146,8 +149,8 @@ class CellDB {
         // todo: return if false
         let result = true;
 
-        for (let j = 0; j < this.boardSize; j++) {
-            if (this.getCellValue(move.cellX, j) !== 0 && this.getCellValue(move.cellX, j) === move.cellValue) {
+        for (let j = 0; j < this._boardSize; j++) {
+            if (this.getCellValue(move.getCellX(), j) !== 0 && this.getCellValue(move.getCellX(), j) === move.getCellValue()) {
                 result = false;
             }
         }
@@ -155,10 +158,12 @@ class CellDB {
         return result;
     }
 
+
     // Private methods
 
+    
     _initialize() {
-        const boardSize = this.boardSize;
+        const boardSize = this._boardSize;
         let cellDB = new Array(boardSize);
 
         for (let i = 0; i < boardSize; i++) {

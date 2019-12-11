@@ -1,4 +1,32 @@
-const log = console.log;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: board.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: board.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const log = console.log;
 const CONSTANTS = require('./constants');
 
 /**
@@ -6,8 +34,8 @@ const CONSTANTS = require('./constants');
  */
 class Board {
     constructor() {
-        this._boardSize = CONSTANTS.boardSize;
-        this._domCache = {
+        this.boardSize = CONSTANTS.boardSize;
+        this.domCache = {
             logo: document.querySelector('#logo'),
             board: document.querySelector('#board'),
             inputTable: document.querySelector('.inputTable'),
@@ -17,11 +45,11 @@ class Board {
             gameOver: document.querySelector('.gameOver'),
             overlay: document.querySelector('.overlay')
         };
-        this._domCache.cellsXY = this._draw();
-        this._domCache.cells = document.querySelectorAll('.cell');
-        this._conflictingCellIndex = { 'index': null };
-        this._boxInfo = CONSTANTS.boxInfo;
-        this._activeCellIndex = null;
+        this.domCache.cellsXY = this._draw();
+        this.domCache.cells = document.querySelectorAll('.cell');
+        this.conflictingCellIndex = { 'index': null };
+        this.boxInfo = CONSTANTS.boxInfo;
+        this.activeCellIndex = null;
     }
 
 
@@ -29,12 +57,12 @@ class Board {
 
 
     getConflictingCellIndex() {
-        const index = this._conflictingCellIndex['index'];
+        const index = this.conflictingCellIndex['index'];
         return index;
     }
 
     setConflictingCellIndex(index) {
-        this._conflictingCellIndex['index'] = index;
+        this.conflictingCellIndex['index'] = index;
     }
 
 
@@ -60,7 +88,7 @@ class Board {
     }
 
     getCellIndexFromCoords(cellX, cellY) {
-        const index = (this._boardSize * cellY) + cellX;
+        const index = (this.boardSize * cellY) + cellX;
         return index;
     }
 
@@ -68,10 +96,10 @@ class Board {
         this._clearBoard();
 
         // Cache board cells from DOM
-        const cells = this._domCache.cells;
-        const rows = this._domCache.rows;
+        const cells = this.domCache.cells;
+        const rows = this.domCache.rows;
         const board = this;
-        const boardSize = this._boardSize;
+        const boardSize = this.boardSize;
 
         // Populate cells and cell DB (for checking move validity) arrays with values from cellValues. 
         cells.forEach(function (cell, cellIndex) {
@@ -94,21 +122,21 @@ class Board {
     }
 
     getCellX(cellIndex) {
-        return cellIndex % this._boardSize;
+        return cellIndex % this.boardSize;
     }
 
     getCellY(cellIndex) {
-        return Math.floor(cellIndex / this._boardSize);
+        return Math.floor(cellIndex / this.boardSize);
     }
 
     play(game) {
-        const cells = this._domCache.cells;
-        const inputCells = this._domCache.inputCells;
-        const inputTable = this._domCache.inputTable;
+        const cells = this.domCache.cells;
+        const inputCells = this.domCache.inputCells;
+        const inputTable = this.domCache.inputTable;
 
         // Helps ensure only one cell is ever active (selected) at a time
         // let activeCellIndex = null;
-        let activeCellIndex = this._activeCellIndex;
+        let activeCellIndex = this.activeCellIndex;
 
         const board = this;
 
@@ -188,22 +216,22 @@ class Board {
 
     _hideGameOver() {
         // const gameOver = this.domCache.gameOver;
-        const overlay = this._domCache.overlay;
+        const overlay = this.domCache.overlay;
         // gameOver.innerText = '';
         overlay.style.display = 'none';
 
     }
 
     _deactivateKeypads() {
-        this._domCache.inputTable.classList.remove('inputTableActive');
-        this._domCache.inputCells.forEach(function (inputCell, inputCellIndex) {
+        this.domCache.inputTable.classList.remove('inputTableActive');
+        this.domCache.inputCells.forEach(function (inputCell, inputCellIndex) {
             inputCell.onclick = null;
             // inputCell.onclick = function () { return false; };
         });
     }
 
     _clearCells() {
-        this._domCache.cells.forEach(function (cell) {
+        this.domCache.cells.forEach(function (cell) {
             cell.classList.remove('clueCell');
             cell.classList.remove('activeCell');
             cell.classList.remove('invalidMove');
@@ -215,13 +243,13 @@ class Board {
 
     _getDomCell(cellX, cellY) {
         // Todo: cache these
-        const boardSize = this._boardSize;
+        const boardSize = this.boardSize;
         const selector = '#cell' + cellX + cellY;
-        if (isNaN(cellX) || isNaN(cellY) || cellX > boardSize - 1 || cellX < 0 || cellY > boardSize - 1 || cellY < 0) {
+        if (isNaN(cellX) || isNaN(cellY) || cellX > boardSize - 1 || cellX &lt; 0 || cellY > boardSize - 1 || cellY &lt; 0) {
             throw "getDomCell: unexpected cell coordinate. (cellX, cellY): " + cellX + ', ' + cellY;
         }
 
-        return this._domCache.cellsXY[selector];
+        return this.domCache.cellsXY[selector];
     }
 
     _addCheckerBoard() {
@@ -230,8 +258,8 @@ class Board {
         checkerboardBoxes.forEach(function (box, index) {
             const boxInfo = this._boxInfo[box];
 
-            for (let cellX = boxInfo.startCellX; cellX <= boxInfo.endCellX; cellX++) {
-                for (let cellY = boxInfo.startCellY; cellY <= boxInfo.endCellY; cellY++) {
+            for (let cellX = boxInfo.startCellX; cellX &lt;= boxInfo.endCellX; cellX++) {
+                for (let cellY = boxInfo.startCellY; cellY &lt;= boxInfo.endCellY; cellY++) {
                     this._getDomCell(cellX, cellY).classList.add('checkerboardBoxCell');
                 }
             }
@@ -239,13 +267,13 @@ class Board {
     }
 
     _doGameOver() {
-        const overlay = this._domCache.overlay;
+        const overlay = this.domCache.overlay;
         overlay.style.display = 'block';
     }
 
     _draw() {
-        const domCache = this._domCache;
-        const boardSize = this._boardSize;
+        const domCache = this.domCache;
+        const boardSize = this.boardSize;
         const cellsXY = {};
 
         // logo
@@ -253,7 +281,7 @@ class Board {
         logo.setAttribute('id', 'logo');
         const logoChars = ('  SUDOKU ').split('');
 
-        for (let i = 0; i < 9; i++) {
+        for (let i = 0; i &lt; 9; i++) {
             const li = document.createElement('li');
             li.innerText = logoChars[i];
             logo.appendChild(li);
@@ -273,12 +301,12 @@ class Board {
         const board = document.createElement('table');
         board.setAttribute('id', 'board');
 
-        for (let i = 0; i < boardSize; i++) {
+        for (let i = 0; i &lt; boardSize; i++) {
             const rowNode = document.createElement('tr');
             rowNode.setAttribute('class', 'row');
             board.appendChild(rowNode);
 
-            for (let j = 0; j < boardSize; j++) {
+            for (let j = 0; j &lt; boardSize; j++) {
                 const cellNode = document.createElement('td');
                 cellNode.setAttribute('class', 'cell');
                 const cellID = 'cell' + j + i;
@@ -294,7 +322,7 @@ class Board {
         const inputTable = document.createElement('ul');
         inputTable.setAttribute('class', 'inputTable');
 
-        for (let i = 0; i < boardSize; i++) {
+        for (let i = 0; i &lt; boardSize; i++) {
             const li = document.createElement('li');
             li.innerText = (i + 1).toString();
             li.setAttribute('class', 'inputCell');
@@ -317,4 +345,26 @@ class Board {
     }
 }
 
-module.exports = Board;
+module.exports = Board;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Board.html">Board</a></li><li><a href="CellDB.html">CellDB</a></li><li><a href="Game.html">Game</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Dec 11 2019 14:09:43 GMT+0000 (Greenwich Mean Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

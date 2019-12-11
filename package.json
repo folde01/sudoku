@@ -6,6 +6,7 @@
   "scripts": {
     "test": "mocha --timeout 5000",
     "build": "webpack",
+    "doc": "jsdoc -r src -d docs",
     "start": "webpack-dev-server --host 0.0.0.0 --port 8765 --entry ./src/js/app.js --output-filename ./dist/bundle.js --devtool source-map"
   },
   "repository": {
@@ -21,7 +22,7 @@
   "homepage": "https://github.com/folde01/sudoku#readme",
   "devDependencies": {
     "css-loader": "^2.1.1",
-    "jest": "^24.7.1",
+    "jsdoc": "^3.6.3",
     "mocha": "^6.1.4",
     "style-loader": "^0.23.1",
     "webpack": "^4.30.0",

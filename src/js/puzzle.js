@@ -8,11 +8,11 @@ const log = console.log;
 
 class Puzzle {
     constructor(solver = new Solver()) {
-        this.solver = solver;
-        this.boardSize = CONSTANTS.boardSize;
-        this.cellDB = new CellDB();
-        this.solver.setCellDB(this.cellDB);
-        this.boxInfo = CONSTANTS.boxInfo;
+        this._solver = solver;
+        this._boardSize = CONSTANTS.boardSize;
+        this._cellDB = new CellDB();
+        this._solver.setCellDB(this._cellDB);
+        this._boxInfo = CONSTANTS.boxInfo;
     }
 
 
@@ -20,19 +20,19 @@ class Puzzle {
 
 
     getCellDB() {
-        return this.cellDB;
+        return this._cellDB;
     }
 
     puzzleIsComplete() {
-        return this.solver.puzzleIsComplete();
+        return this._solver.puzzleIsComplete();
     }
 
     tryMove(move) {
-        return this.solver.tryMove(move);
+        return this._solver.tryMove(move);
     }
 
     solve() {
-        this.solver.solve();
+        this._solver.solve();
         this._removeCluesFromSolvedBoard();
     }
 
@@ -41,12 +41,12 @@ class Puzzle {
 
 
     _removeClue(cellX, cellY) {
-        if (this.cellDB.getCellValue(cellX, cellY) === 0) {
+        if (this._cellDB.getCellValue(cellX, cellY) === 0) {
             return false;
         }
 
-        this.cellDB.setCellValue(cellX, cellY, 0);
-        this.cellDB.setCellClueStatus(cellX, cellY, false);
+        this._cellDB.setCellValue(cellX, cellY, 0);
+        this._cellDB.setCellClueStatus(cellX, cellY, false);
 
         return true;
     }
@@ -98,9 +98,9 @@ class Puzzle {
         Skip the removal if it would leave a row, column or box empty.
         */
 
-        let clueCount = this.boardSize * this.boardSize; // 81
+        let clueCount = this._boardSize * this._boardSize; // 81
         const numCluesRemovedFromCenterBox = this._removeValuesFromCenterBox();
-        const centerBoxClueCount = this.boardSize - numCluesRemovedFromCenterBox; // eg. 2 or 3
+        const centerBoxClueCount = this._boardSize - numCluesRemovedFromCenterBox; // eg. 2 or 3
         clueCount -= numCluesRemovedFromCenterBox; // e.g. 79 or 78
         const clueCountTarget = (clueCount % 2 == 0) ? 35 : 34;
         const clueCountTargetForOneSide = Math.floor((clueCountTarget - centerBoxClueCount) / 2);
@@ -121,7 +121,7 @@ class Puzzle {
             const box = boxesOfOneSide[Math.floor(Math.random() * boxesOfOneSide.length)];
 
             // Removes unless 8 have already been removed from box
-            if (removalCountByBox[box] < this.boardSize - 1) {
+            if (removalCountByBox[box] < this._boardSize - 1) {
 
                 this._removeRandomClueFromBoxAndItsCounterpart(box);
                 removalCountByBox[box]++;
@@ -157,11 +157,11 @@ class Puzzle {
         let firstValueWasRemoved = false;
 
         // Loops until we actually remove values
-        while (!firstValueWasRemoved && triedCells.size < this.boardSize) {
+        while (!firstValueWasRemoved && triedCells.size < this._boardSize) {
 
             // Tries to remove the value of a cell in box:
 
-            const boxInfo = this.boxInfo[box];
+            const boxInfo = this._boxInfo[box];
             const startCellX = boxInfo.startCellX;
             const endCellX = boxInfo.endCellX;
             const startCellY = boxInfo.startCellY;
@@ -179,7 +179,7 @@ class Puzzle {
 
             // Tries to remove the value of the corresponding cell in the counterpart box:
 
-            const boxInfo2 = this.boxInfo[counterpartBox];
+            const boxInfo2 = this._boxInfo[counterpartBox];
             const startCellX2 = boxInfo2.startCellX;
             const endCellX2 = boxInfo2.endCellX;
             const startCellY2 = boxInfo2.startCellY;

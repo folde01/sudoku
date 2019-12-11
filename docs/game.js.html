@@ -1,4 +1,32 @@
-const CellDB = require('./cellDB');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: game.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: game.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const CellDB = require('./cellDB');
 const Puzzle = require('./puzzle');
 const CONSTANTS = require('./constants');
 const log = console.log;
@@ -8,11 +36,11 @@ const log = console.log;
  */
 class Game {
     constructor(board) {
-        this._boardSize = CONSTANTS.boardSize;
-        this._numCells = this._boardSize * this._boardSize;
+        this.boardSize = CONSTANTS.boardSize;
+        this.numCells = this.boardSize * this.boardSize;
         this._reset();
-        this._board = board;
-        this._boxInfo = CONSTANTS.boxInfo;
+        this.board = board;
+        this.boxInfo = CONSTANTS.boxInfo;
     }
 
 
@@ -24,16 +52,16 @@ class Game {
         const cellDB = puzzle.getCellDB();
         this._setCellDB(cellDB);
         this.populateBoard();
-        const boardSize = this._boardSize;
-        this._board.play(this);
+        const boardSize = this.boardSize;
+        this.board.play(this);
     }
 
     populateBoard() {
-        this._board.populate(this.cellDB);
+        this.board.populate(this.cellDB);
     }
     
     userHasSolvedPuzzle() {
-        const boardSize = this._boardSize;
+        const boardSize = this.boardSize;
 
         // Returns if board isn't filled yet.
         if (this.cellDB.getFilledCellCount() !== boardSize * boardSize) {
@@ -41,7 +69,7 @@ class Game {
         }
 
         // Checks row and columns for conflicts and correct number counts
-        for (let i = 0; i < boardSize; i++) {
+        for (let i = 0; i &lt; boardSize; i++) {
             const rowValues = new Set(this.cellDB.getRowValues(i));
             const columnValues = new Set(this.cellDB.getColumnValues(i));
 
@@ -51,8 +79,8 @@ class Game {
         }
 
         // Checks for box conflicts
-        for (let box in this._boxInfo) {
-            if (this._boxInfo.hasOwnProperty(box)) {
+        for (let box in this.boxInfo) {
+            if (this.boxInfo.hasOwnProperty(box)) {
                 const boxValues = new Set(this.cellDB.getBoxValues(box));
 
                 if (boxValues.size !== boardSize) {
@@ -65,11 +93,11 @@ class Game {
     }
 
     getConflictingCellIndex() {
-        return this._board.getConflictingCellIndex();
+        return this.board.getConflictingCellIndex();
     }
 
     setConflictingCellIndex(index) {
-        this._board.setConflictingCellIndex(index);
+        this.board.setConflictingCellIndex(index);
     }
 
     playInCell(cellX, cellY, cellValue) {
@@ -83,10 +111,10 @@ class Game {
         // Searches for conflicts, breaking out of loop if it finds one, in which case highlighting is done. 
 
         let conflictFound = false;
-        const boardSize = this._boardSize;
+        const boardSize = this.boardSize;
 
         // Searches row for conflict:
-        for (let x = 0; x < boardSize; x++) {
+        for (let x = 0; x &lt; boardSize; x++) {
 
             // don't compare with self
             if (x === cellX) {
@@ -105,7 +133,7 @@ class Game {
         }
 
         // Searches column for conflict:
-        for (let y = 0; y < boardSize; y++) {
+        for (let y = 0; y &lt; boardSize; y++) {
 
             if (y === cellY) {
                 continue;
@@ -125,13 +153,13 @@ class Game {
         // Searches box for conflict:
         const corners = this._getBoxCorners(cellX, cellY);
 
-        for (let x = corners.startColumn; x <= corners.endColumn; x++) {
+        for (let x = corners.startColumn; x &lt;= corners.endColumn; x++) {
 
             if (conflictFound) break;
 
-            for (let y = corners.startRow; y < corners.endRow; y++) {
+            for (let y = corners.startRow; y &lt; corners.endRow; y++) {
 
-                if (x === cellX && y === cellY) {
+                if (x === cellX &amp;&amp; y === cellY) {
                     continue;
                 }
 
@@ -150,8 +178,8 @@ class Game {
     }
 
     removeAllConflicts() {
-        for (let cellY = 0; cellY < this._boardSize; cellY++) {
-            for (let cellX = 0; cellX < this._boardSize; cellX++) {
+        for (let cellY = 0; cellY &lt; this.boardSize; cellY++) {
+            for (let cellX = 0; cellX &lt; this.boardSize; cellX++) {
                 this._setBoardConflict(cellX, cellY, false);
             }
         }
@@ -210,7 +238,7 @@ class Game {
             return;
         }
 
-        this._board.removeConflictHighlighting(cellX, cellY);
+        this.board.removeConflictHighlighting(cellX, cellY);
 
     }
 
@@ -224,9 +252,32 @@ class Game {
             return;
         }
 
-        this._board.addConflictHighlighting(cellX, cellY);
+        this.board.addConflictHighlighting(cellX, cellY);
 
     }
 }
 
 module.exports = Game;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Board.html">Board</a></li><li><a href="CellDB.html">CellDB</a></li><li><a href="Game.html">Game</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Dec 11 2019 14:09:43 GMT+0000 (Greenwich Mean Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
