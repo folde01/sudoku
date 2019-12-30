@@ -267,6 +267,12 @@ class Board {
         const oldLogo = domCache.logo;
         oldLogo.parentNode.replaceChild(logo, oldLogo);
 
+        // back button
+        const backBtn = document.createElement('li');
+        backBtn.innerText = '←';
+        backBtn.setAttribute('class', 'backBtn');
+        const liToReplace = document.querySelector('#logo li');
+        liToReplace.parentNode.replaceChild(backBtn, liToReplace);
 
         // board
         const oldBoard = domCache.board;
