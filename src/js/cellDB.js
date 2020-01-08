@@ -48,8 +48,8 @@ class CellDB {
     removeLastPlay() {
         if (!this._gameIsInProgress()) return;
 
-        this._playOrder.pop();
-        console.log(this.getPlayOrder());
+        // console.log(this.getPlayOrder());
+        return this._playOrder.pop();
     }
 
     _removePlay(cellX, cellY) {

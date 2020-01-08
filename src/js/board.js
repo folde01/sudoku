@@ -101,6 +101,17 @@ class Board {
         return Math.floor(cellIndex / this._boardSize);
     }
 
+    _drawInCell(cellX, cellY, n) {
+        const cellID = this._getCellID(cellX, cellY);
+        
+        if (n === 0) {
+            n = '';
+        }
+
+        console.log('cellID:', cellID);
+        document.querySelector('#' + cellID).innerText = n;
+    }
+
     play(game) {
 
         this._game = game;
@@ -136,8 +147,6 @@ class Board {
                     activeCellIndex = cellIndex;
                     cells[activeCellIndex].classList.add('activeCell');
 
-                    // todo: Activates keyboard
-
                     // Activates keypad.
                     inputTable.classList.add('inputTableActive');
                     inputCells.forEach(function (inputCell, inputCellIndex) {
@@ -161,7 +170,9 @@ class Board {
                             game.highlightIfConflicting(cellX, cellY, numericCellValue);
 
                             // Sets cell value in DOM.
-                            cell.innerText = renderedCellValue;
+                        
+                            // cell.innerText = renderedCellValue;
+                            board._drawInCell(cellX, cellY, numericCellValue);
 
                             // Deactivates cell 
                             cell.classList.remove('activeCell');
@@ -200,9 +211,15 @@ class Board {
                 const cellDB = board._game.getCellDB();
                 console.log(cellDB.getPlayOrder());
                 console.log('back button');
-                cellDB.removeLastPlay();
+                const lastPlayID = cellDB.removeLastPlay();
+
+                if (!lastPlayID) return;
+                
+                const cellXY = lastPlayID.split('-').map(x => Number(x));
                 console.log(cellDB.getPlayOrder());
-            }
+                console.log('lastPlay:', lastPlayID);
+                this._drawInCell(cellXY[0], cellXY[1], 0);
+            }.bind(this);
 
         } else {
             // unhighlight
@@ -210,7 +227,6 @@ class Board {
             // unset listener
         }
     }
-
 
     _clearBoard() {
         this._hideGameOver();
@@ -276,6 +292,10 @@ class Board {
         overlay.style.display = 'block';
     }
 
+    _getCellID(cellX, cellY) {
+        return 'cell' + cellX + cellY;
+    }
+
     _draw() {
         const domCache = this._domCache;
         const boardSize = this._boardSize;
@@ -321,7 +341,8 @@ class Board {
             for (let j = 0; j < boardSize; j++) {
                 const cellNode = document.createElement('td');
                 cellNode.setAttribute('class', 'cell');
-                const cellID = 'cell' + j + i;
+                // const cellID = 'cell' + j + i;
+                const cellID = this._getCellID(j, i);
                 cellNode.setAttribute('id', cellID);
                 cellsXY['#' + cellID] = cellNode;
                 rowNode.appendChild(cellNode);
