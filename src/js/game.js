@@ -28,6 +28,10 @@ class Game {
         this._board.play(this);
     }
 
+    getCellDB() {
+        return this.cellDB;
+    }
+
     populateBoard() {
         this._board.populate(this.cellDB);
     }
@@ -185,6 +189,7 @@ class Game {
     }
 
     _setCellDB(cellDB) {
+        cellDB.startGame();
         this.cellDB = cellDB;
     }
 

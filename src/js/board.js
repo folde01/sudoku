@@ -102,10 +102,12 @@ class Board {
     }
 
     play(game) {
+
+        this._game = game;
         const cells = this._domCache.cells;
         const inputCells = this._domCache.inputCells;
         const inputTable = this._domCache.inputTable;
-
+        
         // Helps ensure only one cell is ever active (selected) at a time
         // let activeCellIndex = null;
         let activeCellIndex = this._activeCellIndex;
@@ -164,6 +166,8 @@ class Board {
                             // Deactivates cell 
                             cell.classList.remove('activeCell');
 
+                            this._setBackButton();
+
                             this._deactivateKeypads();
 
                             if (game.userHasSolvedPuzzle()) {
@@ -178,6 +182,35 @@ class Board {
 
 
     // Private methods
+
+    _setBackButton() {
+
+        const backButton = this._domCache.backButton;
+        const board = this;
+
+        let buttonShouldBeActive = this._game && 
+            this._game.getCellDB().getFilledCellCount() > 0;
+
+        if (buttonShouldBeActive) {
+            // highlight
+            backButton.classList.add('backButtonHighlighted');
+            
+            // set listener
+            backButton.onclick = function() {
+                const cellDB = board._game.getCellDB();
+                console.log(cellDB.getPlayOrder());
+                console.log('back button');
+                cellDB.removeLastPlay();
+                console.log(cellDB.getPlayOrder());
+            }
+
+        } else {
+            // unhighlight
+            backButton.classList.remove('backButtonHighlighted');
+            // unset listener
+        }
+    }
+
 
     _clearBoard() {
         this._hideGameOver();
@@ -268,11 +301,12 @@ class Board {
         oldLogo.parentNode.replaceChild(logo, oldLogo);
 
         // back button
-        const backBtn = document.createElement('li');
-        backBtn.innerText = '←';
-        backBtn.setAttribute('class', 'backBtn');
+        const backButton = document.createElement('li');
+        backButton.innerText = '←';
+        backButton.setAttribute('class', 'backBtn');
         const liToReplace = document.querySelector('#logo li');
-        liToReplace.parentNode.replaceChild(backBtn, liToReplace);
+        liToReplace.parentNode.replaceChild(backButton, liToReplace);
+        domCache.backButton = backButton;
 
         // board
         const oldBoard = domCache.board;
