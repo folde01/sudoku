@@ -20,7 +20,7 @@ class Game {
 
     play() {
         const puzzle = new Puzzle();
-        puzzle.solve();
+        puzzle.solve(); // todo: put solve in constructor
         const cellDB = puzzle.getCellDB();
         this._setCellDB(cellDB);
         this.populateBoard();

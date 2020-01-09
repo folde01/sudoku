@@ -199,8 +199,8 @@ class Board {
         const backButton = this._domCache.backButton;
         const board = this;
 
-        let buttonShouldBeActive = this._game && 
-            this._game.getCellDB().getFilledCellCount() > 0;
+        const buttonShouldBeActive = this._game && 
+            this._game.getCellDB().getPlayOrder().length > 0;
 
         if (buttonShouldBeActive) {
             // highlight
@@ -209,38 +209,38 @@ class Board {
             // set listener
             backButton.onclick = function() {
                 const cellDB = board._game.getCellDB();
-                console.log(cellDB.getPlayOrder());
-                console.log('back button');
                 const lastPlayID = cellDB.removeLastPlay();
 
-                if (!lastPlayID) return;
-                
+                if (!lastPlayID) {
+                    return;
+                }
+
                 const cellXY = lastPlayID.split('-').map(x => Number(x));
-                console.log(cellDB.getPlayOrder());
-                console.log('lastPlay:', lastPlayID);
                 this._drawInCell(cellXY[0], cellXY[1], 0);
+
+                log('count:', board._game.getCellDB().getPlayOrder().length);
+                if (board._game.getCellDB().getPlayOrder().length == 0) {
+                    log('yoda');
+                    board._deactivateBackButton();
+                }
             }.bind(this);
 
         } else {
-            // unhighlight
-            backButton.classList.remove('backButtonHighlighted');
-            // unset listener
+            this._deactivateBackButton();
         }
     }
 
     _clearBoard() {
         this._hideGameOver();
         this._deactivateKeypads();
+        this._deactivateBackButton();
         this._clearCells();
-        this._addCheckerBoard();
+        this._addCheckerBoard(); // todo: this should only be done once
     }
 
     _hideGameOver() {
-        // const gameOver = this.domCache.gameOver;
         const overlay = this._domCache.overlay;
-        // gameOver.innerText = '';
         overlay.style.display = 'none';
-
     }
 
     _deactivateKeypads() {
@@ -249,6 +249,12 @@ class Board {
             inputCell.onclick = null;
             // inputCell.onclick = function () { return false; };
         });
+    }
+
+    _deactivateBackButton() {
+        const backButton = this._domCache.backButton;
+        backButton.classList.remove('backButtonHighlighted');
+        backButton.onclick = null;
     }
 
     _clearCells() {
@@ -322,7 +328,8 @@ class Board {
 
         // back button
         const backButton = document.createElement('li');
-        backButton.innerText = '←';
+        backButton.innerText = 'Undo';
+        // backButton.innerText = '←';
         backButton.setAttribute('class', 'backBtn');
         const liToReplace = document.querySelector('#logo li');
         liToReplace.parentNode.replaceChild(backButton, liToReplace);
