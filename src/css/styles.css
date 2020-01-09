@@ -228,7 +228,7 @@ body {
     /* color: var(--backButton-color-active); */
     color: var(--board-border-color);
     /* color: var(--logo-color); */
-    /* background-color: var(--inputTable-background-color-active); */
+    background-color: var(--cell-hover-color);
     /* font-size: 1.15em; */
     cursor: pointer;
 }

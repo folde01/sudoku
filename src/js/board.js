@@ -328,8 +328,9 @@ class Board {
 
         // back button
         const backButton = document.createElement('li');
-        backButton.innerText = 'Undo';
+        // backButton.innerText = 'Undo';
         // backButton.innerText = '←';
+        backButton.innerText = 'Back';
         backButton.setAttribute('class', 'backBtn');
         const liToReplace = document.querySelector('#logo li');
         liToReplace.parentNode.replaceChild(backButton, liToReplace);
