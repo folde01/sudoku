@@ -20,10 +20,6 @@ class Solver {
         };
     }
 
-    
-    // Public methods
-
-
     setCellDB(cellDB) {
         this._cellDB = cellDB;
     }
@@ -66,8 +62,6 @@ class Solver {
             return false;
         }
     }
-
-    // Private methods
 
     _solveByPickingRandomPossibleNextMove() {
 

@@ -16,5 +16,3 @@ window.addEventListener('click', function(event) {
 
 game = new Game(board);
 game.play();
-
-// test change

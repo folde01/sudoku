@@ -23,10 +23,6 @@ class Move {
         }
     }
 
-
-    // Public methods
-
-
     setPreviousMove(move) {
         this._previousMove = move;
     }
@@ -55,9 +51,6 @@ class Move {
         return this.cellY;
     }
 
-    // Private methods
-
-    
     _getRandomInt(min, max) {
         return Utilities.getRandomInt(min, max);
     }

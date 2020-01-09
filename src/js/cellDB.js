@@ -15,19 +15,9 @@ class CellDB {
         this._gameHasStarted = false;
     }
 
-    // Public methods
-
     getFilledCellCount() {
         return this._filledCellCount;
     }
-
-    // _setLastCellPlayed(cellX, cellY) {
-    //     this._playOrder.push([cellX, cellY]);
-    // }
-
-    // _getLastCellPlayed() {
-    //     // return this._lastCellPlayed;
-    // }
 
     startGame() {
         this._gameHasStarted = true;
@@ -207,10 +197,6 @@ class CellDB {
 
         return result;
     }
-
-
-    // Private methods
-
 
     _initialize() {
         const boardSize = this._boardSize;

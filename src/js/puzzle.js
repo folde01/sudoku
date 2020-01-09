@@ -18,10 +18,6 @@ class Puzzle {
         this._boxInfo = CONSTANTS.boxInfo;
     }
 
-
-    // Public methods
-
-
     getCellDB() {
         return this._cellDB;
     }
@@ -38,10 +34,6 @@ class Puzzle {
         this._solver.solve();
         this._removeCluesFromSolvedBoard();
     }
-
-
-    // Private methods
-
 
     _removeClue(cellX, cellY) {
         if (this._cellDB.getCellValue(cellX, cellY) === 0) {

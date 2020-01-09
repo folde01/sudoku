@@ -15,9 +15,6 @@ class Game {
         this._boxInfo = CONSTANTS.boxInfo;
     }
 
-
-    // Public methods
-
     play() {
         const puzzle = new Puzzle();
         puzzle.solve(); // todo: put solve in constructor
@@ -160,12 +157,6 @@ class Game {
             }
         }
     }
-
-
-
-
-
-    // Private methods
 
     _setBoardConflict(cellX, cellY, newStatus) {
 

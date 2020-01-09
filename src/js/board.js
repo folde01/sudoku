@@ -24,10 +24,6 @@ class Board {
         this._activeCellIndex = null;
     }
 
-
-    // Public methods
-
-
     getConflictingCellIndex() {
         const index = this._conflictingCellIndex['index'];
         return index;
@@ -190,9 +186,6 @@ class Board {
             }
         });
     }
-
-
-    // Private methods
 
     _setBackButton() {
 
