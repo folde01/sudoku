@@ -20,12 +20,16 @@ class Game {
 
     play() {
         const puzzle = new Puzzle();
-        puzzle.solve();
+        puzzle.solve(); // todo: put solve in constructor
         const cellDB = puzzle.getCellDB();
         this._setCellDB(cellDB);
         this.populateBoard();
         const boardSize = this._boardSize;
         this._board.play(this);
+    }
+
+    getCellDB() {
+        return this.cellDB;
     }
 
     populateBoard() {
@@ -185,6 +189,7 @@ class Game {
     }
 
     _setCellDB(cellDB) {
+        cellDB.startGame();
         this.cellDB = cellDB;
     }
 

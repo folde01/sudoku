@@ -101,11 +101,24 @@ class Board {
         return Math.floor(cellIndex / this._boardSize);
     }
 
+    _drawInCell(cellX, cellY, n) {
+        const cellID = this._getCellID(cellX, cellY);
+        
+        if (n === 0) {
+            n = '';
+        }
+
+        console.log('cellID:', cellID);
+        document.querySelector('#' + cellID).innerText = n;
+    }
+
     play(game) {
+
+        this._game = game;
         const cells = this._domCache.cells;
         const inputCells = this._domCache.inputCells;
         const inputTable = this._domCache.inputTable;
-
+        
         // Helps ensure only one cell is ever active (selected) at a time
         // let activeCellIndex = null;
         let activeCellIndex = this._activeCellIndex;
@@ -134,8 +147,6 @@ class Board {
                     activeCellIndex = cellIndex;
                     cells[activeCellIndex].classList.add('activeCell');
 
-                    // todo: Activates keyboard
-
                     // Activates keypad.
                     inputTable.classList.add('inputTableActive');
                     inputCells.forEach(function (inputCell, inputCellIndex) {
@@ -159,10 +170,14 @@ class Board {
                             game.highlightIfConflicting(cellX, cellY, numericCellValue);
 
                             // Sets cell value in DOM.
-                            cell.innerText = renderedCellValue;
+                        
+                            // cell.innerText = renderedCellValue;
+                            board._drawInCell(cellX, cellY, numericCellValue);
 
                             // Deactivates cell 
                             cell.classList.remove('activeCell');
+
+                            this._setBackButton();
 
                             this._deactivateKeypads();
 
@@ -179,19 +194,53 @@ class Board {
 
     // Private methods
 
+    _setBackButton() {
+
+        const backButton = this._domCache.backButton;
+        const board = this;
+
+        const buttonShouldBeActive = this._game && 
+            this._game.getCellDB().getPlayOrder().length > 0;
+
+        if (buttonShouldBeActive) {
+            // highlight
+            backButton.classList.add('backButtonHighlighted');
+            
+            // set listener
+            backButton.onclick = function() {
+                const cellDB = board._game.getCellDB();
+                const lastPlayID = cellDB.removeLastPlay();
+
+                if (!lastPlayID) {
+                    return;
+                }
+
+                const cellXY = lastPlayID.split('-').map(x => Number(x));
+                this._drawInCell(cellXY[0], cellXY[1], 0);
+
+                log('count:', board._game.getCellDB().getPlayOrder().length);
+                if (board._game.getCellDB().getPlayOrder().length == 0) {
+                    log('yoda');
+                    board._deactivateBackButton();
+                }
+            }.bind(this);
+
+        } else {
+            this._deactivateBackButton();
+        }
+    }
+
     _clearBoard() {
         this._hideGameOver();
         this._deactivateKeypads();
+        this._deactivateBackButton();
         this._clearCells();
-        this._addCheckerBoard();
+        this._addCheckerBoard(); // todo: this should only be done once
     }
 
     _hideGameOver() {
-        // const gameOver = this.domCache.gameOver;
         const overlay = this._domCache.overlay;
-        // gameOver.innerText = '';
         overlay.style.display = 'none';
-
     }
 
     _deactivateKeypads() {
@@ -200,6 +249,12 @@ class Board {
             inputCell.onclick = null;
             // inputCell.onclick = function () { return false; };
         });
+    }
+
+    _deactivateBackButton() {
+        const backButton = this._domCache.backButton;
+        backButton.classList.remove('backButtonHighlighted');
+        backButton.onclick = null;
     }
 
     _clearCells() {
@@ -243,6 +298,10 @@ class Board {
         overlay.style.display = 'block';
     }
 
+    _getCellID(cellX, cellY) {
+        return 'cell' + cellX + cellY;
+    }
+
     _draw() {
         const domCache = this._domCache;
         const boardSize = this._boardSize;
@@ -267,6 +326,14 @@ class Board {
         const oldLogo = domCache.logo;
         oldLogo.parentNode.replaceChild(logo, oldLogo);
 
+        // back button
+        const backButton = document.createElement('li');
+        backButton.innerText = 'Undo';
+        // backButton.innerText = '←';
+        backButton.setAttribute('class', 'backBtn');
+        const liToReplace = document.querySelector('#logo li');
+        liToReplace.parentNode.replaceChild(backButton, liToReplace);
+        domCache.backButton = backButton;
 
         // board
         const oldBoard = domCache.board;
@@ -281,7 +348,8 @@ class Board {
             for (let j = 0; j < boardSize; j++) {
                 const cellNode = document.createElement('td');
                 cellNode.setAttribute('class', 'cell');
-                const cellID = 'cell' + j + i;
+                // const cellID = 'cell' + j + i;
+                const cellID = this._getCellID(j, i);
                 cellNode.setAttribute('id', cellID);
                 cellsXY['#' + cellID] = cellNode;
                 rowNode.appendChild(cellNode);

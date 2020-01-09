@@ -11,14 +11,62 @@ class CellDB {
         this._cellValueCounts = new Array(this._boardSize + 1).fill(0);
         this._countCompleteCellValues = 0;
         this._filledCellCount = 0;
+        this._playOrder = [];
+        this._gameHasStarted = false;
     }
-
 
     // Public methods
 
-
     getFilledCellCount() {
         return this._filledCellCount;
+    }
+
+    // _setLastCellPlayed(cellX, cellY) {
+    //     this._playOrder.push([cellX, cellY]);
+    // }
+
+    // _getLastCellPlayed() {
+    //     // return this._lastCellPlayed;
+    // }
+
+    startGame() {
+        this._gameHasStarted = true;
+    }
+
+    _gameIsInProgress() {
+        return this._gameHasStarted;
+    }
+
+    _addPlay(cellX, cellY) {
+        if (!this._gameIsInProgress()) return;
+        // this._playOrder.push([cellX, cellY]);
+        this._playOrder.push(cellX.toString() + '-' + cellY.toString());
+        console.log(this.getPlayOrder());
+    }
+
+    // for back button
+    removeLastPlay() {
+        if (!this._gameIsInProgress()) return;
+
+        // console.log(this.getPlayOrder());
+        return this._playOrder.pop();
+    }
+
+    _removePlay(cellX, cellY) {
+        if (!this._gameIsInProgress()) return;
+
+        const playOrder = this._playOrder;
+        const index = playOrder.indexOf(cellX.toString() + '-' + cellY.toString());
+        // const index = playOrder.indexOf([cellX, cellY]);
+
+        if (index > -1) {
+            playOrder.splice(index, 1);
+        }
+        console.log(this.getPlayOrder());
+    }
+
+    getPlayOrder() {
+        return this._playOrder;
     }
 
     setCellValue(cellX, cellY, cellValue) {
@@ -27,8 +75,10 @@ class CellDB {
 
         if (oldCellValue === 0 && cellValue > 0) {
             this._filledCellCount++;
+            this._addPlay(cellX, cellY);
         } else if (oldCellValue > 0 && cellValue === 0) {
             this._filledCellCount--;
+            this._removePlay(cellX, cellY);
         }
     }
 
@@ -161,7 +211,7 @@ class CellDB {
 
     // Private methods
 
-    
+
     _initialize() {
         const boardSize = this._boardSize;
         let cellDB = new Array(boardSize);

@@ -6,7 +6,10 @@
     --inputTable-background-color: var(--board-background-color);
     --inputTable-background-color-active: #d4cecd;
     --inputTable-color: var(--clueCell-color);
+    --backButton-color: var(--clueCell-color);
     --inputTable-color-active: var(--logo-color);
+    --backButton-color-active: var(--board-border-color);
+    --newGame-color: var(--board-border-color);
     --newGame-active-color: var(--checkerboardBoxCell-color);
     --invalidMove-color: var(--board-border-color);
     --checkerboardBoxCell-color: #d4cecd;
@@ -16,6 +19,8 @@
     --inputTable-hover-color: #b362621a;
     --checkboard-hover-color: #b3626225;
     --game-over-color: var(--board-background-color-active);
+    --eraseButton-color: var(--clueCell-color);
+    --eraseButton-color-active: var(--board-border-color);
 }
 
 * {
@@ -110,6 +115,7 @@ body {
 }
 
 .inputTableActive .inputCell:active,
+.backButtonHighlighted:active,
 .newGame:active {
     text-decoration: none;
     background-color: var(--newGame-active-color);
@@ -194,10 +200,37 @@ body {
     padding-top: 75px;
 }
 
-.newGame,
+.newGame {
+    color: var(--newGame-color);
+    font-size: 0.65rem;
+}
+
 #eraseBtn {
+    font-size: 0.65rem;
+    /* color: var(--eraseButton-color); */
+    /* font-size: 0.6rem; */
+}
+
+.inputTableActive #eraseBtn {
+    color: var(--eraseButton-color-active);
+}
+
+.backBtn {
+    /* color: var(--board-border-color); */
+    color: var(--backButton-color);
+    font-size: 0.65rem;
+    /* font-size: 1em; */
+    cursor: text;
+}
+
+.backButtonHighlighted {
+    /* color: var(--backButton-color); */
+    /* color: var(--backButton-color-active); */
     color: var(--board-border-color);
-    font-size: 0.6rem;
+    /* color: var(--logo-color); */
+    /* background-color: var(--inputTable-background-color-active); */
+    /* font-size: 1.15em; */
+    cursor: pointer;
 }
 
 .overlay {
