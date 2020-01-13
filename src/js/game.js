@@ -95,12 +95,14 @@ class Game {
             }
 
             if (this.cellDB.getCellValue(x, cellY) === cellValue) {
+                log('cellDB:', this.cellDB);
                 conflictFound = true;
                 break;
             }
         }
 
         if (conflictFound) {
+            log('row conflict');
             this._setBoardConflict(cellX, cellY, true);
             return;
         }
@@ -119,6 +121,7 @@ class Game {
         }
 
         if (conflictFound) {
+            log('column conflict');
             this._setBoardConflict(cellX, cellY, true);
             return;
         }
@@ -144,6 +147,7 @@ class Game {
         }
 
         if (conflictFound) {
+            log('box conflict');
             this._setBoardConflict(cellX, cellY, true);
             return;
         }

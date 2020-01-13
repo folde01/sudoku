@@ -209,11 +209,12 @@ class Board {
                 }
 
                 const cellXY = lastPlayID.split('-').map(x => Number(x));
-                this._drawInCell(cellXY[0], cellXY[1], 0);
+                const cellX = cellXY[0];
+                const cellY = cellXY[1];
+                cellDB.setCellValue(cellX, cellY, 0)
+                this._drawInCell(cellX, cellY, 0);
 
-                log('count:', board._game.getCellDB().getPlayOrder().length);
                 if (board._game.getCellDB().getPlayOrder().length == 0) {
-                    log('yoda');
                     board._deactivateBackButton();
                 }
             }.bind(this);
